@@ -1,5 +1,5 @@
-# Chikungunya
-chikungunya <- data.frame(
+# Chikungunya (cache via microdatasus, fallback estatico se cache ausente)
+CHIKUNGUNYA_FALLBACK <- data.frame(
   Ano = c(2020, 2021, 2022, 2023, 2024, 2025),
   Masculino = c(348, 60, 49, 104, 559, 70),
   Feminino = c(664, 108, 85, 209, 1234, 162),
@@ -46,13 +46,22 @@ chikungunya <- data.frame(
   Ign_Branco_etnia = c(360, 149, 100, 206, 756, 23),
   Confirmado_casos = c(1001, 102, 6, 52, 1460, 98),
   Descartado_casos = c(2, 64, 127, 250, 287, 130),
-  Ign_Branco_casos = c(9, 2, 1, 11, 48, 4)
+  Ign_Branco_casos = c(9, 2, 1, 11, 48, 4),
+  stringsAsFactors = FALSE
 )
 
-chikungunya_cache_path <- file.path("data", "app_cache", "chikungunya_microdatasus_campos_v1.rds")
-if(file.exists(chikungunya_cache_path)) {
-  chikungunya <- readRDS(chikungunya_cache_path)
+carregar_chikungunya_microdatasus <- function(
+  cache_path = file.path("data", "app_cache", "chikungunya_microdatasus_campos_v1.rds")
+) {
+  cache <- ler_rds_seguro(cache_path, "SINAN-CHIKUNGUNYA")
+  if (is.null(cache) || nrow(cache) == 0) {
+    warning("Cache SINAN-CHIKUNGUNYA indisponivel; usando fallback estatico. Atualize com scripts/update_data.R e ARBOVIROSES_DOWNLOAD=true.")
+    return(CHIKUNGUNYA_FALLBACK)
+  }
+  cache
 }
+
+chikungunya <- carregar_chikungunya_microdatasus()
 
 # Dengue
 dengue <- data.frame(

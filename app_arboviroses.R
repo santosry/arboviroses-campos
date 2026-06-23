@@ -1937,7 +1937,7 @@ ui <- dashboardPage(skin = "black",
     hr(),
     tags$div(class = "sidebar-fonte",
       tags$strong("Fonte de Dados"),
-      "SINAN/SVS — 2020–2025"
+      "SINAN/SVS : 2020-2025"
     )
   ),
   
@@ -2518,7 +2518,7 @@ ui <- dashboardPage(skin = "black",
         tabName = "inicio",
         div(class = "doenca-titulo",
           div(class = "mosquito-icon", span(class = "mosquito-emoji", "A")),
-          span("Painel de Inteligência Epidemiológica para Chikungunya, Dengue e Zika em Campos dos Goytacazes (2020–2025)")
+          span("Painel de Inteligência Epidemiológica para Chikungunya, Dengue e Zika em Campos dos Goytacazes (2020-2025)")
         ),
         div(class = "home-hero",
           h3("Painel de Inteligência Epidemiológica para Arboviroses em Campos dos Goytacazes"),
@@ -2625,19 +2625,19 @@ ui <- dashboardPage(skin = "black",
                  div(class = "graph-title", "Distribuição por Raça/Cor"),
                  plotlyOutput("chik_etnia", height = "280px"),
                  botao_download_grafico("chik_download_etnia")
-              ,div(class="fig-caption","Figura 1. Distribuição proporcional dos casos notificados de chikungunya segundo raça/cor autodeclarada. Os segmentos refletem a proporção relativa de cada categoria em relação ao total de casos com raça informada. Período: 2020–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 1. Distribuição proporcional dos casos notificados de chikungunya segundo raça/cor autodeclarada. Os segmentos refletem a proporção relativa de cada categoria em relação ao total de casos com raça informada. Período: 2020-2025. Fonte: SINAN/SVS.")
           ),
           column(4, class = "graph-box",
                  div(class = "graph-title", "Distribuição por Sexo e Ano"),
                  plotlyOutput("chik_sexo", height = "280px"),
                  botao_download_grafico("chik_download_sexo")
-              ,div(class="fig-caption","Figura 2. Número absoluto de casos notificados de chikungunya por sexo (masculino, feminino e ignorado/branco) e ano de notificação. Permite identificar a predominância do sexo feminino ao longo da série. Período: 2020–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 2. Número absoluto de casos notificados de chikungunya por sexo (masculino, feminino e ignorado/branco) e ano de notificação. Permite identificar a predominância do sexo feminino ao longo da série. Período: 2020-2025. Fonte: SINAN/SVS.")
           ),
           column(4, class = "graph-box",
                div(class = "graph-title", "Evolução Temporal dos Casos"),
                plotlyOutput("chik_serie", height = "280px"),
                botao_download_grafico("chik_download_serie")
-              ,div(class="fig-caption","Figura 3. Série histórica anual de casos confirmados de chikungunya. O pico de 2024 (n=1.460) reflete o maior surto do período analisado. Período: 2020–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 3. Série histórica anual de casos confirmados de chikungunya. O pico de 2024 (n=1.460) reflete o maior surto do período analisado. Período: 2020-2025. Fonte: SINAN/SVS.")
           )
         ),
         fluidRow(class = "graph-row",
@@ -2645,19 +2645,19 @@ ui <- dashboardPage(skin = "black",
                div(class = "graph-title", "Situação Gestacional"),
                plotlyOutput("chik_gestacao", height = "320px"),
                botao_download_grafico("chik_download_gestacao")
-              ,div(class="fig-caption","Figura 4. Casos de chikungunya segundo situação gestacional: 1º, 2º e 3º trimestres, não gestante, não se aplica (sexo masculino/crianças), idade gestacional ignorada e campo ignorado/branco. Período: 2020–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 4. Casos de chikungunya segundo situação gestacional: 1º, 2º e 3º trimestres, não gestante, não se aplica (sexo masculino/crianças), idade gestacional ignorada e campo ignorado/branco. Período: 2020-2025. Fonte: SINAN/SVS.")
           ),
           column(4, class = "graph-box",
             div(class = "graph-title", "Distribuição por Faixa Etária"),
             plotlyOutput("chik_faixa_etaria", height = "320px"),
             botao_download_grafico("chik_download_faixa")
-              ,div(class="fig-caption","Figura 5. Casos confirmados de chikungunya distribuídos por faixa etária (em anos: <1, 1–4, 5–9, 10–14, 15–19, 20–39, 40–59, 60–64, 65–69, 70–79, 80+). Adultos de 40–59 anos concentram a maior carga. Período: 2020–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 5. Casos confirmados de chikungunya distribuídos por faixa etária (em anos: <1, 1-4, 5-9, 10-14, 15-19, 20-39, 40-59, 60-64, 65-69, 70-79, 80+). Adultos de 40-59 anos concentram a maior carga. Período: 2020-2025. Fonte: SINAN/SVS.")
           ),
           column(4, class = "graph-box",
               div(class = "graph-title", "Distribuição por Escolaridade"),
               plotlyOutput("chik_escolaridade", height = "320px"),
               botao_download_grafico("chik_download_escolaridade")
-              ,div(class="fig-caption","Figura 6. Casos de chikungunya segundo nível de escolaridade do paciente. A elevada frequência de ignorado/branco reflete sub-registro e limita interpretações causais. Período: 2020–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 6. Casos de chikungunya segundo nível de escolaridade do paciente. A elevada frequência de ignorado/branco reflete sub-registro e limita interpretações causais. Período: 2020-2025. Fonte: SINAN/SVS.")
           )
         )
       ),
@@ -2708,19 +2708,19 @@ ui <- dashboardPage(skin = "black",
                  div(class = "graph-title", "Distribuição por Raça/Cor"),
                  plotlyOutput("dengue_etnia", height = "280px"),
                  botao_download_grafico("dengue_download_etnia")
-              ,div(class="fig-caption","Figura 1. Distribuição proporcional dos casos notificados de dengue segundo raça/cor autodeclarada, agregada automaticamente a partir dos registros baixados do SINAN-DENGUE pelo pacote microdatasus. Período: 2020–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 1. Distribuição proporcional dos casos notificados de dengue segundo raça/cor autodeclarada, agregada automaticamente a partir dos registros baixados do SINAN-DENGUE pelo pacote microdatasus. Período: 2020-2025. Fonte: SINAN/SVS.")
           ),
           column(4, class = "graph-box",
                  div(class = "graph-title", "Distribuição por Sexo e Ano"),
                  plotlyOutput("dengue_sexo", height = "280px"),
                  botao_download_grafico("dengue_download_sexo")
-              ,div(class="fig-caption","Figura 2. Número absoluto de casos notificados de dengue por sexo e ano. Os valores são calculados a partir dos registros baixados do SINAN-DENGUE pelo pacote microdatasus. Período: 2020–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 2. Número absoluto de casos notificados de dengue por sexo e ano. Os valores são calculados a partir dos registros baixados do SINAN-DENGUE pelo pacote microdatasus. Período: 2020-2025. Fonte: SINAN/SVS.")
           ),
           column(4, class = "graph-box",
                div(class = "graph-title", "Evolução Temporal dos Casos"),
                plotlyOutput("dengue_serie", height = "280px"),
                botao_download_grafico("dengue_download_serie")
-              ,div(class="fig-caption","Figura 3. Série histórica anual de casos confirmados de dengue, calculada automaticamente a partir dos registros baixados do SINAN-DENGUE pelo pacote microdatasus. Período: 2020–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 3. Série histórica anual de casos confirmados de dengue, calculada automaticamente a partir dos registros baixados do SINAN-DENGUE pelo pacote microdatasus. Período: 2020-2025. Fonte: SINAN/SVS.")
           )
         ),
         fluidRow(class = "graph-row",
@@ -2728,19 +2728,19 @@ ui <- dashboardPage(skin = "black",
                div(class = "graph-title", "Situação Gestacional"),
                plotlyOutput("dengue_gestacao", height = "320px"),
                botao_download_grafico("dengue_download_gestacao")
-              ,div(class="fig-caption","Figura 4. Casos de dengue segundo situação gestacional (1º, 2º e 3º trimestres, não gestante, não se aplica e dados ignorados/brancos). Período: 2020–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 4. Casos de dengue segundo situação gestacional (1º, 2º e 3º trimestres, não gestante, não se aplica e dados ignorados/brancos). Período: 2020-2025. Fonte: SINAN/SVS.")
           ),
           column(4, class = "graph-box",
             div(class = "graph-title", "Distribuição por Faixa Etária"),
             plotlyOutput("dengue_faixa_etaria", height = "320px"),
             botao_download_grafico("dengue_download_faixa")
-              ,div(class="fig-caption","Figura 5. Casos confirmados de dengue por faixa etária, agregados automaticamente a partir dos registros baixados do SINAN-DENGUE pelo pacote microdatasus. Período: 2020–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 5. Casos confirmados de dengue por faixa etária, agregados automaticamente a partir dos registros baixados do SINAN-DENGUE pelo pacote microdatasus. Período: 2020-2025. Fonte: SINAN/SVS.")
           ),
           column(4, class = "graph-box",
               div(class = "graph-title", "Distribuição por Escolaridade"),
               plotlyOutput("dengue_escolaridade", height = "320px"),
               botao_download_grafico("dengue_download_escolaridade")
-              ,div(class="fig-caption","Figura 6. Casos de dengue por nível de escolaridade, agregados automaticamente a partir dos registros baixados do SINAN-DENGUE pelo pacote microdatasus. Período: 2020–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 6. Casos de dengue por nível de escolaridade, agregados automaticamente a partir dos registros baixados do SINAN-DENGUE pelo pacote microdatasus. Período: 2020-2025. Fonte: SINAN/SVS.")
           )
         ),
         div(class = "landing-section",
@@ -2800,19 +2800,19 @@ ui <- dashboardPage(skin = "black",
                  div(class = "graph-title", "Distribuição por Raça/Cor"),
                  plotlyOutput("zika_etnia", height = "280px"),
                  botao_download_grafico("zika_download_etnia")
-              ,div(class="fig-caption","Figura 1. Distribuição proporcional dos casos notificados de Zika vírus segundo raça/cor autodeclarada. O alto percentual de ignorado/branco compromete a representatividade dos demais grupos. Período: 2021–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 1. Distribuição proporcional dos casos notificados de Zika vírus segundo raça/cor autodeclarada. O alto percentual de ignorado/branco compromete a representatividade dos demais grupos. Período: 2021-2025. Fonte: SINAN/SVS.")
           ),
           column(4, class = "graph-box",
                  div(class = "graph-title", "Distribuição por Sexo e Ano"),
                  plotlyOutput("zika_sexo", height = "280px"),
                  botao_download_grafico("zika_download_sexo")
-              ,div(class="fig-caption","Figura 2. Número absoluto de casos notificados de Zika vírus por sexo e ano. O predomínio feminino é consistente em todo o período, possivelmente relacionado à maior busca por assistência durante a gestação. Período: 2021–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 2. Número absoluto de casos notificados de Zika vírus por sexo e ano. O predomínio feminino é consistente em todo o período, possivelmente relacionado à maior busca por assistência durante a gestação. Período: 2021-2025. Fonte: SINAN/SVS.")
           ),
           column(4, class = "graph-box",
                div(class = "graph-title", "Evolução Temporal dos Casos"),
                plotlyOutput("zika_serie", height = "280px"),
                botao_download_grafico("zika_download_serie")
-              ,div(class="fig-caption","Figura 3. Série histórica anual de casos confirmados de Zika vírus. O período mostra tendência de queda após o pico epidêmico; os anos de 2023 e 2024 registraram leve elevação. Período: 2021–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 3. Série histórica anual de casos confirmados de Zika vírus. O período mostra tendência de queda após o pico epidêmico; os anos de 2023 e 2024 registraram leve elevação. Período: 2021-2025. Fonte: SINAN/SVS.")
           )
         ),
         fluidRow(class = "graph-row",
@@ -2820,19 +2820,19 @@ ui <- dashboardPage(skin = "black",
                div(class = "graph-title", "Situação Gestacional"),
                plotlyOutput("zika_gestacao", height = "320px"),
                botao_download_grafico("zika_download_gestacao")
-              ,div(class="fig-caption","Figura 4. Casos de Zika vírus segundo situação gestacional. Destaque para o volume de idade gestacional não informada em 2022 (n = 26), sugerindo possível sub-registro do trimestre. Período: 2021–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 4. Casos de Zika vírus segundo situação gestacional. Destaque para o volume de idade gestacional não informada em 2022 (n = 26), sugerindo possível sub-registro do trimestre. Período: 2021-2025. Fonte: SINAN/SVS.")
           ),
           column(4, class = "graph-box",
             div(class = "graph-title", "Distribuição por Faixa Etária"),
             plotlyOutput("zika_faixa_etaria", height = "320px"),
             botao_download_grafico("zika_download_faixa")
-              ,div(class="fig-caption","Figura 5. Casos confirmados de Zika vírus por faixa etária. Adultos de 20–59 anos concentram a maior parte dos casos; a presença em crianças (≤1 ano) pode indicar transmissão vertical. Período: 2021–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 5. Casos confirmados de Zika vírus por faixa etária. Adultos de 20-59 anos concentram a maior parte dos casos; a presença em crianças (≤1 ano) pode indicar transmissão vertical. Período: 2021-2025. Fonte: SINAN/SVS.")
           ),
           column(4, class = "graph-box",
               div(class = "graph-title", "Distribuição por Escolaridade"),
               plotlyOutput("zika_escolaridade", height = "320px"),
               botao_download_grafico("zika_download_escolaridade")
-              ,div(class="fig-caption","Figura 6. Casos de Zika vírus por nível de escolaridade. O ensino médio completo e o grupo ignorado/branco predominam; interpretações sobre vulnerabilidade socioeconômica devem considerar o elevado sub-registro. Período: 2021–2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 6. Casos de Zika vírus por nível de escolaridade. O ensino médio completo e o grupo ignorado/branco predominam; interpretações sobre vulnerabilidade socioeconômica devem considerar o elevado sub-registro. Período: 2021-2025. Fonte: SINAN/SVS.")
           )
         )
       )
@@ -3542,7 +3542,7 @@ server <- function(input, output, session) {
       ano <- ano_selecionado(input_id)
       if (ano == "Todos") {
         anos <- df_full$Ano
-        lbl  <- paste0("Todos os anos (", min(anos), "–", max(anos), ")")
+        lbl  <- paste0("Todos os anos (", min(anos), "-", max(anos), ")")
       } else {
         lbl <- paste0("Ano selecionado: ", ano)
       }

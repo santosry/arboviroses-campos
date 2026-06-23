@@ -1,5 +1,5 @@
 # =============================================================================
-# PIPELINE ANALÍTICO — DENGUE/SINAN | CAMPOS DOS GOYTACAZES (2020–2025)
+# PIPELINE ANALÍTICO : DENGUE/SINAN | CAMPOS DOS GOYTACAZES (2020-2025)
 # Versão com pirâmide etária aprimorada, gráfico de linhas anual e cores vivas
 # =============================================================================
 
@@ -220,7 +220,7 @@ for (i in seq_along(vars_categoricas)) {
 }
 
 # =============================================================================
-# 7.3 SEÇÃO ESPECÍFICA — GESTANTES: IDADE, ÓBITOS E DISTRIBUIÇÃO
+# 7.3 SEÇÃO ESPECÍFICA : GESTANTES: IDADE, ÓBITOS E DISTRIBUIÇÃO
 # =============================================================================
 
 categorias_gestantes <- c("1º trim", "2º trim", "3º trim", "Idade g. ignorada")

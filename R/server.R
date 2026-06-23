@@ -150,7 +150,7 @@ server <- function(input, output, session) {
         icone <- if (nivel == "critico") "\u26A0\uFE0F" else if (nivel == "alerta") "\u2757" else "\u2139\uFE0F"
         cores <- c(critico = "#DC2626", alerta = "#D97706", atencao = "#2563EB")
         div(class = "quality-card", style = paste0("border-left: 3px solid ", cores[nivel]),
-          div(class = "quality-label", paste(icone, nome, "—", v)),
+          div(class = "quality-label", paste(icone, nome, ":", v)),
           div(class = "quality-value", if (is.na(p)) "?" else paste0(format_percent(p))),
           div(class = "quality-note", if (nivel == "critico") "Campo critico: inferencias nao confiaveis" else if (nivel == "alerta") "Atencao: alta incompletude" else "Verificar preenchimento")
         )
@@ -656,7 +656,7 @@ server <- function(input, output, session) {
       ano <- ano_selecionado(input_id)
       if (ano == "Todos") {
         anos <- df_full$Ano
-        lbl  <- paste0("Todos os anos (", min(anos), "–", max(anos), ")")
+        lbl  <- paste0("Todos os anos (", min(anos), "-", max(anos), ")")
       } else {
         lbl <- paste0("Ano selecionado: ", ano)
       }
