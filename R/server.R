@@ -2,6 +2,11 @@
 # SERVER
 # ============================================================
 
+# Thresholds centralizados de qualidade (usados em alertas e auditoria)
+QUALIDADE_THRESHOLD_CRITICO  <- 60   # % ignorado/branco acima disso = critico
+QUALIDADE_THRESHOLD_ALERTA   <- 40   # % ignorado/branco acima disso = alerta
+QUALIDADE_THRESHOLD_ATENCAO  <- 30   # % ignorado/branco acima disso = atencao
+
 server <- function(input, output, session) {
   
   observeEvent(input$sidebarItemExpanded, {
@@ -135,13 +140,13 @@ server <- function(input, output, session) {
       df <- df_list[[nome]]
       if (nrow(df) == 0) return(NULL)
       q <- qualidade_dados(df)
-      criticos <- q[q$Percentual > 30 | is.na(q$Percentual), ]
+      criticos <- q[q$Percentual > QUALIDADE_THRESHOLD_ATENCAO | is.na(q$Percentual), ]
       if (nrow(criticos) == 0) return(NULL)
 
       lapply(seq_len(nrow(criticos)), function(i) {
         v <- criticos$Variavel[i]
         p <- criticos$Percentual[i]
-        nivel <- if (is.na(p) || p > 60) "critico" else if (p > 40) "alerta" else "atencao"
+        nivel <- if (is.na(p) || p > QUALIDADE_THRESHOLD_CRITICO) "critico" else if (p > QUALIDADE_THRESHOLD_ALERTA) "alerta" else "atencao"
         icone <- if (nivel == "critico") "\u26A0\uFE0F" else if (nivel == "alerta") "\u2757" else "\u2139\uFE0F"
         cores <- c(critico = "#DC2626", alerta = "#D97706", atencao = "#2563EB")
         div(class = "quality-card", style = paste0("border-left: 3px solid ", cores[nivel]),
@@ -155,7 +160,7 @@ server <- function(input, output, session) {
     alertas <- unlist(alertas, recursive = FALSE)
     if (length(alertas) == 0) {
       return(div(class = "quality-card", style = "grid-column: 1 / -1; text-align: center;",
-        div(class = "quality-label", "\u2705 Nenhum campo com incompletude superior a 30% no periodo selecionado.")
+        div(class = "quality-label", paste0("\u2705 Nenhum campo com incompletude superior a ", QUALIDADE_THRESHOLD_ATENCAO, "% no periodo selecionado."))
       ))
     }
     alertas

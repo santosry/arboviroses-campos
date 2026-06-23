@@ -7,9 +7,23 @@ dir.create(root_path("data", "processed"), recursive = TRUE, showWarnings = FALS
 
 agregar_limpo_ou_cache <- function(agravo, fallback) {
   path <- root_path("data", "interim", paste0(tolower(agravo), "_limpo.rds"))
-  if (!file.exists(path) || nrow(readRDS(path)) == 0) return(fallback)
-  # O app atual usa estrutura agregada consolidada; enquanto a limpeza ampla amadurece,
-  # preservamos o fallback validado para manter compatibilidade.
+  if (!file.exists(path)) {
+    message("Dados limpos de ", agravo, " nao encontrados; usando fallback.")
+    return(fallback)
+  }
+  limpo <- tryCatch(readRDS(path), error = function(e) {
+    warning("Falha ao ler dados limpos de ", agravo, ": ", conditionMessage(e))
+    return(NULL)
+  })
+  if (is.null(limpo) || nrow(limpo) == 0) {
+    message("Dados limpos de ", agravo, " vazios; usando fallback.")
+    return(fallback)
+  }
+  # FASE 2: Quando o pipeline de agregacao a partir de microdados estiver
+  # completamente validado com ARBOVIROSES_DOWNLOAD=true, substituir o fallback
+  # pela chamada a agregar_dengue_sinan(limpo, anos, agravo).
+  # Por enquanto, preservamos o fallback validado para manter compatibilidade.
+  message("Microdados de ", agravo, " disponiveis (", nrow(limpo), " registros). Usando fallback agregado pre-validado (fase 2 pendente).")
   fallback
 }
 

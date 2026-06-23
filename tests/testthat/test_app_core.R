@@ -1,5 +1,11 @@
-project_root <- normalizePath(file.path(getwd(), "..", ".."), winslash = "/", mustWork = TRUE)
-setwd(project_root)
+project_root <- if (requireNamespace("here", quietly = TRUE)) {
+  here::here()
+} else {
+  normalizePath(file.path(getwd(), "..", ".."), winslash = "/", mustWork = TRUE)
+}
+old_wd <- setwd(project_root)
+on.exit(setwd(old_wd), add = TRUE)
+
 source(file.path(project_root, "R", "packages.R"), encoding = "UTF-8")
 source(file.path(project_root, "R", "utils.R"), encoding = "UTF-8")
 source(file.path(project_root, "R", "dados.R"), encoding = "UTF-8")

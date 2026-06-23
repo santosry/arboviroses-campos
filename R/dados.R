@@ -276,251 +276,66 @@ agregar_dengue_sinan <- function(df, anos = 2020:2025, agravo = "dengue") {
 }
 
 carregar_zika_microdatasus <- function(
-  anos = 2020:2025,
-  municipio = "330100",
-  cache_path = file.path("data", "app_cache", "zika_microdatasus_campos_v1.rds"),
-  temporal_cache_path = file.path("data", "app_cache", "zika_microdatasus_temporal_campos_v1.rds"),
-  atualizar_cache = identical(tolower(Sys.getenv("ZIKA_ATUALIZAR_CACHE", "false")), "true")
+  cache_path = file.path("data", "app_cache", "zika_microdatasus_campos_v1.rds")
 ) {
-  cache_valido <- file.exists(cache_path)
-  
-  if(cache_valido) return(readRDS(cache_path))
-  warning("Cache SINAN-ZIKA nao encontrado; usando tabela agregada local. Atualize os dados com scripts/update_data.R.")
-  return(zika)
-  
-  vars_zika <- c(
-    "NU_ANO", "ID_MUNICIP", "ID_MN_RESI", "CS_SEXO", "CS_GESTANT", "CS_RACA",
-    "CS_ESCOL_N", "NU_IDADE_N", "CLASSI_FIN", "EVOLUCAO"
-  )
-  
-  tryCatch({
-    lista <- lapply(anos, function(ano) {
-      bruto <- fetch_datasus(
-        year_start = ano,
-        year_end = ano,
-        uf = "RJ",
-        information_system = "SINAN-ZIKA",
-        vars = vars_zika,
-        stop_on_error = FALSE,
-        timeout = 600
-      )
-      
-      if(is.null(bruto) || nrow(bruto) == 0) return(NULL)
-      
-      col_municipio <- if("ID_MUNICIP" %in% names(bruto)) "ID_MUNICIP" else "ID_MN_RESI"
-      bruto <- bruto[as.character(bruto[[col_municipio]]) == municipio, , drop = FALSE]
-      if(nrow(bruto) == 0) return(NULL)
-      
-      proc <- process_sinan_zika(bruto, municipality_data = FALSE)
-      proc$Ano <- ano
-      proc
-    })
-    
-    dados_microdatasus <- dplyr::bind_rows(lista)
-    if(nrow(dados_microdatasus) == 0) stop("Nenhum registro de zika encontrado para o municipio informado.")
-    
-    zika_agregado <- agregar_dengue_sinan(dados_microdatasus, anos, agravo = "zika")
-    zika_temporal <- preparar_serie_temporal_sinan(dados_microdatasus, anos, agravo = "zika")
-    dir.create(dirname(cache_path), recursive = TRUE, showWarnings = FALSE)
-    saveRDS(zika_agregado, cache_path)
-    saveRDS(zika_temporal, temporal_cache_path)
-    zika_agregado
-  }, error = function(e) {
-    warning("Falha ao carregar SINAN-ZIKA pelo microdatasus: ", conditionMessage(e))
-    if(file.exists(cache_path)) return(readRDS(cache_path))
-    warning("Sem cache de SINAN-ZIKA; usando tabela agregada informada no script.")
-    zika
-  })
+  cache <- ler_rds_seguro(cache_path, "SINAN-ZIKA")
+  if (is.null(cache) || nrow(cache) == 0) {
+    warning("Cache SINAN-ZIKA indisponivel; usando tabela agregada local. Atualize os dados com scripts/update_data.R.")
+    return(zika)
+  }
+  cache
 }
 
 carregar_dengue_microdatasus <- function(
-  anos = 2020:2025,
-  municipio = "330100",
-  cache_path = file.path("data", "app_cache", "dengue_microdatasus_campos_v2.rds"),
-  temporal_cache_path = file.path("data", "app_cache", "dengue_microdatasus_temporal_campos_v1.rds"),
-  atualizar_cache = identical(tolower(Sys.getenv("DENGUE_ATUALIZAR_CACHE", "false")), "true")
+  cache_path = file.path("data", "app_cache", "dengue_microdatasus_campos_v2.rds")
 ) {
-  cache_valido <- file.exists(cache_path)
-  
-  if(cache_valido) return(readRDS(cache_path))
-  warning("Cache SINAN-DENGUE nao encontrado; usando tabela agregada local. Atualize os dados com scripts/update_data.R.")
-  return(dengue)
-  
-  vars_dengue <- c(
-    "NU_ANO", "ID_MUNICIP", "ID_MN_RESI", "CS_SEXO", "CS_GESTANT", "CS_RACA",
-    "CS_ESCOL_N", "NU_IDADE_N", "CLASSI_FIN", "EVOLUCAO", "SOROTIPO"
-  )
-  
-  tryCatch({
-    lista <- lapply(anos, function(ano) {
-      bruto <- fetch_datasus(
-        year_start = ano,
-        year_end = ano,
-        uf = "RJ",
-        information_system = "SINAN-DENGUE",
-        vars = vars_dengue,
-        stop_on_error = FALSE,
-        timeout = 600
-      )
-      
-      if(is.null(bruto) || nrow(bruto) == 0) return(NULL)
-      
-      col_municipio <- if("ID_MUNICIP" %in% names(bruto)) "ID_MUNICIP" else "ID_MN_RESI"
-      bruto <- bruto[as.character(bruto[[col_municipio]]) == municipio, , drop = FALSE]
-      if(nrow(bruto) == 0) return(NULL)
-      
-      proc <- process_sinan_dengue(bruto, municipality_data = FALSE)
-      proc$Ano <- ano
-      proc
-    })
-    
-    dados_microdatasus <- dplyr::bind_rows(lista)
-    if(nrow(dados_microdatasus) == 0) stop("Nenhum registro de dengue encontrado para o município informado.")
-    
-    dengue_agregado <- agregar_dengue_sinan(dados_microdatasus, anos)
-    dengue_temporal <- preparar_serie_temporal_sinan(dados_microdatasus, anos, agravo = "dengue")
-    dir.create(dirname(cache_path), recursive = TRUE, showWarnings = FALSE)
-    saveRDS(dengue_agregado, cache_path)
-    saveRDS(dengue_temporal, temporal_cache_path)
-    dengue_agregado
-  }, error = function(e) {
-    warning("Falha ao carregar SINAN-DENGUE pelo microdatasus: ", conditionMessage(e))
-    if(file.exists(cache_path)) return(readRDS(cache_path))
-    stop("Não foi possível carregar dados de dengue do SINAN-DENGUE/microdatasus e não existe cache baixado.", call. = FALSE)
-  })
+  cache <- ler_rds_seguro(cache_path, "SINAN-DENGUE")
+  if (is.null(cache) || nrow(cache) == 0) {
+    warning("Cache SINAN-DENGUE indisponivel; usando tabela agregada local. Atualize os dados com scripts/update_data.R.")
+    return(dengue)
+  }
+  cache
 }
 
+POPULACAO_FALLBACK <- data.frame(
+  Ano = c(2020, 2021, 2022, 2023, 2024, 2025),
+  Populacao = c(511168, 514643, 514643, 514643, 519011, 519259),
+  Fonte_populacao = c(
+    "IBGE/SIDRA tabela 6579, variavel 9324",
+    "IBGE/SIDRA tabela 6579, variavel 9324",
+    "SIDRA 2021 replicado por ausencia do ano no retorno",
+    "SIDRA 2021 replicado por ausencia do ano no retorno",
+    "IBGE/SIDRA tabela 6579, variavel 9324",
+    "IBGE/SIDRA tabela 6579, variavel 9324"
+  ),
+  stringsAsFactors = FALSE
+)
+
 carregar_populacao_campos_sidra <- function(
-  anos = 2020:2025,
-  cache_path = file.path("data", "app_cache", "populacao_campos_sidra.rds"),
-  atualizar_cache = identical(tolower(Sys.getenv("POPULACAO_ATUALIZAR_CACHE", "false")), "true")
+  cache_path = file.path("data", "app_cache", "populacao_campos_sidra.rds")
 ) {
-  registrar_status <- function(status, detalhes, linhas = 0) {
-    registrar_log(LOG_POPULACAO, data.frame(
-      fonte = "IBGE/SIDRA tabela 6579, variável 9324, município 3301009",
-      status = status,
-      anos_solicitados = paste(anos, collapse = ", "),
-      linhas = linhas,
-      detalhes = detalhes
-    ))
+  pop <- ler_rds_seguro(cache_path, "populacao")
+  if (!is.null(pop) && nrow(pop) > 0 && "Populacao" %in% names(pop)) {
+    return(pop[order(pop$Ano), , drop = FALSE])
   }
-
-  preparar_pop <- function(pop) {
-    pop$Ano <- as.integer(pop$Ano)
-    pop$Populacao <- as.numeric(pop$Populacao)
-    pop <- pop[!is.na(pop$Ano) & !is.na(pop$Populacao), , drop = FALSE]
-    pop <- pop[order(pop$Ano), , drop = FALSE]
-    if(nrow(pop) == 0) {
-      return(data.frame(
-        Ano = anos,
-        Populacao = NA_real_,
-        Fonte_populacao = "população indisponível",
-        stringsAsFactors = FALSE
-      ))
-    }
-
-    anos_faltantes <- setdiff(anos, pop$Ano)
-    if(length(anos_faltantes) > 0 && nrow(pop) > 0) {
-      estimados <- bind_rows(lapply(anos_faltantes, function(ano_faltante) {
-        candidatos <- pop[pop$Ano <= ano_faltante, , drop = FALSE]
-        if(nrow(candidatos) == 0) candidatos <- pop[pop$Ano >= ano_faltante, , drop = FALSE]
-        base <- candidatos[which.max(candidatos$Ano), , drop = FALSE]
-        data.frame(
-          Ano = ano_faltante,
-          Populacao = base$Populacao,
-          Fonte_populacao = paste0("SIDRA ", base$Ano, " replicado por ausência do ano no retorno"),
-          stringsAsFactors = FALSE
-        )
-      }))
-      pop <- bind_rows(pop, estimados)
-    }
-
-    pop %>%
-      filter(Ano %in% anos) %>%
-      arrange(Ano)
-  }
-
-  if(file.exists(cache_path)) {
-    pop_cache <- readRDS(cache_path)
-    pop_cache <- preparar_pop(pop_cache)
-    if(nrow(pop_cache) > 0) {
-      registrar_status("cache", "População carregada do cache local.", nrow(pop_cache))
-      return(pop_cache)
-    }
-    registrar_status("cache_invalido", "Cache local de população estava vazio e será atualizado.", 0)
-  }
-
-  pop_fallback <- data.frame(
-    Ano = c(2020, 2021, 2022, 2023, 2024, 2025),
-    Populacao = c(511168, 514643, 514643, 514643, 519011, 519259),
-    Fonte_populacao = c(
-      "IBGE/SIDRA tabela 6579, variavel 9324",
-      "IBGE/SIDRA tabela 6579, variavel 9324",
-      "SIDRA 2021 replicado por ausencia do ano no retorno",
-      "SIDRA 2021 replicado por ausencia do ano no retorno",
-      "IBGE/SIDRA tabela 6579, variavel 9324",
-      "IBGE/SIDRA tabela 6579, variavel 9324"
-    ),
-    stringsAsFactors = FALSE
-  )
-  pop_fallback <- preparar_pop(pop_fallback)
-  registrar_status("fallback_embutido", "Populacao carregada do fallback embutido no app; atualize o cache com scripts/update_data.R.", nrow(pop_fallback))
-  return(pop_fallback)
-
-  if(!requireNamespace("sidrar", quietly = TRUE)) {
-    pop_fallback <- data.frame(
-      Ano = anos,
-      Populacao = NA_real_,
-      Fonte_populacao = "sidrar indisponível no ambiente",
-      stringsAsFactors = FALSE
-    )
-    registrar_status("erro", "Pacote sidrar não instalado; incidência por 100 mil será exibida como indisponível.", nrow(pop_fallback))
-    return(pop_fallback)
-  }
-
-  pop <- tryCatch({
-    bruto <- sidrar::get_sidra(
-      api = paste0("/t/6579/n6/3301009/v/9324/p/", paste(anos, collapse = ","))
-    )
-    col_ano <- c("Ano", "D1C", "D2C")[c("Ano", "D1C", "D2C") %in% names(bruto)][1]
-    col_valor <- c("Valor", "V")[c("Valor", "V") %in% names(bruto)][1]
-    if(is.na(col_ano) || is.na(col_valor)) {
-      stop("Retorno do SIDRA sem colunas de ano/valor esperadas.", call. = FALSE)
-    }
-    data.frame(
-      Ano = suppressWarnings(as.integer(bruto[[col_ano]])),
-      Populacao = suppressWarnings(as.numeric(gsub(",", ".", bruto[[col_valor]]))),
-      Fonte_populacao = "IBGE/SIDRA tabela 6579, variável 9324",
-      stringsAsFactors = FALSE
-    )
-  }, error = function(e) {
-    registrar_status("erro", paste("Falha ao consultar SIDRA:", conditionMessage(e)), 0)
-    data.frame(
-      Ano = anos,
-      Populacao = NA_real_,
-      Fonte_populacao = "falha na consulta SIDRA",
-      stringsAsFactors = FALSE
-    )
-  })
-
-  pop <- preparar_pop(pop)
-  if(any(!is.na(pop$Populacao))) {
-    dir.create(dirname(cache_path), recursive = TRUE, showWarnings = FALSE)
-    saveRDS(pop, cache_path)
-    registrar_status("sidra", "População carregada via sidrar e salva em cache local.", nrow(pop))
-  } else {
-    registrar_status("indisponível", "População não foi carregada; incidência por 100 mil ficará indisponível até nova consulta SIDRA.", nrow(pop))
-  }
-  pop
+  warning("Cache de populacao indisponivel; usando fallback embutido. Atualize com scripts/update_data.R.")
+  POPULACAO_FALLBACK
 }
 
 dengue <- carregar_dengue_microdatasus()
 zika <- carregar_zika_microdatasus()
 populacao_campos <- carregar_populacao_campos_sidra()
 
+TEMPORAL_VAZIO <- data.frame(
+  Agravo = character(), Intervalo = character(), Periodo = character(),
+  Data = as.Date(character()), Ano = integer(), Casos = integer(),
+  stringsAsFactors = FALSE
+)
+
 carregar_temporal_cache <- function(cache_path) {
-  if(file.exists(cache_path)) return(readRDS(cache_path))
-  data.frame(Agravo = character(), Intervalo = character(), Periodo = character(), Data = as.Date(character()), Ano = integer(), Casos = integer())
+  cache <- ler_rds_seguro(cache_path)
+  if (!is.null(cache) && nrow(cache) > 0) return(cache)
+  TEMPORAL_VAZIO
 }
 
 dengue_temporal <- carregar_temporal_cache(file.path("data", "app_cache", "dengue_microdatasus_temporal_campos_v1.rds"))
@@ -538,7 +353,8 @@ carregar_bairros_dengue_local <- function(
   dir_dados = "dados_sinan_campos",
   cache_path = file.path("data", "app_cache", "dengue_bairros_campos_v1.rds")
 ) {
-  if(file.exists(cache_path)) return(readRDS(cache_path))
+  cache <- ler_rds_seguro(cache_path)
+  if (!is.null(cache) && nrow(cache) > 0) return(cache)
 
   arquivos <- list.files(dir_dados, pattern = "^DENGUE[0-9]{4}\\.xlsx$", full.names = TRUE)
   if(length(arquivos) == 0) {

@@ -4,10 +4,20 @@ if (.Platform$OS.type == "unix") Sys.setlocale("LC_CTYPE", "pt_BR.UTF-8")
 
 # SISTEMA DE AUDITORIA
 
-# Em publicacao, o diretorio do app pode ser somente leitura.
-# Por isso os logs vao para um diretorio temporario e gravavel.
-AUDIT_DIR <- file.path(tempdir(), "auditoria")
-if(!dir.exists(AUDIT_DIR)) dir.create(AUDIT_DIR, recursive = TRUE, showWarnings = FALSE)
+# Em publicacao (shinyapps.io), o diretorio do app pode ser somente leitura.
+# Tentamos primeiro gravar em logs/ local; se falhar, usamos tempdir().
+AUDIT_DIR <- tryCatch({
+  dir.create("logs", showWarnings = FALSE, recursive = TRUE)
+  test_file <- file.path("logs", ".write_test")
+  writeLines("test", test_file)
+  file.remove(test_file)
+  "logs"
+}, error = function(e) {
+  d <- file.path(tempdir(), "auditoria")
+  dir.create(d, recursive = TRUE, showWarnings = FALSE)
+  d
+})
+if (!dir.exists(AUDIT_DIR)) dir.create(AUDIT_DIR, recursive = TRUE, showWarnings = FALSE)
 
 # Arquivos de log
 LOG_ACESSOS <- file.path(AUDIT_DIR, "01_acessos.csv")
@@ -120,6 +130,28 @@ APP_DATA_ATUALIZACAO <- Sys.Date()
 APP_PERIODO_PADRAO <- "2020-2025"
 APP_MUNICIPIO <- "Campos dos Goytacazes (RJ)"
 APP_UNIDADE_ANALISE <- "casos notificados residentes/notificados no municipio, agregados por ano epidemiologico"
+
+# Leitura segura de .rds com validacao de integridade
+ler_rds_seguro <- function(path, nome = basename(path), quiet = FALSE) {
+  if (!file.exists(path)) {
+    if (!quiet) warning("Arquivo ", nome, " nao encontrado em ", path)
+    return(NULL)
+  }
+  if (file.info(path)$size == 0) {
+    if (!quiet) warning("Arquivo ", nome, " esta vazio (0 bytes)")
+    return(NULL)
+  }
+  obj <- tryCatch(readRDS(path), error = function(e) {
+    warning("Falha ao ler ", nome, ": ", conditionMessage(e))
+    return(NULL)
+  })
+  if (is.null(obj)) {
+    if (!quiet) warning("Retorno nulo ao ler ", nome)
+  } else if (is.data.frame(obj) && nrow(obj) == 0) {
+    if (!quiet) message("Data frame vazio ao ler ", nome, " (esperado se cache nao foi gerado com downloads)")
+  }
+  obj
+}
 
 primeira_coluna_existente <- function(df, candidatas) {
   candidatas[candidatas %in% names(df)][1]

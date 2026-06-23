@@ -43,17 +43,27 @@ write.csv(totais, root_path("data", "audit", "totais_por_ano_agravo.csv"), row.n
 write.csv(completude, root_path("data", "audit", "completude_variaveis.csv"), row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(bairros_nao_mapeados, root_path("data", "audit", "bairros_nao_mapeados.csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
+df_para_html <- function(df, max_linhas = 100) {
+  df <- utils::head(df, max_linhas)
+  if (nrow(df) == 0) return("<p>Nenhum registro.</p>")
+  header <- paste0("<tr>", paste0("<th>", names(df), "</th>", collapse = ""), "</tr>")
+  rows <- apply(df, 1, function(r) {
+    paste0("<tr>", paste0("<td>", as.character(r), "</td>", collapse = ""), "</tr>")
+  })
+  paste0("<table>", header, paste(rows, collapse = ""), "</table>")
+}
+
 html <- c(
   "<!doctype html><html lang='pt-BR'><head><meta charset='utf-8'><title>Auditoria Arboviroses</title>",
-  "<style>body{font-family:Arial,sans-serif;max-width:980px;margin:32px auto;line-height:1.5}table{border-collapse:collapse;width:100%;margin:16px 0}td,th{border:1px solid #ddd;padding:6px}th{background:#f2f4f8}</style></head><body>",
+  "<style>body{font-family:Arial,sans-serif;max-width:980px;margin:32px auto;line-height:1.5}table{border-collapse:collapse;width:100%;margin:16px 0}td,th{border:1px solid #ddd;padding:6px 10px;text-align:left}th{background:#f2f4f8;font-weight:600}tr:nth-child(even){background:#fafafa}</style></head><body>",
   "<h1>Relatorio de auditoria - Arboviroses Campos dos Goytacazes</h1>",
-  paste0("<p>Gerado em: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "</p>"),
+  paste0("<p><strong>Gerado em:</strong> ", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "</p>"),
   "<h2>Totais por ano e agravo</h2>",
-  paste(capture.output(print(totais)), collapse = "<br>"),
-  "<h2>Completude</h2>",
-  paste(capture.output(print(completude)), collapse = "<br>"),
-  "<h2>Bairros nao pareados</h2>",
-  paste(capture.output(print(utils::head(bairros_nao_mapeados, 50))), collapse = "<br>"),
+  df_para_html(totais),
+  "<h2>Completude por variavel</h2>",
+  df_para_html(completude),
+  "<h2>Bairros nao pareados (top 50)</h2>",
+  df_para_html(bairros_nao_mapeados, 50),
   "<h2>Alertas metodologicos</h2><ul><li>Dados de vigilancia podem conter atraso, campos ignorados/brancos e revisoes posteriores.</li><li>Incidencia depende de denominador populacional confiavel.</li><li>Correspondencia espacial depende da grafia dos bairros e da malha disponivel.</li></ul>",
   "</body></html>"
 )

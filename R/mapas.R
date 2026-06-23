@@ -19,53 +19,58 @@ carregar_malha_bairros_campos <- function(
 ) {
   preparar_malha <- function(malha) {
     col_bairro <- primeira_coluna_existente(malha, c("name_neighborhood", "name_neighbourhood", "NM_BAIRRO", "bairro", "NM_BAIR", "NM_BAIRRO_GEO"))
-    if(is.na(col_bairro)) {
-      stop("Não encontrei uma coluna de nome de bairro na malha do geobr.", call. = FALSE)
+    if (is.na(col_bairro)) {
+      warning("Coluna de nome de bairro nao encontrada na malha; mapa nao disponivel.")
+      return(NULL)
     }
-    
     malha$NM_BAIRRO_GEO <- normalizar_bairro(malha[[col_bairro]])
     malha$bairro_key <- normalizar_chave_bairro(malha[[col_bairro]])
     sf::st_make_valid(malha)
   }
-  
-  if(file.exists(cache_path)) {
-    malha_cache <- readRDS(cache_path)
-    if(!all(c("NM_BAIRRO_GEO", "bairro_key") %in% names(malha_cache))) {
-      malha_cache <- preparar_malha(malha_cache)
+
+  if (file.exists(cache_path)) {
+    malha_cache <- tryCatch(readRDS(cache_path), error = function(e) {
+      warning("Cache de malha corrompido: ", conditionMessage(e))
+      return(NULL)
+    })
+    if (!is.null(malha_cache) && nrow(malha_cache) > 0) {
+      if (!all(c("NM_BAIRRO_GEO", "bairro_key") %in% names(malha_cache))) {
+        malha_cache <- preparar_malha(malha_cache)
+      }
+      if (!is.null(malha_cache)) return(malha_cache)
     }
-    return(malha_cache)
   }
 
-  if(file.exists(gpkg_path) && file.info(gpkg_path)$size > 0) {
-    malha <- sf::read_sf(gpkg_path)
-  } else {
-    stop(
-      "Malha de bairros nao encontrada em cache local. ",
-      "Execute scripts/update_data.R antes de publicar; o app nao baixa geobr no startup.",
-      call. = FALSE
-    )
+  if (!file.exists(gpkg_path) || file.info(gpkg_path)$size == 0) {
+    warning("Malha de bairros nao encontrada. Execute scripts/update_data.R.")
+    return(NULL)
   }
-  
-  if(is.null(malha) || nrow(malha) == 0) {
-    stop("O geobr não retornou a malha de bairros.", call. = FALSE)
+
+  malha <- tryCatch(sf::read_sf(gpkg_path), error = function(e) {
+    warning("Falha ao ler gpkg da malha: ", conditionMessage(e))
+    return(NULL)
+  })
+  if (is.null(malha) || nrow(malha) == 0) {
+    warning("Malha de bairros vazia ou ilegivel.")
+    return(NULL)
   }
-  
+
   col_codigo <- primeira_coluna_existente(malha, c("code_muni", "code_muni_7", "CD_MUN", "CD_GEOCMU"))
   col_municipio <- primeira_coluna_existente(malha, c("name_muni", "NM_MUN", "municipio"))
-  if(!is.na(col_codigo)) {
+  if (!is.na(col_codigo)) {
     malha <- malha[as.character(malha[[col_codigo]]) %in% c("3301009", "330100"), , drop = FALSE]
-  } else if(!is.na(col_municipio)) {
+  } else if (!is.na(col_municipio)) {
     malha <- malha[grepl("Campos dos Goytacazes", as.character(malha[[col_municipio]]), ignore.case = TRUE), , drop = FALSE]
   } else {
-    stop("Não encontrei coluna de município na malha do geobr para filtrar Campos dos Goytacazes.", call. = FALSE)
+    warning("Coluna de municipio nao encontrada na malha; mapa pode incluir areas de fora.")
   }
-  
-  if(nrow(malha) == 0) {
-    stop("A base de bairros do geobr não trouxe polígonos para Campos dos Goytacazes.", call. = FALSE)
+
+  if (nrow(malha) == 0) {
+    warning("Nenhum poligono de bairro encontrado para Campos dos Goytacazes.")
+    return(NULL)
   }
-  
-  malha <- preparar_malha(malha)
-  malha
+
+  preparar_malha(malha)
 }
 
 preparar_mapa_bairros_geobr <- function(df_bairros) {
