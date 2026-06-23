@@ -19,6 +19,14 @@ ui <- dashboardPage(skin = "black",
       menuItem("ZIKA", tabName = "zika")
     ),
     hr(),
+    tags$div(class = "sidebar-filtro-global",
+      tags$strong("Filtro Global"),
+      selectInput("global_ano", "Período",
+        choices = c("Todos", 2020, 2021, 2022, 2023, 2024, 2025),
+        selected = "Todos"
+      )
+    ),
+    hr(),
     tags$div(class = "sidebar-fonte",
       tags$strong("Fonte de Dados"),
       "SINAN/SVS — 2020–2025"
@@ -146,6 +154,48 @@ ui <- dashboardPage(skin = "black",
         .sidebar .selectize-dropdown-content .option { color: #B8C8DC !important; }
         .sidebar .selectize-dropdown-content .option.active,
         .sidebar .selectize-dropdown-content .option:hover {
+          background: rgba(27,58,107,0.55) !important;
+          color: white !important;
+        }
+        /* Global filter inside sidebar */
+        .sidebar-filtro-global {
+          padding: 10px 18px 10px 18px;
+        }
+        .sidebar-filtro-global strong {
+          display: block;
+          color: #9E9E9E;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 1.2px;
+          text-transform: uppercase;
+          margin-bottom: 6px;
+        }
+        .sidebar-filtro-global .form-group {
+          padding: 0;
+          margin-bottom: 0;
+        }
+        .sidebar-filtro-global label {
+          color: #9E9E9E !important;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+        }
+        .sidebar-filtro-global .selectize-input {
+          background: rgba(255,255,255,0.07) !important;
+          border: 1px solid rgba(255,255,255,0.18) !important;
+          color: #ffffff !important;
+          border-radius: 4px !important;
+          font-size: 13px !important;
+        }
+        .sidebar-filtro-global .selectize-input .item { color: #fff !important; }
+        .sidebar-filtro-global .selectize-dropdown {
+          background: #1E3048 !important;
+          border: 1px solid rgba(255,255,255,0.12) !important;
+        }
+        .sidebar-filtro-global .selectize-dropdown-content .option { color: #B8C8DC !important; }
+        .sidebar-filtro-global .selectize-dropdown-content .option.active,
+        .sidebar-filtro-global .selectize-dropdown-content .option:hover {
           background: rgba(27,58,107,0.55) !important;
           color: white !important;
         }
@@ -642,6 +692,24 @@ ui <- dashboardPage(skin = "black",
           ),
           plotlyOutput("home_comparador_plot", height = "360px"),
           DTOutput("home_comparador_tabela")
+        ),
+        div(class = "landing-section",
+          h4("Qualidade dos Dados — Completude por Variável"),
+          p("Percentual de registros com campo ignorado ou em branco por agravo e variável. Barras altas indicam maior incompletude e menor confiabilidade para inferências. O período respeita o filtro global."),
+          fluidRow(
+            column(4,
+              selectInput(
+                "home_qualidade_agravo",
+                "Agravo",
+                choices = c("Todos", "Chikungunya", "Dengue", "Zika"),
+                selected = "Todos"
+              )
+            )
+          ),
+          plotlyOutput("home_qualidade_plot", height = "400px"),
+          div(class = "quality-grid",
+            uiOutput("home_alertas_qualidade")
+          )
         ),
         div(class = "landing-section",
           h3("Projeto"),

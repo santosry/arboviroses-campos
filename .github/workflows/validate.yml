@@ -1,0 +1,71 @@
+name: Validate Pipeline and Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      ARBOVIROSES_DOWNLOAD: "false"
+      RENV_PATHS_ROOT: ~/.cache/R/renv
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.4'
+          use-public-rspm: true
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev libgdal-dev libgeos-dev libproj-dev libudunits2-dev
+
+      - name: Restore renv
+        run: |
+          if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
+          renv::restore(prompt = FALSE)
+        shell: Rscript {0}
+
+      - name: Run pipeline (no download)
+        run: |
+          source("scripts/update_data.R")
+        shell: Rscript {0}
+
+      - name: Run tests
+        run: |
+          testthat::test_dir("tests/testthat")
+        shell: Rscript {0}
+
+      - name: Verify caches
+        run: |
+          cat("=== Verificando caches finais ===\n")
+          caches <- list.files("data/app_cache", pattern = "\\.rds$", full.names = TRUE)
+          for (f in caches) {
+            obj <- readRDS(f)
+            cat(basename(f), ":", nrow(obj), "linhas,", ncol(obj), "colunas\n")
+          }
+          cat("=== metadata.json ===\n")
+          if (file.exists("data/app_cache/metadata.json")) {
+            cat(readLines("data/app_cache/metadata.json"), sep = "\n")
+          }
+        shell: Rscript {0}
+
+      - name: Upload audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-report
+          path: |
+            data/audit/
+            data/app_cache/metadata.json

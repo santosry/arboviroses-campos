@@ -11,10 +11,18 @@ server <- function(input, output, session) {
       detalhes = paste("Navegou para aba:", input$sidebarItemExpanded)
     ))
   })
+
+  # Filtro global sincronizado com filtros por doenca
+  observeEvent(input$global_ano, {
+    updateSelectInput(session, "chik_ano", selected = input$global_ano)
+    updateSelectInput(session, "dengue_ano", selected = input$global_ano)
+    updateSelectInput(session, "zika_ano", selected = input$global_ano)
+  })
   
   ano_selecionado <- function(input_id) {
+    # Usa filtro global como preferencia; se per-tab diferir, usa per-tab
     valor <- input[[input_id]]
-    if(is.null(valor)) "Todos" else valor
+    if(is.null(valor)) input$global_ano else valor
   }
 
   dados_longos_home <- reactive({
@@ -99,6 +107,58 @@ server <- function(input, output, session) {
 
   output$home_comparador_tabela <- renderDT({
     datatable(tabela_comparador_home(), rownames = FALSE, options = list(pageLength = 8, scrollX = TRUE))
+  })
+
+  # Painel de qualidade na pagina inicial
+  dados_filtrados_global <- reactive({
+    ano <- input$global_ano
+    if (is.null(ano) || ano == "Todos") {
+      return(dados)
+    }
+    lapply(dados, function(df) df[df$Ano == as.numeric(ano), , drop = FALSE])
+  })
+
+  output$home_qualidade_plot <- renderPlotly({
+    agravo <- input$home_qualidade_agravo
+    if (is.null(agravo)) agravo <- "Todos"
+    criar_grafico_qualidade_temporal(dados_filtrados_global(), agravo)
+  })
+
+  output$home_alertas_qualidade <- renderUI({
+    agravo <- input$home_qualidade_agravo
+    df_list <- dados_filtrados_global()
+    if (!is.null(agravo) && agravo != "Todos") {
+      df_list <- df_list[names(df_list) == agravo]
+    }
+
+    alertas <- lapply(names(df_list), function(nome) {
+      df <- df_list[[nome]]
+      if (nrow(df) == 0) return(NULL)
+      q <- qualidade_dados(df)
+      criticos <- q[q$Percentual > 30 | is.na(q$Percentual), ]
+      if (nrow(criticos) == 0) return(NULL)
+
+      lapply(seq_len(nrow(criticos)), function(i) {
+        v <- criticos$Variavel[i]
+        p <- criticos$Percentual[i]
+        nivel <- if (is.na(p) || p > 60) "critico" else if (p > 40) "alerta" else "atencao"
+        icone <- if (nivel == "critico") "\u26A0\uFE0F" else if (nivel == "alerta") "\u2757" else "\u2139\uFE0F"
+        cores <- c(critico = "#DC2626", alerta = "#D97706", atencao = "#2563EB")
+        div(class = "quality-card", style = paste0("border-left: 3px solid ", cores[nivel]),
+          div(class = "quality-label", paste(icone, nome, "—", v)),
+          div(class = "quality-value", if (is.na(p)) "?" else paste0(format_percent(p))),
+          div(class = "quality-note", if (nivel == "critico") "Campo critico: inferencias nao confiaveis" else if (nivel == "alerta") "Atencao: alta incompletude" else "Verificar preenchimento")
+        )
+      })
+    })
+
+    alertas <- unlist(alertas, recursive = FALSE)
+    if (length(alertas) == 0) {
+      return(div(class = "quality-card", style = "grid-column: 1 / -1; text-align: center;",
+        div(class = "quality-label", "\u2705 Nenhum campo com incompletude superior a 30% no periodo selecionado.")
+      ))
+    }
+    alertas
   })
   
   observeEvent(input$chik_ano, {

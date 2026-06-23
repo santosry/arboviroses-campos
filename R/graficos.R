@@ -869,6 +869,75 @@ perfil_equipe <- function(nome, subtitulo, mini_curriculo, lattes, iniciais) {
   )
 }
 
+criar_grafico_qualidade_temporal <- function(df_list, agravo = NULL) {
+  # Produz serie temporal de completude por variavel
+  # df_list: lista nomeada de dataframes (ex: dados$Dengue, dados$Chikungunya)
+  if (!is.null(agravo) && agravo != "Todos") {
+    df_list <- df_list[names(df_list) == agravo]
+  }
+  if (length(df_list) == 0) {
+    return(plot_ly() %>% layout(
+      annotations = list(list(
+        text = "Selecione um agravo para visualizar.",
+        x = 0.5, y = 0.5, showarrow = FALSE
+      ))
+    ))
+  }
+
+  comp <- dplyr::bind_rows(lapply(names(df_list), function(nome) {
+    df <- df_list[[nome]]
+    if (nrow(df) == 0) return(data.frame())
+    q <- qualidade_dados(df)
+    q$Agravo <- nome
+    q$Ano <- if (nrow(df) == 1) as.character(df$Ano[1]) else paste(min(df$Ano), max(df$Ano), sep = "-")
+    q
+  }))
+
+  if (nrow(comp) == 0) {
+    return(plot_ly() %>% layout(
+      annotations = list(list(
+        text = "Dados insuficientes para gerar painel de qualidade.",
+        x = 0.5, y = 0.5, showarrow = FALSE
+      ))
+    ))
+  }
+
+  cores <- c(
+    "Sexo" = "#2E86AB",
+    "Idade" = "#C73E1D",
+    "Escolaridade" = "#A23B72",
+    "Raça/cor" = "#F18F01",
+    "Gestação" = "#1ABC9C",
+    "Classificacao final" = "#3B1F2B"
+  )
+
+  comp$Variavel_label <- comp$Variavel
+  comp$hover_text <- paste0(
+    comp$Variavel_label, "<br>",
+    comp$Agravo, "<br>",
+    "Ignorado/Branco: ", format_percent(comp$Percentual)
+  )
+
+  plot_ly(comp,
+    x = ~Variavel_label, y = ~Percentual, color = ~Agravo,
+    type = "bar",
+    text = ~paste0(format_percent(Percentual)),
+    textposition = "outside",
+    cliponaxis = FALSE,
+    textfont = list(size = 12),
+    hovertemplate = "%{hovertext}<extra></extra>",
+    hovertext = ~hover_text,
+    marker = list(line = list(width = 0.5, color = "#ffffff"))
+  ) %>%
+    layout(
+      barmode = "group",
+      xaxis = list(title = "", tickfont = list(size = 11)),
+      yaxis = list(title = "% Ignorado/Branco", range = c(0, max(c(comp$Percentual, 1), na.rm = TRUE) * 1.25), ticksuffix = "%"),
+      legend = list(orientation = "h", y = 1.2, x = 0.5, xanchor = "center"),
+      margin = list(l = 50, r = 30, t = 10, b = 80)
+    )
+}
+
 texto_contexto_dengue <- div(class = "context-box",
   tags$strong("Guia de interpretação: "),
   "use os gráficos de dengue para observar concentração etária, distribuição por sexo, completude de escolaridade/raça e mudanças temporais de confirmação. Campos ignorados/brancos devem ser interpretados como sinal de qualidade de preenchimento, não como categoria biológica."
