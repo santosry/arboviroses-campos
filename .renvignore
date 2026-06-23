@@ -1,0 +1,12 @@
+dados_sinan_campos/outputs
+dados_sinan_campos/*.xlsx
+data/raw
+data/interim
+data/audit
+renv/library
+renv/local
+renv/cellar
+renv/python
+renv/staging
+rsconnect
+logs

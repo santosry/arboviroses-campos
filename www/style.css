@@ -1,0 +1,7 @@
+/* Estilos incrementais do app modular.
+   O CSS visual principal permanece no app legado extraído para preservar o design atual. */
+
+.app-update-note {
+  font-size: 11px;
+  color: #64748b;
+}

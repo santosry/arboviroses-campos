@@ -1,0 +1,9 @@
+{
+  "atualizado_em": "2026-06-23 19:44:09 -0300",
+  "fonte": ["SINAN/SVS via microdatasus quando ARBOVIROSES_DOWNLOAD=true", "Planilhas locais DENGUEYYYY.xlsx", "IBGE/SIDRA para populacao quando cacheado"],
+  "anos_incluidos": [2020, 2021, 2022, 2023, 2024, 2025],
+  "municipio": "Campos dos Goytacazes, RJ",
+  "versao_pipeline": "0.1.0",
+  "arquivos_gerados": ["chikungunya_microdatasus_campos_v1.rds", "dengue_bairros_campos_v1.rds", "dengue_microdatasus_campos_v2.rds", "dengue_microdatasus_temporal_campos_v1.rds", "geobr_bairros_campos_2010.rds", "metadata.json", "neighborhoods_2010_simplified.gpkg", "populacao_campos_sidra.rds", "zika_microdatasus_campos_v1.rds", "zika_microdatasus_temporal_campos_v1.rds"],
+  "observacoes_metodologicas": ["O app Shiny le apenas caches processados e nao baixa dados no startup.", "Dados brutos e dados_sinan_campos/outputs nao sao publicados.", "Chikungunya possui etapa de ingestao via SINAN-CHIKUNGUNYA no microdatasus."]
+}

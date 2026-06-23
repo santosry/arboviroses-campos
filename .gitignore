@@ -1,0 +1,34 @@
+.Rhistory
+.RData
+.Ruserdata
+.Renviron
+# .Rprofile mantido para renv activate
+
+# Credenciais e registros locais de deploy
+rsconnect/
+*.dcf
+
+# Logs e temporários
+logs/
+*.log
+*.tmp
+tmp/
+temp/
+
+# Dados brutos e outputs locais não versionados
+dados_sinan_campos/outputs/
+dados_sinan_campos/*.xlsx
+
+# Caches e auditorias gerados localmente
+data/raw/
+data/interim/
+data/processed/
+renv/library/
+renv/local/
+renv/cellar/
+renv/python/
+renv/staging/
+
+# Artefatos de sistema
+.DS_Store
+Thumbs.db
