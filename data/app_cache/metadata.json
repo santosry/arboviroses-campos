@@ -1,5 +1,5 @@
 {
-  "atualizado_em": "2026-06-23 20:12:21 -0300",
+  "atualizado_em": "2026-06-23 20:21:00 -0300",
   "fonte": ["SINAN/SVS via microdatasus quando ARBOVIROSES_DOWNLOAD=true", "Planilhas locais DENGUEYYYY.xlsx", "IBGE/SIDRA para populacao quando cacheado"],
   "anos_incluidos": [2020, 2021, 2022, 2023, 2024, 2025],
   "municipio": "Campos dos Goytacazes, RJ",
