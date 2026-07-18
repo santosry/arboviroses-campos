@@ -5,6 +5,12 @@ source("R/dados.R", encoding = "UTF-8")
 root_path <- function(...) if (requireNamespace("here", quietly = TRUE)) here::here(...) else file.path(getwd(), ...)
 dir.create(root_path("data", "processed"), recursive = TRUE, showWarnings = FALSE)
 
+TEMPORAL_VAZIO <- data.frame(
+  Agravo = character(), Intervalo = character(), Periodo = character(),
+  Data = as.Date(character()), Ano = integer(), Casos = integer(),
+  stringsAsFactors = FALSE
+)
+
 agregar_limpo_ou_cache <- function(agravo, fallback) {
   path <- root_path("data", "interim", paste0(tolower(agravo), "_limpo.rds"))
   if (!file.exists(path)) {
@@ -25,6 +31,18 @@ agregar_limpo_ou_cache <- function(agravo, fallback) {
   # Por enquanto, preservamos o fallback validado para manter compatibilidade.
   message("Microdados de ", agravo, " disponiveis (", nrow(limpo), " registros). Usando fallback agregado pre-validado (fase 2 pendente).")
   fallback
+}
+
+# Resolver variaveis temporais (podem nao existir se R/dados.R foi refatorado)
+dengue_temporal <- if (exists("dengue_temporal", inherits = FALSE)) {
+  dengue_temporal
+} else {
+  TEMPORAL_VAZIO
+}
+zika_temporal <- if (exists("zika_temporal", inherits = FALSE)) {
+  zika_temporal
+} else {
+  TEMPORAL_VAZIO
 }
 
 saveRDS(agregar_limpo_ou_cache("chikungunya", chikungunya), root_path("data", "processed", "chikungunya_agregado.rds"))
