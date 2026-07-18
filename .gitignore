@@ -19,6 +19,9 @@ temp/
 dados_sinan_campos/outputs/
 dados_sinan_campos/*.xlsx
 
+# Dados de temperatura — não versionar
+TEMPERATURA/
+
 # Caches e auditorias gerados localmente
 data/raw/
 data/interim/

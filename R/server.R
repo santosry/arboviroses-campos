@@ -27,7 +27,9 @@ server <- function(input, output, session) {
   ano_selecionado <- function(input_id) {
     # Usa filtro global como preferencia; se per-tab diferir, usa per-tab
     valor <- input[[input_id]]
-    if(is.null(valor)) input$global_ano else valor
+    if (is.null(valor) || length(valor) == 0) valor <- input[["global_ano"]]
+    if (is.null(valor) || length(valor) == 0) valor <- "Todos"
+    valor
   }
 
   dados_longos_home <- reactive({
@@ -40,6 +42,12 @@ server <- function(input, output, session) {
 
   resumo_home <- reactive({
     df <- dados_longos_home()
+    if (nrow(df) == 0) {
+      return(list(
+        total = 0, obitos = 0, pico = "N/D", predominante = "N/D",
+        incidencia = NA_real_, atualizado = as.character(APP_DATA_ATUALIZACAO)
+      ))
+    }
     por_agravo <- df %>%
       group_by(Agravo) %>%
       summarise(
@@ -50,11 +58,21 @@ server <- function(input, output, session) {
     por_ano <- df %>%
       group_by(Ano) %>%
       summarise(Casos = sum(Confirmado_casos, na.rm = TRUE), .groups = "drop")
+    pico_ano <- if (nrow(por_ano) > 0 && any(por_ano$Casos > 0, na.rm = TRUE)) {
+      as.character(por_ano$Ano[which.max(por_ano$Casos)])
+    } else {
+      "N/D"
+    }
+    predominante_agravo <- if (nrow(por_agravo) > 0 && any(por_agravo$Casos > 0, na.rm = TRUE)) {
+      por_agravo$Agravo[which.max(por_agravo$Casos)]
+    } else {
+      "N/D"
+    }
     list(
       total = sum(por_agravo$Casos, na.rm = TRUE),
       obitos = sum(por_agravo$Obitos, na.rm = TRUE),
-      pico = por_ano$Ano[which.max(por_ano$Casos)],
-      predominante = por_agravo$Agravo[which.max(por_agravo$Casos)],
+      pico = pico_ano,
+      predominante = predominante_agravo,
       incidencia = incidencia_periodo(df),
       atualizado = if (file.exists(file.path("data", "app_cache", "metadata.json")) && requireNamespace("jsonlite", quietly = TRUE)) {
         meta <- jsonlite::read_json(file.path("data", "app_cache", "metadata.json"))
@@ -260,67 +278,6 @@ server <- function(input, output, session) {
   registrar_downloads("dengue", dengue_filtrado, "dengue")
   registrar_downloads("zika", zika_filtrado, "zika")
 
-  registrar_temporal_bruto <- function(prefixo, temporal_df, nome_doenca) {
-    temporal_filtrado <- reactive({
-      df <- temporal_df
-      if(is.null(df) || nrow(df) == 0) return(df)
-      intervalo <- input[[paste0(prefixo, "_temporal_intervalo")]]
-      if(is.null(intervalo)) intervalo <- "Mensal"
-      ano <- ano_selecionado(paste0(prefixo, "_ano"))
-      df <- df[df$Intervalo == intervalo, , drop = FALSE]
-      if(ano != "Todos") df <- df[df$Ano == as.numeric(ano), , drop = FALSE]
-      df %>% arrange(Data)
-    })
-    
-    output[[paste0(prefixo, "_temporal_plot")]] <- renderPlotly({
-      df <- temporal_filtrado()
-      if(is.null(df) || nrow(df) == 0) {
-        return(plot_ly() %>% layout(
-          xaxis = list(visible = FALSE),
-          yaxis = list(visible = FALSE),
-          annotations = list(list(
-            text = "Serie temporal bruta indisponivel em cache.",
-            x = 0.5, y = 0.5, xref = "paper", yref = "paper",
-            showarrow = FALSE
-          ))
-        ))
-      }
-      plot_ly(
-        df,
-        x = ~Data,
-        y = ~Casos,
-        type = "scatter",
-        mode = "lines+markers",
-        line = list(color = if(nome_doenca == "Dengue") "#C73E1D" else "#A23B72", width = 2),
-        marker = list(size = 6),
-        text = ~paste0(Periodo, "<br>Casos confirmados: ", Casos),
-        hoverinfo = "text"
-      ) %>%
-        layout(
-          title = paste(nome_doenca, "- casos confirmados por intervalo"),
-          xaxis = list(title = ""),
-          yaxis = list(title = "Casos confirmados"),
-          margin = list(l = 55, r = 25, t = 55, b = 45)
-        )
-    })
-    
-    output[[paste0(prefixo, "_temporal_tabela")]] <- renderDT({
-      datatable(temporal_filtrado(), rownames = FALSE, options = list(pageLength = 8, scrollX = TRUE))
-    })
-    
-    output[[paste0(prefixo, "_download_temporal")]] <- downloadHandler(
-      filename = function() {
-        paste0(tolower(nome_doenca), "_serie_temporal_bruta_", Sys.Date(), ".csv")
-      },
-      content = function(file) {
-        write.csv(temporal_filtrado(), file, row.names = FALSE, fileEncoding = "UTF-8")
-      }
-    )
-  }
-
-  registrar_temporal_bruto("dengue", dengue_temporal, "Dengue")
-  registrar_temporal_bruto("zika", zika_temporal, "Zika")
-
   salvar_png_alta_resolucao <- function(plot, file, width = 9, height = 6) {
     ggsave(file, plot = plot, device = "png", width = width, height = height, dpi = 600, units = "in", bg = "white")
   }
@@ -380,7 +337,7 @@ server <- function(input, output, session) {
       df_filtrado,
       nome_doenca,
       "faixa",
-      paste(nome_doenca, "- Faixa etaria")
+      paste(nome_doenca, "- Faixa etária")
     )
     registrar_download_grafico(
       paste0(prefixo, "_download_escolaridade"),

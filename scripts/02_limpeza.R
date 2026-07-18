@@ -80,7 +80,6 @@ ler_raw <- function(nome) {
 }
 
 dengue <- limpar_sinan(ler_raw("dengue_sinan_raw.rds"), "Dengue")
-if (nrow(dengue) == 0) dengue <- limpar_sinan(ler_raw("dengue_planilhas_locais_raw.rds"), "Dengue")
 zika <- limpar_sinan(ler_raw("zika_sinan_raw.rds"), "Zika")
 chikungunya <- limpar_sinan(ler_raw("chikungunya_sinan_raw.rds"), "Chikungunya")
 

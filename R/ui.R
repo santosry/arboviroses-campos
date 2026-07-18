@@ -883,7 +883,6 @@ ui <- dashboardPage(skin = "black",
           div(class="fig-caption","O que mostra: casos confirmados de dengue padronizados pela população estimada de Campos dos Goytacazes. Como interpretar: compare anos com maior carga relativa. Atenção metodológica: a taxa usa casos notificados e população SIDRA/IBGE.")
         ),
         painel_downloads("dengue"),
-        painel_temporal_bruto("dengue"),
         fluidRow(class = "graph-row",
           column(4, class = "graph-box",
                  div(class = "graph-title", "Distribuição por Raça/Cor"),
@@ -975,7 +974,6 @@ ui <- dashboardPage(skin = "black",
           div(class="fig-caption","O que mostra: casos confirmados de Zika vírus padronizados pela população estimada de Campos dos Goytacazes. Como interpretar: compare anos com maior carga relativa. Atenção metodológica: a taxa usa casos notificados e população SIDRA/IBGE.")
         ),
         painel_downloads("zika"),
-        painel_temporal_bruto("zika"),
         fluidRow(class = "graph-row",
           column(4, class = "graph-box",
                  div(class = "graph-title", "Distribuição por Raça/Cor"),
@@ -1094,27 +1092,27 @@ ui <- dashboardPage(skin = "black",
         tabName = "metodos",
         div(class = "doenca-titulo",
           div(class = "mosquito-icon", span(class = "mosquito-emoji", "i")),
-          span("METODOS")
+          span("MÉTODOS")
         ),
         div(class = "landing-section",
-          h3("Metodos, fontes e reprodutibilidade"),
-          p("Esta aba documenta as fontes, os filtros aplicados, os criterios de agregacao e as limitacoes usadas no painel."),
+          h3("Métodos, fontes e reprodutibilidade"),
+          p("Esta aba documenta as fontes, os filtros aplicados, os critérios de agregação e as limitações usadas no painel."),
           fluidRow(
             column(6, div(class = "method-note",
-              h4("Recorte analitico"),
+              h4("Recorte analítico"),
               tags$dl(
-                tags$dt("Municipio"),
+                tags$dt("Município"),
                 tags$dd(APP_MUNICIPIO),
-                tags$dt("Periodo"),
+                tags$dt("Período"),
                 tags$dd(APP_PERIODO_PADRAO),
-                tags$dt("Unidade de analise"),
+                tags$dt("Unidade de análise"),
                 tags$dd(APP_UNIDADE_ANALISE),
                 tags$dt("Filtros aplicados"),
-                tags$dd("Dengue e Zika: UF RJ, municipio 330100, anos 2020-2025, registros processados pelo microdatasus. Chikungunya: tabela agregada do projeto.")
+                tags$dd("Dengue e Zika: UF RJ, município 330100, anos 2020-2025, registros processados pelo microdatasus. Chikungunya: tabela agregada do projeto.")
               )
             )),
             column(6, div(class = "method-note",
-              h4("Pacotes e atualizacao"),
+              h4("Pacotes e atualização"),
               tags$dl(
                 tags$dt("R"),
                 tags$dd(R.version.string),
@@ -1127,38 +1125,38 @@ ui <- dashboardPage(skin = "black",
                   "| sf", as.character(packageVersion("sf")),
                   "| geobr", as.character(packageVersion("geobr"))
                 )),
-                tags$dt("Data de atualizacao"),
+                tags$dt("Data de atualização"),
                 tags$dd(as.character(APP_DATA_ATUALIZACAO))
               )
             ))
           )
         ),
         div(class = "landing-section",
-          h4("Criterios de confirmacao e agregacao"),
+          h4("Critérios de confirmação e agregação"),
           tags$ul(
-            tags$li("Dengue: registros do SINAN-DENGUE classificados como dengue ou febre hemorragica, excluindo descartados e registros classificados como chikungunya."),
-            tags$li("Zika: registros do SINAN-ZIKA com classificacao compativel com confirmacao apos processamento pelo microdatasus, excluindo descartados e inconclusivos."),
+            tags$li("Dengue: registros do SINAN-DENGUE classificados como dengue ou febre hemorrágica, excluindo descartados e registros classificados como chikungunya."),
+            tags$li("Zika: registros do SINAN-ZIKA com classificação compatível com confirmação após processamento pelo microdatasus, excluindo descartados e inconclusivos."),
             tags$li("Chikungunya: casos confirmados conforme tabela agregada do projeto."),
-            tags$li("Incidencia: casos confirmados divididos pela populacao estimada do IBGE/SIDRA e multiplicados por 100 mil."),
-            tags$li("Qualidade dos dados: percentual de ignorado, branco ou ausente por sexo, idade, raca/cor, escolaridade, gestacao e classificacao final.")
+            tags$li("Incidência: casos confirmados divididos pela população estimada do IBGE/SIDRA e multiplicados por 100 mil."),
+            tags$li("Qualidade dos dados: percentual de ignorado, branco ou ausente por sexo, idade, raça/cor, escolaridade, gestação e classificação final.")
           )
         ),
         div(class = "landing-section",
-          h4("Series temporais e mapa"),
+          h4("Séries temporais e mapa"),
           tags$ul(
-            tags$li("Series mensal e semanal: calculadas a partir da data de notificacao dos registros brutos de Dengue e Zika, quando disponiveis em cache."),
+            tags$li("Séries mensal e semanal: calculadas a partir da data de notificação dos registros brutos de Dengue e Zika, quando disponíveis em cache."),
             tags$li("Mapa de bairros: une registros locais de dengue por NM_BAIRRO com a malha geobr/IBGE de bairros 2010 por chave textual normalizada."),
-            tags$li("Correspondencia de bairros: bairros nao mapeados devem ser revisados manualmente, pois podem representar grafias alternativas, localidades sem poligono ou nomes nao presentes na malha.")
+            tags$li("Correspondência de bairros: bairros não mapeados devem ser revisados manualmente, pois podem representar grafias alternativas, localidades sem polígono ou nomes não presentes na malha.")
           )
         ),
         div(class = "landing-section",
-          h4("Limitacoes"),
+          h4("Limitações"),
           tags$ul(
-            tags$li("Os dados sao notificacoes registradas e podem subestimar a ocorrencia real."),
-            tags$li("Atrasos de digitacao, encerramento e investigacao podem alterar anos recentes, especialmente 2025."),
-            tags$li("Campos ignorados/brancos reduzem a interpretabilidade dos perfis sociodemograficos."),
-            tags$li("As visualizacoes sao descritivas e nao estabelecem causalidade."),
-            tags$li("A malha de bairros de 2010 pode nao refletir todos os limites ou nomes territoriais usados nos registros atuais.")
+            tags$li("Os dados são notificações registradas e podem subestimar a ocorrência real."),
+            tags$li("Atrasos de digitação, encerramento e investigação podem alterar anos recentes, especialmente 2025."),
+            tags$li("Campos ignorados/brancos reduzem a interpretabilidade dos perfis sociodemográficos."),
+            tags$li("As visualizações são descritivas e não estabelecem causalidade."),
+            tags$li("A malha de bairros de 2010 pode não refletir todos os limites ou nomes territoriais usados nos registros atuais.")
           )
         )
       ),

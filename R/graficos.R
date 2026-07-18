@@ -97,7 +97,7 @@ qualidade_dados_base <- qualidade_dados
 qualidade_dados <- function(df) {
   bind_rows(
     qualidade_dados_base(df),
-    qualidade_variavel(df, "Classificacao final", c(
+    qualidade_variavel(df, "Classificação final", c(
       "Confirmado_casos", "Descartado_casos", "Inconclusivo_casos", "Ign_Branco_casos"
     ), c("Ign_Branco_casos"))
   )
@@ -106,7 +106,7 @@ qualidade_dados <- function(df) {
 dashboard_qualidade_dados <- function(output_id) {
   div(class = "quality-panel",
     h4("Qualidade dos dados"),
-    p("Percentual de registros ignorados, brancos ou ausentes nas principais variáveis do periodo selecionado."),
+    p("Percentual de registros ignorados, brancos ou ausentes nas principais variáveis do período selecionado."),
     uiOutput(output_id)
   )
 }
@@ -117,8 +117,18 @@ criar_donut <- function(valores, rotulos, cores, exibir_rotulo_detalhado = FALSE
   rotulos <- rotulos[manter]
   cores <- cores[manter]
   
-  if(length(valores) == 0) {
-    return(plot_ly() %>% layout(margin = list(l = 60, r = 60, t = 10, b = 80)))
+  if(length(valores) == 0 || all(valores == 0)) {
+    return(plot_ly() %>%
+      layout(
+        xaxis = list(visible = FALSE), yaxis = list(visible = FALSE),
+        annotations = list(list(
+          text = "Sem dados disponíveis para este recorte.",
+          x = 0.5, y = 0.5, xref = "paper", yref = "paper",
+          showarrow = FALSE, font = list(size = 13, color = "#475569")
+        )),
+        margin = list(l = 40, r = 40, t = 40, b = 40)
+      )
+    )
   }
   
   df <- data.frame(
@@ -158,8 +168,18 @@ criar_donut <- function(valores, rotulos, cores, exibir_rotulo_detalhado = FALSE
 }
 
 criar_barras_verticais <- function(valores, rotulos, cores = NULL) {
-  if(length(valores) == 0) {
-    return(plot_ly() %>% layout(margin = list(l = 40, r = 20, t = 10, b = 80)))
+  if(length(valores) == 0 || all(valores == 0)) {
+    return(plot_ly() %>%
+      layout(
+        xaxis = list(visible = FALSE), yaxis = list(visible = FALSE),
+        annotations = list(list(
+          text = "Sem dados disponíveis para este recorte.",
+          x = 0.5, y = 0.5, xref = "paper", yref = "paper",
+          showarrow = FALSE, font = list(size = 13, color = "#475569")
+        )),
+        margin = list(l = 40, r = 40, t = 40, b = 40)
+      )
+    )
   }
   
   if(is.null(cores)) {
@@ -191,6 +211,19 @@ criar_barras_verticais <- function(valores, rotulos, cores = NULL) {
 
 # Gráfico de série temporal (Confirmado_casos por ano)
 criar_grafico_serie <- function(df, cor, nome) {
+  if (nrow(df) == 0 || all(df$Confirmado_casos == 0)) {
+    return(plot_ly() %>%
+      layout(
+        xaxis = list(visible = FALSE), yaxis = list(visible = FALSE),
+        annotations = list(list(
+          text = paste("Sem dados de", nome, "para o período selecionado."),
+          x = 0.5, y = 0.5, xref = "paper", yref = "paper",
+          showarrow = FALSE, font = list(size = 13, color = "#475569")
+        )),
+        margin = list(l = 40, r = 40, t = 40, b = 40)
+      )
+    )
+  }
   df_plot <- df
   df_plot$Ano <- as.integer(df_plot$Ano)
   df_plot$rotulo_texto <- ifelse(df_plot$Confirmado_casos > 0, format_number(df_plot$Confirmado_casos), "")
@@ -556,7 +589,7 @@ criar_grafico_escolaridade <- function(df) {
   rotulos <- c(
     "Ign/Branco esc.", "Analfabeto", "EF 1-4 inc.",
     "EF 4 comp.", "EF 5-8 inc.", "Fund. completo",
-    "Médio incompleto", "Médio completo",
+    "Médio incomp.", "Médio completo",
     "Sup. incompleta", "Sup. completa",
     "Não se aplica"
   )
@@ -661,7 +694,7 @@ tabela_visualizacao <- function(df, visualizacao) {
   }
   if(visualizacao == "gestacao") {
     valores <- c(sum(df$Primeiro_trimestre), sum(df$Segundo_trimestre), sum(df$Terceiro_trimestre), sum(df$Nao_gestacao), sum(df$Nao_se_aplica_gestacao), sum(df$Idade_gestacional), sum(df$Ign_Branco_gestacao))
-    return(data.frame(Categoria = c("1º trimestre", "2º trimestre", "3º trimestre", "Não gestante", "Não se aplica", "Idade gestacional ignorada", "Ign/Branco"), Casos = valores))
+    return(data.frame(Categoria = c("1º trimestre", "2º trimestre", "3º trimestre", "Não gestante", "Não se aplica", "Idade gest. ignorada", "Ign/Branco"), Casos = valores))
   }
   valores <- c(
     sum(df$Ign_Branco_escolaridade), sum(df$Analfabeto), sum(df$Primeira_a_quarta_serie_incompleta_EF),
@@ -671,7 +704,7 @@ tabela_visualizacao <- function(df, visualizacao) {
     sum(df$Educacao_superior_completa), sum(df$Nao_se_aplica_escolaridade)
   )
   data.frame(
-    Categoria = c("Ign/Branco", "Analfabeto", "EF 1-4 inc.", "EF 4 comp.", "EF 5-8 inc.", "Fund. completo", "Médio incompleto", "Médio completo", "Sup. incompleta", "Sup. completa", "Não se aplica"),
+    Categoria = c("Ign/Branco", "Analfabeto", "EF 1-4 inc.", "EF 4 comp.", "EF 5-8 inc.", "Fund. completo", "Médio incomp.", "Médio completo", "Sup. incompleta", "Sup. completa", "Não se aplica"),
     Casos = valores
   )
 }
@@ -707,40 +740,27 @@ tabela_analitica_doenca <- function(df, nome_doenca, periodo_label = NULL) {
 
 nota_metodologica_doenca <- function(nome_doenca, fonte, criterio_confirmacao, limitacoes) {
   div(class = "method-note",
-    h4("Nota metodologica"),
+    h4("Nota metodológica"),
     tags$dl(
       tags$dt("Fonte"),
       tags$dd(fonte),
-      tags$dt("Periodo"),
+      tags$dt("Período"),
       tags$dd(APP_PERIODO_PADRAO),
-      tags$dt("Unidade de analise"),
+      tags$dt("Unidade de análise"),
       tags$dd(APP_UNIDADE_ANALISE),
-      tags$dt("Criterio de confirmacao"),
+      tags$dt("Critério de confirmação"),
       tags$dd(criterio_confirmacao),
-      tags$dt("Limitacoes"),
+      tags$dt("Limitações"),
       tags$dd(limitacoes)
     )
   )
 }
 
-painel_temporal_bruto <- function(prefixo) {
-  div(class = "download-panel",
-    h4("Serie temporal a partir dos registros brutos"),
-    p("Contagem de casos confirmados por intervalo mensal ou semanal, quando os registros brutos do microdatasus estao disponiveis em cache."),
-    fluidRow(
-      column(4, selectInput(paste0(prefixo, "_temporal_intervalo"), "Intervalo", choices = c("Mensal", "Semanal"), selected = "Mensal")),
-      column(4, br(), downloadButton(paste0(prefixo, "_download_temporal"), "Baixar serie temporal CSV"))
-    ),
-    plotlyOutput(paste0(prefixo, "_temporal_plot"), height = "280px"),
-    DTOutput(paste0(prefixo, "_temporal_tabela"))
-  )
-}
-
 painel_correspondencia_bairros <- function() {
   div(class = "download-panel",
-    h4("Correspondencia bairro-planilha vs bairro-geobr"),
-    p("Tabela de auditoria da vinculacao espacial. Bairros sem correspondencia indicam divergencias de grafia, localidade sem poligono na malha de 2010 ou necessidade de ajuste manual."),
-    downloadButton("dengue_download_correspondencia_bairros", "Baixar correspondencia CSV"),
+    h4("Correspondência bairro-planilha vs bairro-geobr"),
+    p("Tabela de auditoria da vinculação espacial. Bairros sem correspondência indicam divergências de grafia, localidade sem polígono na malha de 2010 ou necessidade de ajuste manual."),
+    downloadButton("dengue_download_correspondencia_bairros", "Baixar correspondência CSV"),
     DTOutput("dengue_correspondencia_bairros")
   )
 }
@@ -749,20 +769,20 @@ metadados_figura <- function(nome_doenca, visualizacao, periodo_label = "Períod
   nomes <- c(
     serie = "série temporal dos casos confirmados",
     incidencia = "incidência anual por 100 mil habitantes",
-    sexo = "distribuicao por sexo e ano",
-    etnia = "distribuicao por raça/cor",
-    faixa = "distribuicao por faixa etaria",
+    sexo = "distribuição por sexo e ano",
+    etnia = "distribuição por raça/cor",
+    faixa = "distribuição por faixa etária",
     gestacao = "situação gestacional",
-    escolaridade = "distribuicao por escolaridade"
+    escolaridade = "distribuição por escolaridade"
   )
   o_que <- paste0("O que mostra: ", nome_doenca, " - ", nomes[[visualizacao]], ".")
   interpretar <- switch(
     visualizacao,
-    serie = "Como interpretar: observe picos, quedas e concentracao temporal de casos confirmados.",
+    serie = "Como interpretar: observe picos, quedas e concentração temporal de casos confirmados.",
     incidencia = "Como interpretar: compare a carga anual padronizada pela população estimada do município.",
-    sexo = "Como interpretar: compare a distribuicao entre masculino, feminino e ignorado/branco ao longo dos anos.",
-    etnia = "Como interpretar: avalie a composicao dos registros segundo raça/cor e o peso de ignorado/branco.",
-    faixa = "Como interpretar: identifique grupos etarios com maior carga registrada no periodo selecionado.",
+    sexo = "Como interpretar: compare a distribuição entre masculino, feminino e ignorado/branco ao longo dos anos.",
+    etnia = "Como interpretar: avalie a composição dos registros segundo raça/cor e o peso de ignorado/branco.",
+    faixa = "Como interpretar: identifique grupos etários com maior carga registrada no período selecionado.",
     gestacao = "Como interpretar: observe registros relacionados à gestação e categorias não aplicáveis ou ignoradas.",
     escolaridade = "Como interpretar: avalie padrões de escolaridade sempre considerando incompletude de preenchimento."
   )

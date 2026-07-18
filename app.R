@@ -3,6 +3,7 @@
 
 source("R/packages.R", encoding = "UTF-8")
 source("R/utils.R", encoding = "UTF-8")
+if (!exists("ler_rds_seguro", mode = "function")) stop("ler_rds_seguro NAO definida apos source('R/utils.R')")
 source("R/dados.R", encoding = "UTF-8")
 source("R/graficos.R", encoding = "UTF-8")
 source("R/mapas.R", encoding = "UTF-8")

@@ -28,7 +28,9 @@ fetch_sinan_microdatasus <- function(agravo, information_system, vars = NULL) {
     stop("Pacote microdatasus ausente. Restaure o ambiente com renv::restore().", call. = FALSE)
   }
 
+  message("Baixando ", agravo, " (", information_system, ") anos ", paste(anos_pipeline, collapse = ", "))
   lista <- lapply(anos_pipeline, function(ano) {
+    message("  Ano ", ano, "...")
     bruto <- microdatasus::fetch_datasus(
       year_start = ano,
       year_end = ano,
@@ -43,32 +45,17 @@ fetch_sinan_microdatasus <- function(agravo, information_system, vars = NULL) {
     bruto
   })
   dados <- dplyr::bind_rows(lista)
-  saveRDS(dados, out)
+  if (nrow(dados) > 0) {
+    saveRDS(dados, out)
+    message("  Salvo: ", nrow(dados), " registros em ", out)
+  }
   dados
 }
 
-ler_planilhas_dengue_locais <- function(dir_dados = root_path("dados_sinan_campos")) {
-  arquivos <- list.files(dir_dados, pattern = "^DENGUE[0-9]{4}\\.xlsx$", full.names = TRUE)
-  dados <- lapply(arquivos, function(path) {
-    ano <- as.integer(gsub("[^0-9]", "", tools::file_path_sans_ext(basename(path))))
-    df <- readxl::read_excel(path, col_types = "text", na = c("", "NA", "N/A", "NULL"))
-    df$ano_arquivo <- ano
-    df
-  })
-  dplyr::bind_rows(dados)
-}
+message("Iniciando downloads via microdatasus...")
 
-vars_padrao <- c(
-  "NU_ANO", "ID_MUNICIP", "ID_MN_RESI", "CS_SEXO", "CS_GESTANT", "CS_RACA",
-  "CS_ESCOL_N", "NU_IDADE_N", "CLASSI_FIN", "EVOLUCAO", "DT_NOTIFIC", "DT_SIN_PRI",
-  "NM_BAIRRO", "SOROTIPO"
-)
-
-dengue_raw_local <- ler_planilhas_dengue_locais()
-saveRDS(dengue_raw_local, root_path("data", "raw", "dengue_planilhas_locais_raw.rds"))
-
-fetch_sinan_microdatasus("dengue", "SINAN-DENGUE", vars_padrao)
-fetch_sinan_microdatasus("zika", "SINAN-ZIKA", setdiff(vars_padrao, "SOROTIPO"))
-fetch_sinan_microdatasus("chikungunya", "SINAN-CHIKUNGUNYA", setdiff(vars_padrao, "SOROTIPO"))
+fetch_sinan_microdatasus("dengue", "SINAN-DENGUE")
+fetch_sinan_microdatasus("zika", "SINAN-ZIKA")
+fetch_sinan_microdatasus("chikungunya", "SINAN-CHIKUNGUNYA")
 
 message("01_ingestao concluido.")

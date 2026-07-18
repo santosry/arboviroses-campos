@@ -1,6 +1,6 @@
 # Forçar encoding UTF-8
 options(encoding = "UTF-8")
-if (.Platform$OS.type == "unix") Sys.setlocale("LC_CTYPE", "pt_BR.UTF-8")
+try(Sys.setlocale("LC_CTYPE", "pt_BR.UTF-8"), silent = TRUE)
 
 # SISTEMA DE AUDITORIA
 
@@ -46,10 +46,13 @@ registrar_log <- function(arquivo, dados) {
 }
 
 # Registrar inicio da sessao
-registrar_log(LOG_SESSAO, data.frame(
-  evento = "inicio_sessao",
-  detalhes = "Sessao iniciada"
-))
+tryCatch(
+  registrar_log(LOG_SESSAO, data.frame(
+    evento = "inicio_sessao",
+    detalhes = "Sessao iniciada"
+  )),
+  error = function(e) warning("Falha ao registrar inicio de sessao: ", conditionMessage(e))
+)
 
 # Funcao para validar dados
 validar_dados <- function(df, nome_doenca) {
