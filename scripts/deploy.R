@@ -33,9 +33,10 @@ required_files <- c(
   "app.R",
   list.files("R", pattern = "\\.R$", full.names = TRUE),
   list.files("www", full.names = TRUE),
+  list.files("www", pattern = "\\.svg$", full.names = TRUE),
   list.files("data/app_cache", full.names = TRUE)
 )
-required_files <- required_files[file.exists(required_files)]
+required_files <- unique(required_files[file.exists(required_files)])
 
 if (!"data/app_cache/metadata.json" %in% required_files) {
   warning("metadata.json nao encontrado em data/app_cache. Rode scripts/update_data.R antes do deploy.")

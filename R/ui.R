@@ -832,7 +832,7 @@ ui <- dashboardPage(skin = "black",
         ),
         div(class = "landing-section",
           h4("Qualidade dos Dados : Completude por Variável"),
-          p("Percentual de registros com campo ignorado ou em branco por agravo e variável. Barras altas indicam maior incompletude e menor confiabilidade para inferências. O período respeita o filtro global."),
+          p("Tabela com o percentual de registros ignorados, brancos ou ausentes por agravo e variável. O período e agravo selecionados abaixo filtram os dados exibidos. Valores acima de 30% indicam atenção; acima de 40%, alerta; acima de 60%, situação crítica para inferências."),
           fluidRow(
             column(4,
               selectInput(
@@ -843,7 +843,7 @@ ui <- dashboardPage(skin = "black",
               )
             )
           ),
-          plotlyOutput("home_qualidade_plot", height = "400px"),
+          DTOutput("home_qualidade_tabela"),
           uiOutput("home_alertas_qualidade")
         ),
         div(class = "landing-section",

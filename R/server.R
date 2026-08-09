@@ -94,7 +94,7 @@ server <- function(input, output, session) {
   }
 
   output$home_card_total <- criar_home_card("total", "TOTAL DE CASOS", format_number)
-  output$home_card_incidencia <- criar_home_card("incidencia", "INCIDENCIA/100 MIL", function(x) if(is.finite(x)) format_number(round(x)) else "Indisponível")
+  output$home_card_incidencia <- criar_home_card("incidencia", "INCIDÊNCIA/100 MIL", function(x) if(is.finite(x)) format_number(round(x)) else "Indisponível")
   output$home_card_obitos <- criar_home_card("obitos", "ÓBITOS", format_number)
   output$home_card_pico <- criar_home_card("pico", "ANO DE PICO", as.character)
   output$home_card_predominante <- criar_home_card("predominante", "AGRAVO PREDOMINANTE", as.character)
@@ -150,18 +150,59 @@ server <- function(input, output, session) {
     lapply(dados, function(df) df[df$Ano == as.numeric(ano), , drop = FALSE])
   })
 
-  output$home_qualidade_plot <- renderPlotly({
+  # Tabela de qualidade na pagina inicial (substitui o grafico com log)
+  home_qualidade_tabela_dados <- reactive({
     agravo <- input$home_qualidade_agravo
     if (is.null(agravo)) agravo <- "Todos"
-    p <- criar_grafico_qualidade_temporal(dados_filtrados_global(), agravo)
-    # Adiciona escala logarítmica ao eixo Y (com offset +1 para evitar log(0))
-    p <- p %>% layout(yaxis = list(
-      title = "% Ignorado/Branco (escala log)",
-      type = "log",
-      tickformat = ",.1f",
-      ticksuffix = "%"
-    ))
-    p
+    df_list <- dados_filtrados_global()
+    if (!is.null(agravo) && agravo != "Todos") {
+      df_list <- df_list[names(df_list) == agravo]
+    }
+
+    dplyr::bind_rows(lapply(names(df_list), function(nome) {
+      df <- df_list[[nome]]
+      if (nrow(df) == 0) return(data.frame())
+      q <- qualidade_dados(df)
+      q$Agravo <- nome
+      q
+    })) %>%
+      select(Agravo, Variável = Variavel, `Total de registros` = Total,
+             `Ignorados/Brancos` = Ignorado_Branco_Ausente,
+             `% Incompletude` = Percentual) %>%
+      mutate(`% Incompletude` = round(`% Incompletude`, 1))
+  })
+
+  output$home_qualidade_tabela <- renderDT({
+    df <- home_qualidade_tabela_dados()
+    if (nrow(df) == 0) {
+      return(datatable(data.frame(Mensagem = "Selecione um agravo para visualizar.")))
+    }
+    datatable(
+      df,
+      rownames = FALSE,
+      options = list(
+        pageLength = 12,
+        scrollX = TRUE,
+        columnDefs = list(
+          list(targets = 4, render = DT::JS(
+            "function(data, type, row) {
+              if (data === null || isNaN(data)) return 'N/D';
+              var val = parseFloat(data);
+              var color = val > 60 ? '#DC2626' : val > 40 ? '#D97706' : val > 30 ? '#2563EB' : '#16A34A';
+              return '<span style=\"font-weight:700;color:' + color + '\">' + val.toFixed(1) + '%</span>';
+            }"
+          ))
+        )
+      ),
+      escape = FALSE
+    ) %>%
+      formatStyle(
+        5,
+        backgroundColor = styleInterval(
+          c(30, 40, 60),
+          c('#F0FFF0', '#FFF7ED', '#FEF3C7', '#FEE2E2')
+        )
+      )
   })
 
   output$home_alertas_qualidade <- renderUI({
