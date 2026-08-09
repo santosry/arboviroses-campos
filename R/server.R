@@ -426,14 +426,14 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       df <- dengue_bairros_filtrado() %>%
-        slice_max(Casos, n = 25, with_ties = FALSE) %>%
+        slice_max(Casos, n = 20, with_ties = FALSE) %>%
         arrange(Casos)
 
       p <- ggplot(df, aes(x = Casos, y = reorder(NM_BAIRRO, Casos))) +
         geom_col(fill = "#C73E1D") +
         geom_text(aes(label = format_number(Casos)), hjust = -0.08, size = 3.4, color = "#1e293b") +
         scale_x_continuous(expand = expansion(mult = c(0, 0.16))) +
-        labs(title = "Top 25 bairros com mais registros de dengue", x = "Casos", y = "") +
+        labs(title = "Top 20 bairros com mais registros de dengue", x = "Casos", y = "") +
         theme_minimal(base_size = 12) +
         theme(
           plot.title = element_text(face = "bold", size = 16, color = "#1A2535"),
@@ -520,7 +520,7 @@ server <- function(input, output, session) {
 
   output$dengue_bairros_barra <- renderPlot({
     df <- dengue_bairros_filtrado() %>%
-      slice_max(Casos, n = 25, with_ties = FALSE) %>%
+      slice_max(Casos, n = 20, with_ties = FALSE) %>%
       arrange(Casos)
     
     if(nrow(df) == 0) {
@@ -544,7 +544,7 @@ server <- function(input, output, session) {
         limits = c(0, max_casos * 1.18)
       ) +
       labs(
-        title = "Distribuição dos registros de dengue por bairro — 25 bairros com maior volume de notificações, Campos dos Goytacazes",
+        title = "Distribuição dos registros de dengue por bairro — 20 bairros com maior volume de notificações, Campos dos Goytacazes",
         x = "Número de notificações",
         y = NULL
       ) +
