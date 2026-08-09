@@ -31,10 +31,11 @@ if (dir.exists("dados_sinan_campos/outputs")) {
 
 required_files <- c(
   "app.R",
-  setdiff(list.files("R", pattern = "\\.R$", full.names = TRUE), "R/app_legacy_original.R"),
+  list.files("R", pattern = "\\.R$", full.names = TRUE),
   list.files("www", full.names = TRUE),
   list.files("data/app_cache", full.names = TRUE)
 )
+required_files <- unique(required_files[file.exists(required_files)])
 required_files <- unique(required_files[file.exists(required_files)])
 
 if (!"data/app_cache/metadata.json" %in% required_files) {

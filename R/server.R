@@ -536,6 +536,7 @@ server <- function(input, output, session) {
     }
     
     paleta <- colorRampPalette(c("#facc15", "#f97316", "#ef4444", "#b91c1c", "#7f1d1d"))(nrow(df))
+    max_casos <- max(df$Casos, na.rm = TRUE)
     plot_ly(df) %>%
       add_bars(
         x = ~Casos,
@@ -545,14 +546,15 @@ server <- function(input, output, session) {
         text = ~format_number(Casos),
         textposition = "outside",
         cliponaxis = FALSE,
+        textfont = list(size = 11, color = "#1e293b"),
         hovertemplate = "<b>%{y}</b><br>Casos: %{x}<extra></extra>"
       ) %>%
       layout(
         title = list(text = "Top 25 bairros com mais registros de dengue"),
-        xaxis = list(title = "Casos"),
+        xaxis = list(title = "Casos", range = c(0, max_casos * 1.22)),
         yaxis = list(title = "", automargin = TRUE),
         showlegend = FALSE,
-        margin = list(l = 175, r = 70, t = 50, b = 45)
+        margin = list(l = 175, r = 90, t = 50, b = 45)
       )
   })
   
