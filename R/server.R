@@ -459,7 +459,7 @@ server <- function(input, output, session) {
         tags$strong("Nota metodológica: "),
         "o mapa usa a malha de bairros de 2010 disponibilizada pelo geobr/IBGE. A vinculação com as planilhas é feita por nome normalizado do bairro; divergências de grafia podem deixar alguns bairros sem correspondência espacial."
       ),
-      plotlyOutput("dengue_bairros_barra", height = "430px"),
+      plotOutput("dengue_bairros_barra", height = "430px"),
       botao_download_grafico("dengue_download_bairros_barra")
     )
   })
@@ -518,50 +518,47 @@ server <- function(input, output, session) {
     })
   })
 
-  output$dengue_bairros_barra <- renderPlotly({
+  output$dengue_bairros_barra <- renderPlot({
     df <- dengue_bairros_filtrado() %>%
       slice_max(Casos, n = 25, with_ties = FALSE) %>%
       arrange(Casos)
     
     if(nrow(df) == 0) {
-      return(plot_ly() %>% layout(
-        xaxis = list(visible = FALSE),
-        yaxis = list(visible = FALSE),
-        annotations = list(list(
-          text = "Sem bairros informados para exibir.",
-          x = 0.5, y = 0.5, xref = "paper", yref = "paper",
-          showarrow = FALSE
-        ))
-      ))
+      return(ggplot() + annotate("text", x = 1, y = 1, label = "Sem bairros informados para exibir.") + theme_void())
     }
     
-    paleta <- colorRampPalette(c("#facc15", "#f97316", "#ef4444", "#b91c1c", "#7f1d1d"))(nrow(df))
+    df$NM_BAIRRO <- factor(df$NM_BAIRRO, levels = df$NM_BAIRRO)
     max_casos <- max(df$Casos, na.rm = TRUE)
-    plot_ly(df) %>%
-      add_bars(
-        x = ~Casos,
-        y = ~factor(NM_BAIRRO, levels = NM_BAIRRO),
-        orientation = "h",
-        marker = list(color = paleta),
-        text = ~format_number(Casos),
-        textposition = "auto",
-        textfont = list(size = 12, color = "#1e293b"),
-        insidetextfont = list(size = 12, color = "white"),
-        cliponaxis = FALSE,
-        hovertemplate = "<b>%{y}</b><br>Casos: %{x}<extra></extra>"
-      ) %>%
-      layout(
-        title = list(
-          text = "Distribuição dos registros de dengue por bairro — 25 bairros com maior volume de notificações, Campos dos Goytacazes",
-          font = list(size = 14)
-        ),
-        xaxis = list(title = "Número de notificações", range = c(0, max_casos * 1.35)),
-        yaxis = list(title = "", automargin = TRUE, tickfont = list(size = 11)),
-        showlegend = FALSE,
-        margin = list(l = 175, r = 100, t = 65, b = 45),
-        bargap = 0.15
+    
+    paleta <- colorRampPalette(c("#facc15", "#f97316", "#ef4444", "#b91c1c", "#7f1d1d"))(nrow(df))
+    
+    ggplot(df, aes(x = Casos, y = NM_BAIRRO)) +
+      geom_col(aes(fill = NM_BAIRRO), width = 0.72) +
+      geom_text(
+        aes(label = format_number(Casos)),
+        hjust = -0.15, size = 3.6, color = "#1e293b", fontface = "bold"
+      ) +
+      scale_fill_manual(values = paleta, guide = "none") +
+      scale_x_continuous(
+        expand = expansion(mult = c(0, 0.22)),
+        limits = c(0, max_casos * 1.18)
+      ) +
+      labs(
+        title = "Distribuição dos registros de dengue por bairro — 25 bairros com maior volume de notificações, Campos dos Goytacazes",
+        x = "Número de notificações",
+        y = NULL
+      ) +
+      theme_minimal(base_size = 13) +
+      theme(
+        plot.title = element_text(face = "bold", size = 14, color = "#1A2535", margin = margin(b = 10)),
+        axis.title.x = element_text(size = 12, color = "#334155"),
+        axis.text.y = element_text(size = 11, color = "#1A2535"),
+        axis.text.x = element_text(size = 10, color = "#475569"),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.margin = margin(10, 55, 10, 10)
       )
-  })
+  }, height = 430)
   
   criar_card <- function(df_reativo, coluna, rotulo, extra_class = NULL) {
     renderUI({
