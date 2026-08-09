@@ -6,7 +6,6 @@ if (.Platform$OS.type == "unix") {
 required_packages <- c(
   "shiny",
   "shinydashboard",
-  "shinyjs",
   "dplyr",
   "tidyr",
   "plotly",

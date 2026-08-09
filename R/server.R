@@ -9,9 +9,9 @@ QUALIDADE_THRESHOLD_ATENCAO  <- 30   # % ignorado/branco acima disso = atencao
 
 server <- function(input, output, session) {
   
-  # Tutorial: fecha com shinyjs e persiste na sessão
+  # Tutorial: fecha com removeUI do proprio Shiny (persiste na sessao)
   observeEvent(input$fechar_tutorial, {
-    shinyjs::hide("tutorial-box", anim = TRUE, animType = "fade", time = 0.3)
+    removeUI(selector = "#tutorial-box")
   })
   
   observeEvent(input$sidebarItemExpanded, {

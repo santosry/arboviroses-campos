@@ -274,9 +274,9 @@ ui <- dashboardPage(skin = "black",
           font-size: 22px;
         }
         .tutorial-close-btn {
-          background: #1B3A6B;
-          color: #ffffff;
-          border: none;
+          background: #1B3A6B !important;
+          color: #ffffff !important;
+          border: none !important;
           border-radius: 4px;
           padding: 6px 14px;
           font-size: 13px;
@@ -287,9 +287,11 @@ ui <- dashboardPage(skin = "black",
           text-decoration: none !important;
           display: inline-block;
         }
-        .tutorial-close-btn:hover {
-          background: #122856;
+        .tutorial-close-btn:hover,
+        .tutorial-close-btn:focus {
+          background: #122856 !important;
           color: #ffffff !important;
+          border: none !important;
           text-decoration: none !important;
         }
         .tutorial-content {
@@ -730,7 +732,6 @@ ui <- dashboardPage(skin = "black",
         }
       "))
     ),
-    shinyjs::useShinyjs(),
     tags$div(class = "fixed-app-title", "Painel Arboviroses — Campos/RJ"),
     tabItems(
       tabItem(
@@ -743,7 +744,7 @@ ui <- dashboardPage(skin = "black",
         div(class = "tutorial-collapsible", id = "tutorial-box",
           div(class = "tutorial-header",
             h3("\U0001F4D6 Tutorial e Interpretação"),
-            actionLink("fechar_tutorial", label = "\u2715 Fechar", class = "tutorial-close-btn")
+            actionButton("fechar_tutorial", label = "\u2715 Fechar", class = "tutorial-close-btn")
           ),
           div(class = "tutorial-content",
             p("Este painel foi criado para apoiar a leitura epidemiológica das arboviroses em Campos dos Goytacazes. Ele reúne indicadores descritivos de Chikungunya, Dengue e Zika, permitindo observar a magnitude dos registros, o perfil dos casos, a completude das notificações e a distribuição espacial da dengue por bairro. Para detalhes sobre fontes, métodos e limitações, consulte a aba Métodos."),
