@@ -49,9 +49,9 @@ registrar_log <- function(arquivo, dados) {
 tryCatch(
   registrar_log(LOG_SESSAO, data.frame(
     evento = "inicio_sessao",
-    detalhes = "Sessao iniciada"
+    detalhes = "Sessão iniciada"
   )),
-  error = function(e) warning("Falha ao registrar inicio de sessao: ", conditionMessage(e))
+  error = function(e) warning("Falha ao registrar início de sessão: ", conditionMessage(e))
 )
 
 # Funcao para validar dados
@@ -100,7 +100,7 @@ validar_dados <- function(df, nome_doenca) {
       if(total_sexo != total_idade) {
         inconsistencias <- c(inconsistencias, 
                              paste("Ano", df$Ano[i], ": Sexo (M+F+Ign) =", total_sexo, 
-                                   "vs Idade (faixas+Ign) =", total_idade, "diferenca =", total_sexo - total_idade))
+                                   "vs Idade (faixas+Ign) =", total_idade, "diferença =", total_sexo - total_idade))
       }
     }
   }
@@ -132,16 +132,16 @@ cols_numeric <- names(df)[sapply(df, is.numeric)]
 APP_DATA_ATUALIZACAO <- Sys.Date()
 APP_PERIODO_PADRAO <- "2020-2025"
 APP_MUNICIPIO <- "Campos dos Goytacazes (RJ)"
-APP_UNIDADE_ANALISE <- "casos notificados residentes/notificados no municipio, agregados por ano epidemiologico"
+APP_UNIDADE_ANALISE <- "casos notificados residentes/notificados no município, agregados por ano epidemiológico"
 
 # Leitura segura de .rds com validacao de integridade
 ler_rds_seguro <- function(path, nome = basename(path), quiet = FALSE) {
   if (!file.exists(path)) {
-    if (!quiet) warning("Arquivo ", nome, " nao encontrado em ", path)
+    if (!quiet) warning("Arquivo ", nome, " não encontrado em ", path)
     return(NULL)
   }
   if (file.info(path)$size == 0) {
-    if (!quiet) warning("Arquivo ", nome, " esta vazio (0 bytes)")
+    if (!quiet) warning("Arquivo ", nome, " está vazio (0 bytes)")
     return(NULL)
   }
   obj <- tryCatch(readRDS(path), error = function(e) {
@@ -151,7 +151,7 @@ ler_rds_seguro <- function(path, nome = basename(path), quiet = FALSE) {
   if (is.null(obj)) {
     if (!quiet) warning("Retorno nulo ao ler ", nome)
   } else if (is.data.frame(obj) && nrow(obj) == 0) {
-    if (!quiet) message("Data frame vazio ao ler ", nome, " (esperado se cache nao foi gerado com downloads)")
+    if (!quiet) message("Data frame vazio ao ler ", nome, " (esperado se cache não foi gerado com downloads)")
   }
   obj
 }

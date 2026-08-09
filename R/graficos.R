@@ -928,7 +928,7 @@ criar_grafico_qualidade_temporal <- function(df_list, agravo = NULL) {
     "Escolaridade" = "#A23B72",
     "Raça/cor" = "#F18F01",
     "Gestação" = "#1ABC9C",
-    "Classificacao final" = "#3B1F2B"
+    "Classificação final" = "#3B1F2B"
   )
 
   comp$Variavel_label <- comp$Variavel

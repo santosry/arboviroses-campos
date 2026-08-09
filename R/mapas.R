@@ -20,7 +20,7 @@ carregar_malha_bairros_campos <- function(
   preparar_malha <- function(malha) {
     col_bairro <- primeira_coluna_existente(malha, c("name_neighborhood", "name_neighbourhood", "NM_BAIRRO", "bairro", "NM_BAIR", "NM_BAIRRO_GEO"))
     if (is.na(col_bairro)) {
-      warning("Coluna de nome de bairro nao encontrada na malha; mapa nao disponivel.")
+      warning("Coluna de nome de bairro não encontrada na malha; mapa não disponível.")
       return(NULL)
     }
     malha$NM_BAIRRO_GEO <- normalizar_bairro(malha[[col_bairro]])
@@ -42,7 +42,7 @@ carregar_malha_bairros_campos <- function(
   }
 
   if (!file.exists(gpkg_path) || file.info(gpkg_path)$size == 0) {
-    warning("Malha de bairros nao encontrada. Execute scripts/update_data.R.")
+    warning("Malha de bairros não encontrada. Execute scripts/update_data.R.")
     return(NULL)
   }
 
@@ -62,7 +62,7 @@ carregar_malha_bairros_campos <- function(
   } else if (!is.na(col_municipio)) {
     malha <- malha[grepl("Campos dos Goytacazes", as.character(malha[[col_municipio]]), ignore.case = TRUE), , drop = FALSE]
   } else {
-    warning("Coluna de municipio nao encontrada na malha; mapa pode incluir areas de fora.")
+    warning("Coluna de município não encontrada na malha; mapa pode incluir áreas de fora.")
   }
 
   if (nrow(malha) == 0) {
@@ -125,7 +125,7 @@ preparar_correspondencia_bairros <- function(df_bairros) {
     summarise(Casos = sum(Casos, na.rm = TRUE), .groups = "drop") %>%
     left_join(malha, by = "bairro_key") %>%
     mutate(
-      Status = ifelse(is.na(NM_BAIRRO_GEOBR), "Nao mapeado", "Mapeado"),
+      Status = ifelse(is.na(NM_BAIRRO_GEOBR), "Não mapeado", "Mapeado"),
       NM_BAIRRO_GEOBR = ifelse(is.na(NM_BAIRRO_GEOBR), "", NM_BAIRRO_GEOBR)
     ) %>%
     arrange(Status, desc(Casos), NM_BAIRRO_PLANILHA)

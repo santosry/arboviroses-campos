@@ -94,11 +94,11 @@ server <- function(input, output, session) {
   }
 
   output$home_card_total <- criar_home_card("total", "TOTAL DE CASOS", format_number)
-  output$home_card_incidencia <- criar_home_card("incidencia", "INCIDENCIA/100 MIL", function(x) if(is.finite(x)) format_number(round(x)) else "Indisponivel")
-  output$home_card_obitos <- criar_home_card("obitos", "OBITOS", format_number)
+  output$home_card_incidencia <- criar_home_card("incidencia", "INCIDENCIA/100 MIL", function(x) if(is.finite(x)) format_number(round(x)) else "Indisponível")
+  output$home_card_obitos <- criar_home_card("obitos", "ÓBITOS", format_number)
   output$home_card_pico <- criar_home_card("pico", "ANO DE PICO", as.character)
   output$home_card_predominante <- criar_home_card("predominante", "AGRAVO PREDOMINANTE", as.character)
-  output$home_card_atualizacao <- criar_home_card("atualizado", "ULTIMA ATUALIZACAO", as.character)
+  output$home_card_atualizacao <- criar_home_card("atualizado", "ÚLTIMA ATUALIZAÇÃO", as.character)
 
   tabela_comparador_home <- reactive({
     variavel <- input$home_comparador_variavel
@@ -124,8 +124,17 @@ server <- function(input, output, session) {
 
   output$home_comparador_plot <- renderPlotly({
     tab <- tabela_comparador_home()
-    plot_ly(tab, x = ~Categoria, y = ~Casos, color = ~Agravo, type = "bar") %>%
-      layout(barmode = "group", xaxis = list(title = ""), yaxis = list(title = "Casos confirmados"))
+    tab$Casos_plot <- tab$Casos + 1  # evita log(0)
+    plot_ly(tab, x = ~Categoria, y = ~Casos_plot, color = ~Agravo, type = "bar") %>%
+      layout(
+        barmode = "group",
+        xaxis = list(title = ""),
+        yaxis = list(
+          title = "Casos confirmados (escala log)",
+          type = "log",
+          tickformat = ",d"
+        )
+      )
   })
 
   output$home_comparador_tabela <- renderDT({
@@ -144,7 +153,15 @@ server <- function(input, output, session) {
   output$home_qualidade_plot <- renderPlotly({
     agravo <- input$home_qualidade_agravo
     if (is.null(agravo)) agravo <- "Todos"
-    criar_grafico_qualidade_temporal(dados_filtrados_global(), agravo)
+    p <- criar_grafico_qualidade_temporal(dados_filtrados_global(), agravo)
+    # Adiciona escala logarítmica ao eixo Y (com offset +1 para evitar log(0))
+    p <- p %>% layout(yaxis = list(
+      title = "% Ignorado/Branco (escala log)",
+      type = "log",
+      tickformat = ",.1f",
+      ticksuffix = "%"
+    ))
+    p
   })
 
   output$home_alertas_qualidade <- renderUI({
@@ -170,18 +187,20 @@ server <- function(input, output, session) {
         div(class = "quality-card", style = paste0("border-left: 3px solid ", cores[nivel]),
           div(class = "quality-label", paste(icone, nome, ":", v)),
           div(class = "quality-value", if (is.na(p)) "?" else paste0(format_percent(p))),
-          div(class = "quality-note", if (nivel == "critico") "Campo critico: inferencias nao confiaveis" else if (nivel == "alerta") "Atencao: alta incompletude" else "Verificar preenchimento")
+          div(class = "quality-note", if (nivel == "critico") "Campo crítico: inferências não confiáveis" else if (nivel == "alerta") "Atenção: alta incompletude" else "Verificar preenchimento")
         )
       })
     })
 
     alertas <- unlist(alertas, recursive = FALSE)
     if (length(alertas) == 0) {
-      return(div(class = "quality-card", style = "grid-column: 1 / -1; text-align: center;",
-        div(class = "quality-label", paste0("\u2705 Nenhum campo com incompletude superior a ", QUALIDADE_THRESHOLD_ATENCAO, "% no periodo selecionado."))
+      return(div(class = "quality-grid",
+        div(class = "quality-card", style = "grid-column: 1 / -1; text-align: center;",
+          div(class = "quality-label", paste0("\u2705 Nenhum campo com incompletude superior a ", QUALIDADE_THRESHOLD_ATENCAO, "% no período selecionado."))
+        )
       ))
     }
-    alertas
+    div(class = "quality-grid", alertas)
   })
   
   observeEvent(input$chik_ano, {
@@ -401,7 +420,7 @@ server <- function(input, output, session) {
       botao_download_grafico("dengue_download_mapa_bairros"),
       div(class = "context-box",
         tags$strong("Nota metodológica: "),
-        "o mapa usa a malha de bairros de 2010 disponibilizada pelo geobr/IBGE. A vinculacao com as planilhas e feita por nome normalizado do bairro; divergencias de grafia podem deixar alguns bairros sem correspondencia espacial."
+        "o mapa usa a malha de bairros de 2010 disponibilizada pelo geobr/IBGE. A vinculação com as planilhas é feita por nome normalizado do bairro; divergências de grafia podem deixar alguns bairros sem correspondência espacial."
       ),
       plotlyOutput("dengue_bairros_barra", height = "430px"),
       botao_download_grafico("dengue_download_bairros_barra")
@@ -631,7 +650,7 @@ server <- function(input, output, session) {
   session$onSessionEnded(function() {
     registrar_log(LOG_SESSAO, data.frame(
       evento = "fim_sessao",
-      detalhes = "Sessao encerrada"
+      detalhes = "Sessão encerrada"
     ))
   })
 }

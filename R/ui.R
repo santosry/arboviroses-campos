@@ -11,7 +11,6 @@ ui <- dashboardPage(skin = "black",
     width = 220,
     sidebarMenu(
       menuItem("INÍCIO", tabName = "inicio", icon = icon("home")),
-      menuItem("TUTORIAL", tabName = "tutorial", icon = icon("book-open")),
       menuItem("MÉTODOS", tabName = "metodos", icon = icon("flask")),
       menuItem("EQUIPE", tabName = "equipe", icon = icon("users")),
       menuItem("CHIKUNGUNYA", tabName = "chik"),
@@ -245,8 +244,77 @@ ui <- dashboardPage(skin = "black",
           border-radius: 6px;
           margin-right: 14px;
           box-shadow: 0 2px 8px rgba(27,58,107,0.35);
+          flex-shrink: 0;
+        }
+        .mosquito-icon img {
+          width: 28px;
+          height: 28px;
         }
         .mosquito-emoji { font-size: 22px; line-height: 1; }
+        
+        /* ===== COLLAPSIBLE TUTORIAL ===== */
+        .tutorial-collapsible {
+          background: #EBF5FB;
+          border: 2px solid #1B3A6B;
+          border-radius: 8px;
+          padding: 20px 24px;
+          margin-bottom: 18px;
+          box-shadow: 0 3px 12px rgba(27,58,107,0.12);
+        }
+        .tutorial-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 12px;
+        }
+        .tutorial-header h3 {
+          margin: 0;
+          color: #1A2535;
+          font-family: 'Source Serif 4', Georgia, serif;
+          font-size: 22px;
+        }
+        .tutorial-close-btn {
+          background: #1B3A6B;
+          color: #ffffff;
+          border: none;
+          border-radius: 4px;
+          padding: 6px 14px;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          box-shadow: 0 1px 4px rgba(27,58,107,0.25);
+          transition: background 0.15s ease;
+        }
+        .tutorial-close-btn:hover {
+          background: #122856;
+        }
+        .tutorial-content {
+          color: #334155;
+          font-size: 14px;
+          line-height: 1.55;
+        }
+        .tutorial-content h4 {
+          color: #1A2535;
+          font-family: 'Source Serif 4', Georgia, serif;
+          margin-top: 14px;
+          margin-bottom: 6px;
+        }
+        .tutorial-content ol, .tutorial-content ul {
+          padding-left: 20px;
+          margin: 6px 0;
+        }
+        .tutorial-content li {
+          margin-bottom: 4px;
+        }
+        .tutorial-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px;
+          margin-top: 14px;
+        }
+        @media (max-width: 900px) {
+          .tutorial-grid { grid-template-columns: 1fr; }
+        }
         
         /* ===== METRIC CARDS ===== */
         .custom-card {
@@ -435,7 +503,7 @@ ui <- dashboardPage(skin = "black",
         }
         .quality-grid {
           display: grid;
-          grid-template-columns: repeat(5, minmax(0, 1fr));
+          grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 10px;
           margin-top: 10px;
         }
@@ -651,8 +719,77 @@ ui <- dashboardPage(skin = "black",
       tabItem(
         tabName = "inicio",
         div(class = "doenca-titulo",
-          div(class = "mosquito-icon", span(class = "mosquito-emoji", "A")),
+          div(class = "mosquito-icon", tags$img(src = "mosquito.svg", width = "28", height = "28", alt = "Mosquito")),
           span("Painel de Inteligência Epidemiológica para Chikungunya, Dengue e Zika em Campos dos Goytacazes (2020-2025)")
+        ),
+        # TUTORIAL COLLAPSIBLE - Integrated into Início tab
+        div(class = "tutorial-collapsible", id = "tutorial-box",
+          div(class = "tutorial-header",
+            h3("\U0001F4D6 Tutorial e Interpretação"),
+            tags$button(
+              class = "tutorial-close-btn",
+              onclick = "document.getElementById('tutorial-box').style.display='none';",
+              "\u2715 Fechar"
+            )
+          ),
+          div(class = "tutorial-content",
+            p("Este painel foi criado para apoiar a leitura epidemiológica das arboviroses em Campos dos Goytacazes. Ele reúne indicadores descritivos de Chikungunya, Dengue e Zika, permitindo observar a magnitude dos registros, o perfil dos casos, a completude das notificações e a distribuição espacial da dengue por bairro."),
+            tags$ol(
+              tags$li("Escolha a doença no menu lateral: Chikungunya, Dengue ou Zika."),
+              tags$li("Use o filtro de período para analisar todos os anos juntos ou focar em um ano específico."),
+              tags$li("Comece pelos cartões-resumo para entender rapidamente curas, óbitos, casos confirmados, descartados, inconclusivos e campos ignorados/brancos."),
+              tags$li("Compare os gráficos de série temporal, sexo, faixa etária, gestação, raça/cor e escolaridade para reconhecer padrões e diferenças entre os grupos."),
+              tags$li("Na aba de Dengue, explore também o mapa por bairros e o ranking dos bairros com maior número de registros."),
+              tags$li("Use os botões abaixo de cada gráfico para baixar figuras em alta resolução e use o painel de downloads para exportar tabelas e plots em formatos de relatório.")
+            ),
+            div(class = "tutorial-grid",
+              div(
+                h4("Como interpretar os gráficos"),
+                p("A série temporal mostra como os casos confirmados variam ao longo dos anos e ajuda a identificar picos, quedas e possíveis períodos de maior transmissão. Os gráficos por sexo e faixa etária ajudam a observar quais grupos aparecem com maior frequência nos registros."),
+                p("Os recortes por raça/cor, escolaridade e situação gestacional devem ser lidos com cuidado: eles podem sugerir desigualdades, padrões de exposição, acesso ao serviço de saúde e diferenças de preenchimento, mas não provam causalidade isoladamente."),
+                p("Campos ignorados/brancos são indicadores importantes de qualidade da informação. Quando aparecem em grande volume, eles reduzem a confiança de interpretações sobre o perfil social ou biológico dos casos.")
+              ),
+              div(
+                h4("Para que o site serve"),
+                p("O aplicativo serve como ferramenta de apoio para ensino, pesquisa, vigilância epidemiológica e comunicação científica. Ele organiza dados brutos e agregados em visualizações que facilitam a comparação entre doenças, anos e perfis populacionais."),
+                p("Na prática, o painel pode ajudar a construir relatórios, selecionar figuras para apresentações, levantar hipóteses de investigação, discutir qualidade de preenchimento das fichas e orientar perguntas para análises futuras mais profundas.")
+              ),
+              div(
+                h4("Exemplos de inferência epidemiológica"),
+                tags$ul(
+                  tags$li("Aumento em crianças e adolescentes pode sugerir mudanças de exposição domiciliar, escolar ou comunitária."),
+                  tags$li("Diferenças por sexo podem refletir exposição, comportamento de busca por cuidado ou vigilância em gestantes."),
+                  tags$li("Maior proporção de idosos pode levantar hipóteses sobre gravidade e risco de evolução desfavorável."),
+                  tags$li("Sub-registro de escolaridade ou raça/cor limita inferências sociais e deve ser relatado.")
+                )
+              ),
+              div(
+                h4("Boas práticas de uso"),
+                tags$ul(
+                  tags$li("Compare categorias sempre considerando o período selecionado no filtro."),
+                  tags$li("Evite concluir que um grupo tem maior risco apenas porque aparece mais no gráfico; diferenças de população, acesso e registro também influenciam."),
+                  tags$li("Ao usar uma figura em relatório, cite o período, a doença, a fonte SINAN/SVS e o recorte analisado."),
+                  tags$li("Quando houver muitos registros ignorados/brancos, destaque essa limitação junto da interpretação.")
+                )
+              )
+            ),
+            h4("Metodologia"),
+            tags$ul(
+              tags$li("Chikungunya: dados provenientes do SINAN, organizados em tabela agregada para o período analisado."),
+              tags$li("Dengue e Zika: dados baixados e processados com o pacote microdatasus, filtrados para Campos dos Goytacazes e agregados por ano e variáveis epidemiológicas."),
+              tags$li("Mapa de dengue: utiliza planilha fornecida pela Subsecretaria de Vigilância Epidemiológica de Campos e malha de bairros do geobr/IBGE."),
+              tags$li("População: estimativas municipais consultadas via pacote sidrar na tabela 6579 do IBGE/SIDRA, variável 9324, com cache local e registro de auditoria."),
+              tags$li("Indicadores: casos absolutos, incidência por 100 mil habitantes e percentuais de campos ignorados, brancos ou ausentes.")
+            ),
+            h4("Limitações metodológicas"),
+            tags$ul(
+              tags$li("Os dados representam notificações registradas, não necessariamente todos os casos reais ocorridos no município."),
+              tags$li("Subnotificação, atraso de digitação, mudanças de definição de caso e diferenças de acesso aos serviços podem alterar a leitura temporal e territorial."),
+              tags$li("Campos ignorados, brancos ou ausentes reduzem a precisão das análises por sexo, idade, raça/cor, escolaridade e gestação."),
+              tags$li("Associações observadas nos gráficos são descritivas e não estabelecem causalidade."),
+              tags$li("A incidência por 100 mil usa população estimada; por isso deve ser lida como padronização aproximada para comparação entre anos.")
+            )
+          )
         ),
         div(class = "home-hero",
           h3("Painel de Inteligência Epidemiológica para Arboviroses em Campos dos Goytacazes"),
@@ -678,13 +815,13 @@ ui <- dashboardPage(skin = "black",
             column(4,
               selectInput(
                 "home_comparador_variavel",
-                "Variavel",
+                "Variável",
                 choices = c(
                   "Ano" = "ano",
                   "Sexo" = "sexo",
-                  "Faixa etaria" = "faixa",
-                  "Raca/cor" = "raca",
-                  "Gestacao" = "gestacao"
+                  "Faixa etária" = "faixa",
+                  "Raça/cor" = "raca",
+                  "Gestação" = "gestacao"
                 ),
                 selected = "ano"
               )
@@ -707,9 +844,7 @@ ui <- dashboardPage(skin = "black",
             )
           ),
           plotlyOutput("home_qualidade_plot", height = "400px"),
-          div(class = "quality-grid",
-            uiOutput("home_alertas_qualidade")
-          )
+          uiOutput("home_alertas_qualidade")
         ),
         div(class = "landing-section",
           h3("Projeto"),
@@ -762,7 +897,7 @@ ui <- dashboardPage(skin = "black",
       tabItem(
         tabName = "chik",
         div(class = "doenca-titulo",
-          div(class = "mosquito-icon", span(class = "mosquito-emoji", "🦟")),
+          div(class = "mosquito-icon", tags$img(src = "mosquito.svg", width = "28", height = "28", alt = "Mosquito")),
           span("CHIKUNGUNYA")
         ),
         fluidRow(
@@ -790,8 +925,8 @@ ui <- dashboardPage(skin = "black",
         nota_metodologica_doenca(
           "Chikungunya",
           "SINAN/SVS em tabela agregada do projeto.",
-          "Casos classificados como confirmados na base agregada disponivel no painel.",
-          "Dados anuais agregados; nao ha granularidade mensal/semanal nesta aba. Notificacoes podem sofrer subregistro, atraso de digitacao e incompletude de campos."
+          "Casos classificados como confirmados na base agregada disponível no painel.",
+          "Dados anuais agregados; não há granularidade mensal/semanal nesta aba. Notificações podem sofrer sub-registro, atraso de digitação e incompletude de campos."
         ),
         dashboard_qualidade_dados("chik_qualidade"),
         div(class = "graph-box",
@@ -847,7 +982,7 @@ ui <- dashboardPage(skin = "black",
       tabItem(
         tabName = "dengue",
         div(class = "doenca-titulo",
-          div(class = "mosquito-icon", span(class = "mosquito-emoji", "🦟")),
+          div(class = "mosquito-icon", tags$img(src = "mosquito.svg", width = "28", height = "28", alt = "Mosquito")),
           span("DENGUE")
         ),
         fluidRow(
@@ -871,9 +1006,9 @@ ui <- dashboardPage(skin = "black",
         ),
         nota_metodologica_doenca(
           "Dengue",
-          "SINAN-DENGUE/SVS baixado pelo pacote microdatasus; populacao IBGE/SIDRA para incidencia.",
-          "Classificacao final compativel com dengue ou febre hemorragica, excluindo descartados e registros classificados como chikungunya.",
-          "Dados notificados nao equivalem a todos os casos ocorridos; ha risco de subnotificacao, atraso de encerramento, mudancas de criterio e divergencias de nomes de bairros."
+          "SINAN-DENGUE/SVS baixado pelo pacote microdatasus; população IBGE/SIDRA para incidência.",
+          "Classificação final compatível com dengue ou febre hemorrágica, excluindo descartados e registros classificados como chikungunya.",
+          "Dados notificados não equivalem a todos os casos ocorridos; há risco de subnotificação, atraso de encerramento, mudanças de critério e divergências de nomes de bairros."
         ),
         dashboard_qualidade_dados("dengue_qualidade"),
         div(class = "graph-box",
@@ -935,7 +1070,7 @@ ui <- dashboardPage(skin = "black",
       tabItem(
         tabName = "zika",
         div(class = "doenca-titulo",
-          div(class = "mosquito-icon", span(class = "mosquito-emoji", "🦟")),
+          div(class = "mosquito-icon", tags$img(src = "mosquito.svg", width = "28", height = "28", alt = "Mosquito")),
           span("ZIKA")
         ),
         fluidRow(
@@ -962,9 +1097,9 @@ ui <- dashboardPage(skin = "black",
         ),
         nota_metodologica_doenca(
           "Zika",
-          "SINAN-ZIKA/SVS baixado pelo pacote microdatasus; populacao IBGE/SIDRA para incidencia.",
-          "Classificacao final compativel com confirmacao de Zika apos processamento do SINAN-ZIKA, excluindo descartados e inconclusivos.",
-          "Zika e sensivel a subregistro, investigacao em gestantes, mudancas de vigilancia e baixa confirmacao laboratorial; interpretar perfis sociais junto da incompletude dos campos."
+          "SINAN-ZIKA/SVS baixado pelo pacote microdatasus; população IBGE/SIDRA para incidência.",
+          "Classificação final compatível com confirmação de Zika após processamento do SINAN-ZIKA, excluindo descartados e inconclusivos.",
+          "Zika é sensível a sub-registro, investigação em gestantes, mudanças de vigilância e baixa confirmação laboratorial; interpretar perfis sociais junto da incompletude dos campos."
         ),
         dashboard_qualidade_dados("zika_qualidade"),
         div(class = "graph-box",
@@ -999,7 +1134,7 @@ ui <- dashboardPage(skin = "black",
                div(class = "graph-title", "Situação Gestacional"),
                plotlyOutput("zika_gestacao", height = "320px"),
                botao_download_grafico("zika_download_gestacao")
-              ,div(class="fig-caption","Figura 4. Casos de Zika vírus segundo situação gestacional. Destaque para o volume de idade gestacional não informada em 2022 (n = 26), sugerindo possível sub-registro do trimestre. Período: 2021-2025. Fonte: SINAN/SVS.")
+              ,div(class="fig-caption","Figura 4. Casos de Zika vírus segundo situação gestacional. Destaque para o volume de idade gestacional não informada em 2022 (n = 26), sugerindo possível sub-registro do trimestre. Período: 2021-2025. Fonte: SINAN/SVS.")
           ),
           column(4, class = "graph-box",
             div(class = "graph-title", "Distribuição por Faixa Etária"),
@@ -1014,84 +1149,11 @@ ui <- dashboardPage(skin = "black",
               ,div(class="fig-caption","Figura 6. Casos de Zika vírus por nível de escolaridade. O ensino médio completo e o grupo ignorado/branco predominam; interpretações sobre vulnerabilidade socioeconômica devem considerar o elevado sub-registro. Período: 2021-2025. Fonte: SINAN/SVS.")
           )
         )
-      )
-      ,
-      tabItem(
-        tabName = "tutorial",
-        div(class = "doenca-titulo",
-          div(class = "mosquito-icon", span(class = "mosquito-emoji", "?")),
-          span("TUTORIAL E INTERPRETAÇÃO")
-        ),
-        div(class = "landing-section",
-          h3("Como utilizar o app"),
-          p("Este painel foi criado para apoiar a leitura epidemiológica das arboviroses em Campos dos Goytacazes. Ele reúne indicadores descritivos de Chikungunya, Dengue e Zika, permitindo observar a magnitude dos registros, o perfil dos casos, a completude das notificações e a distribuição espacial da dengue por bairro."),
-          tags$ol(
-            tags$li("Escolha a doença no menu lateral: Chikungunya, Dengue ou Zika."),
-            tags$li("Use o filtro de período para analisar todos os anos juntos ou focar em um ano específico."),
-            tags$li("Comece pelos cartões-resumo para entender rapidamente curas, óbitos, casos confirmados, descartados, inconclusivos e campos ignorados/brancos."),
-            tags$li("Compare os gráficos de série temporal, sexo, faixa etária, gestação, raça/cor e escolaridade para reconhecer padrões e diferenças entre os grupos."),
-            tags$li("Na aba de Dengue, explore também o mapa por bairros e o ranking dos bairros com maior número de registros."),
-            tags$li("Use os botões abaixo de cada gráfico para baixar figuras em alta resolução e use o painel de downloads para exportar tabelas e plots em formatos de relatório.")
-          )
-        ),
-        fluidRow(
-          column(6, div(class = "landing-section",
-            h4("Como interpretar os gráficos"),
-            p("A série temporal mostra como os casos confirmados variam ao longo dos anos e ajuda a identificar picos, quedas e possíveis períodos de maior transmissão. Os gráficos por sexo e faixa etária ajudam a observar quais grupos aparecem com maior frequência nos registros."),
-            p("Os recortes por raça/cor, escolaridade e situação gestacional devem ser lidos com cuidado: eles podem sugerir desigualdades, padrões de exposição, acesso ao serviço de saúde e diferenças de preenchimento, mas não provam causalidade isoladamente."),
-            p("Campos ignorados/brancos são indicadores importantes de qualidade da informação. Quando aparecem em grande volume, eles reduzem a confiança de interpretações sobre o perfil social ou biológico dos casos.")
-          )),
-          column(6, div(class = "landing-section",
-            h4("Para que o site serve"),
-            p("O aplicativo serve como ferramenta de apoio para ensino, pesquisa, vigilância epidemiológica e comunicação científica. Ele organiza dados brutos e agregados em visualizações que facilitam a comparação entre doenças, anos e perfis populacionais."),
-            p("Na prática, o painel pode ajudar a construir relatórios, selecionar figuras para apresentações, levantar hipóteses de investigação, discutir qualidade de preenchimento das fichas e orientar perguntas para análises futuras mais profundas.")
-          ))
-        ),
-        fluidRow(
-          column(6, div(class = "landing-section",
-            h4("Exemplos de inferência epidemiológica"),
-            tags$ul(
-              tags$li("Aumento em crianças e adolescentes pode sugerir mudanças de exposição domiciliar, escolar ou comunitária."),
-              tags$li("Diferenças por sexo podem refletir exposição, comportamento de busca por cuidado ou vigilância em gestantes."),
-              tags$li("Maior proporção de idosos pode levantar hipóteses sobre gravidade e risco de evolução desfavorável."),
-              tags$li("Sub-registro de escolaridade ou raça/cor limita inferências sociais e deve ser relatado.")
-            )
-          )),
-          column(6, div(class = "landing-section",
-            h4("Boas práticas de uso"),
-            tags$ul(
-              tags$li("Compare categorias sempre considerando o período selecionado no filtro."),
-              tags$li("Evite concluir que um grupo tem maior risco apenas porque aparece mais no gráfico; diferenças de população, acesso e registro também influenciam."),
-              tags$li("Ao usar uma figura em relatório, cite o período, a doença, a fonte SINAN/SVS e o recorte analisado."),
-              tags$li("Quando houver muitos registros ignorados/brancos, destaque essa limitação junto da interpretação.")
-            )
-          ))
-        ),
-        div(class = "landing-section",
-          h4("Metodologia"),
-          tags$ul(
-            tags$li("Chikungunya: dados provenientes do SINAN, organizados em tabela agregada para o periodo analisado."),
-            tags$li("Dengue e Zika: dados baixados e processados com o pacote microdatasus, filtrados para Campos dos Goytacazes e agregados por ano e variáveis epidemiológicas."),
-            tags$li("Mapa de dengue: utiliza planilha fornecida pela Subsecretaria de Vigilância Epidemiológica de Campos e malha de bairros do geobr/IBGE."),
-            tags$li("População: estimativas municipais consultadas via pacote sidrar na tabela 6579 do IBGE/SIDRA, variável 9324, com cache local e registro de auditoria."),
-            tags$li("Indicadores: casos absolutos, incidência por 100 mil habitantes e percentuais de campos ignorados, brancos ou ausentes.")
-          )
-        ),
-        div(class = "landing-section",
-          h4("Limitações metodológicas"),
-          tags$ul(
-            tags$li("Os dados representam notificações registradas, não necessariamente todos os casos reais ocorridos no município."),
-            tags$li("Subnotificação, atraso de digitação, mudanças de definição de caso e diferenças de acesso aos serviços podem alterar a leitura temporal e territorial."),
-            tags$li("Campos ignorados, brancos ou ausentes reduzem a precisão das análises por sexo, idade, raça/cor, escolaridade e gestação."),
-            tags$li("Associações observadas nos gráficos são descritivas e não estabelecem causalidade."),
-            tags$li("A incidência por 100 mil usa população estimada; por isso deve ser lida como padronização aproximada para comparação entre anos.")
-          )
-        )
       ),
       tabItem(
         tabName = "metodos",
         div(class = "doenca-titulo",
-          div(class = "mosquito-icon", span(class = "mosquito-emoji", "i")),
+          div(class = "mosquito-icon", tags$img(src = "mosquito.svg", width = "28", height = "28", alt = "Mosquito")),
           span("MÉTODOS")
         ),
         div(class = "landing-section",
@@ -1163,7 +1225,7 @@ ui <- dashboardPage(skin = "black",
       tabItem(
         tabName = "equipe",
         div(class = "doenca-titulo",
-          div(class = "mosquito-icon", span(class = "mosquito-emoji", "i")),
+          div(class = "mosquito-icon", tags$img(src = "mosquito.svg", width = "28", height = "28", alt = "Mosquito")),
           span("EQUIPE E DESENVOLVEDORES")
         ),
         div(class = "landing-section",
@@ -1211,4 +1273,3 @@ ui <- dashboardPage(skin = "black",
     )
   )
 )
-

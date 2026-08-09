@@ -6,11 +6,11 @@
 # Funcao local de leitura segura (redundante com utils.R para robustez no deploy)
 ler_rds_seguro_local <- function(path, nome = basename(path), quiet = FALSE) {
   if (!file.exists(path)) {
-    if (!quiet) warning("Arquivo ", nome, " nao encontrado em ", path)
+    if (!quiet) warning("Arquivo ", nome, " não encontrado em ", path)
     return(NULL)
   }
   if (file.info(path)$size == 0) {
-    if (!quiet) warning("Arquivo ", nome, " esta vazio (0 bytes)")
+    if (!quiet) warning("Arquivo ", nome, " está vazio (0 bytes)")
     return(NULL)
   }
   obj <- tryCatch(readRDS(path), error = function(e) {
@@ -30,7 +30,7 @@ carregar_chikungunya_microdatasus <- function(
   cache <- ler_rds_seguro_local(cache_path, "SINAN-CHIKUNGUNYA")
   if (is.null(cache) || nrow(cache) == 0) {
     stop(
-      "Dados de chikungunya nao encontrados. ",
+      "Dados de chikungunya não encontrados. ",
       "Execute o pipeline com ARBOVIROSES_DOWNLOAD=true:\n",
       "  Sys.setenv(ARBOVIROSES_DOWNLOAD = 'true')\n",
       "  source('scripts/update_data.R')",
@@ -55,7 +55,7 @@ carregar_dengue_microdatasus <- function(
   cache <- ler_rds_seguro_local(cache_path, "SINAN-DENGUE")
   if (is.null(cache) || nrow(cache) == 0) {
     stop(
-      "Dados de dengue nao encontrados. ",
+      "Dados de dengue não encontrados. ",
       "Execute o pipeline com ARBOVIROSES_DOWNLOAD=true:\n",
       "  Sys.setenv(ARBOVIROSES_DOWNLOAD = 'true')\n",
       "  source('scripts/update_data.R')",
@@ -80,7 +80,7 @@ carregar_zika_microdatasus <- function(
   cache <- ler_rds_seguro_local(cache_path, "SINAN-ZIKA")
   if (is.null(cache) || nrow(cache) == 0) {
     stop(
-      "Dados de zika nao encontrados. ",
+      "Dados de zika não encontrados. ",
       "Execute o pipeline com ARBOVIROSES_DOWNLOAD=true:\n",
       "  Sys.setenv(ARBOVIROSES_DOWNLOAD = 'true')\n",
       "  source('scripts/update_data.R')",
@@ -104,7 +104,7 @@ carregar_populacao_campos_sidra <- function(
 ) {
   pop <- ler_rds_seguro_local(cache_path, "populacao")
   if (is.null(pop) || nrow(pop) == 0 || !"Populacao" %in% names(pop)) {
-    warning("Cache de populacao indisponivel; incidencia por 100 mil ficara indisponivel.")
+    warning("Cache de população indisponível; incidência por 100 mil ficará indisponível.")
     return(data.frame(
       Ano = 2020:2025,
       Populacao = NA_real_,
@@ -118,7 +118,7 @@ carregar_populacao_campos_sidra <- function(
 populacao_campos <- tryCatch(
   carregar_populacao_campos_sidra(),
   error = function(e) {
-    warning("Falha ao carregar populacao: ", conditionMessage(e))
+    warning("Falha ao carregar população: ", conditionMessage(e))
     data.frame(Ano = 2020:2025, Populacao = NA_real_, Fonte_populacao = "indisponivel", stringsAsFactors = FALSE)
   }
 )
@@ -158,7 +158,7 @@ carregar_bairros_dengue_local <- function(
       transmute(Ano = ano, NM_BAIRRO = normalizar_bairro(NM_BAIRRO)) %>%
       filter(
         NM_BAIRRO != "",
-        !grepl("ignorado|sem informa|nao informado|não informado", NM_BAIRRO, ignore.case = TRUE)
+        !grepl("ignorado|sem informa|não informado", NM_BAIRRO, ignore.case = TRUE)
       ) %>%
       count(Ano, NM_BAIRRO, name = "Casos")
   })
