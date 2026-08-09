@@ -537,8 +537,6 @@ server <- function(input, output, session) {
     
     paleta <- colorRampPalette(c("#facc15", "#f97316", "#ef4444", "#b91c1c", "#7f1d1d"))(nrow(df))
     max_casos <- max(df$Casos, na.rm = TRUE)
-    # Calcula label: dentro da barra se valor < 30% do maximo, fora se >= 30%
-    df$label_pos <- ifelse(df$Casos < max_casos * 0.30, "outside", "inside")
     plot_ly(df) %>%
       add_bars(
         x = ~Casos,
@@ -546,10 +544,9 @@ server <- function(input, output, session) {
         orientation = "h",
         marker = list(color = paleta),
         text = ~format_number(Casos),
-        textposition = ~label_pos,
-        insidetextanchor = "end",
+        textposition = "auto",
+        textfont = list(size = 12, color = "#1e293b"),
         insidetextfont = list(size = 12, color = "white"),
-        outsidetextfont = list(size = 11, color = "#1e293b"),
         cliponaxis = FALSE,
         hovertemplate = "<b>%{y}</b><br>Casos: %{x}<extra></extra>"
       ) %>%
@@ -558,10 +555,11 @@ server <- function(input, output, session) {
           text = "Distribuição dos registros de dengue por bairro — 25 bairros com maior volume de notificações, Campos dos Goytacazes",
           font = list(size = 14)
         ),
-        xaxis = list(title = "Número de notificações", range = c(0, max_casos * 1.28)),
-        yaxis = list(title = "", automargin = TRUE),
+        xaxis = list(title = "Número de notificações", range = c(0, max_casos * 1.35)),
+        yaxis = list(title = "", automargin = TRUE, tickfont = list(size = 11)),
         showlegend = FALSE,
-        margin = list(l = 175, r = 95, t = 65, b = 45)
+        margin = list(l = 175, r = 100, t = 65, b = 45),
+        bargap = 0.15
       )
   })
   
