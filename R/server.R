@@ -9,6 +9,11 @@ QUALIDADE_THRESHOLD_ATENCAO  <- 30   # % ignorado/branco acima disso = atencao
 
 server <- function(input, output, session) {
   
+  # Tutorial: fecha com shinyjs e persiste na sessão
+  observeEvent(input$fechar_tutorial, {
+    shinyjs::hide("tutorial-box", anim = TRUE, animType = "fade", time = 0.3)
+  })
+  
   observeEvent(input$sidebarItemExpanded, {
     registrar_log(LOG_ACESSOS, data.frame(
       pagina = input$sidebarItemExpanded,
@@ -124,17 +129,8 @@ server <- function(input, output, session) {
 
   output$home_comparador_plot <- renderPlotly({
     tab <- tabela_comparador_home()
-    tab$Casos_plot <- tab$Casos + 1  # evita log(0)
-    plot_ly(tab, x = ~Categoria, y = ~Casos_plot, color = ~Agravo, type = "bar") %>%
-      layout(
-        barmode = "group",
-        xaxis = list(title = ""),
-        yaxis = list(
-          title = "Casos confirmados (escala log)",
-          type = "log",
-          tickformat = ",d"
-        )
-      )
+    plot_ly(tab, x = ~Categoria, y = ~Casos, color = ~Agravo, type = "bar") %>%
+      layout(barmode = "group", xaxis = list(title = ""), yaxis = list(title = "Casos confirmados"))
   })
 
   output$home_comparador_tabela <- renderDT({
@@ -188,7 +184,7 @@ server <- function(input, output, session) {
             "function(data, type, row) {
               if (data === null || isNaN(data)) return 'N/D';
               var val = parseFloat(data);
-              var color = val > 60 ? '#DC2626' : val > 40 ? '#D97706' : val > 30 ? '#2563EB' : '#16A34A';
+              var color = val > 60 ? '#DC2626' : val > 30 ? '#D97706' : val > 10 ? '#2563EB' : '#16A34A';
               return '<span style=\"font-weight:700;color:' + color + '\">' + val.toFixed(1) + '%</span>';
             }"
           ))
@@ -199,7 +195,7 @@ server <- function(input, output, session) {
       formatStyle(
         5,
         backgroundColor = styleInterval(
-          c(30, 40, 60),
+          c(10, 30, 60),
           c('#F0FFF0', '#FFF7ED', '#FEF3C7', '#FEE2E2')
         )
       )
@@ -665,7 +661,25 @@ server <- function(input, output, session) {
   output$zika_gestacao <- renderPlotly({ criar_grafico_gestacao(zika_filtrado()) })
   output$zika_escolaridade <- renderPlotly({ criar_grafico_escolaridade(zika_filtrado()) })
   
-  
+  # ---- Títulos dinâmicos com ano ativo (#9) ----
+  output$chik_titulo_ano <- renderUI({
+    ano <- ano_selecionado("chik_ano")
+    if (ano != "Todos") {
+      tags$span(class = "titulo-ano-badge", paste0("(", ano, ")"))
+    }
+  })
+  output$dengue_titulo_ano <- renderUI({
+    ano <- ano_selecionado("dengue_ano")
+    if (ano != "Todos") {
+      tags$span(class = "titulo-ano-badge", paste0("(", ano, ")"))
+    }
+  })
+  output$zika_titulo_ano <- renderUI({
+    ano <- ano_selecionado("zika_ano")
+    if (ano != "Todos") {
+      tags$span(class = "titulo-ano-badge", paste0("(", ano, ")"))
+    }
+  })
   
   # ---- Badge de periodo ativo ----
   render_periodo <- function(df_full, input_id) {

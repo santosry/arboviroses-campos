@@ -28,7 +28,7 @@ ui <- dashboardPage(skin = "black",
     hr(),
     tags$div(class = "sidebar-fonte",
       tags$strong("Fonte de Dados"),
-      "SINAN/SVS : 2020-2025"
+      "SINAN/SVS: 2020-2025"
     )
   ),
   
@@ -284,9 +284,13 @@ ui <- dashboardPage(skin = "black",
           cursor: pointer;
           box-shadow: 0 1px 4px rgba(27,58,107,0.25);
           transition: background 0.15s ease;
+          text-decoration: none !important;
+          display: inline-block;
         }
         .tutorial-close-btn:hover {
           background: #122856;
+          color: #ffffff !important;
+          text-decoration: none !important;
         }
         .tutorial-content {
           color: #334155;
@@ -712,9 +716,22 @@ ui <- dashboardPage(skin = "black",
           white-space: nowrap;
           margin-bottom: 14px;
         }
+        /* ===== ANO ATIVO NO TITULO ===== */
+        .titulo-ano-badge {
+          font-family: 'Source Sans 3', 'Helvetica Neue', Arial, sans-serif;
+          font-size: 22px;
+          font-weight: 600;
+          color: #1B3A6B;
+          margin-left: 10px;
+          background: #EBF0F8;
+          padding: 2px 12px;
+          border-radius: 6px;
+          vertical-align: middle;
+        }
       "))
     ),
-    tags$div(class = "fixed-app-title", "Painel de Inteligência Epidemiológica - Campos dos Goytacazes"),
+    shinyjs::useShinyjs(),
+    tags$div(class = "fixed-app-title", "Painel Arboviroses — Campos/RJ"),
     tabItems(
       tabItem(
         tabName = "inicio",
@@ -726,17 +743,13 @@ ui <- dashboardPage(skin = "black",
         div(class = "tutorial-collapsible", id = "tutorial-box",
           div(class = "tutorial-header",
             h3("\U0001F4D6 Tutorial e Interpretação"),
-            tags$button(
-              class = "tutorial-close-btn",
-              onclick = "document.getElementById('tutorial-box').style.display='none';",
-              "\u2715 Fechar"
-            )
+            actionLink("fechar_tutorial", label = "\u2715 Fechar", class = "tutorial-close-btn")
           ),
           div(class = "tutorial-content",
-            p("Este painel foi criado para apoiar a leitura epidemiológica das arboviroses em Campos dos Goytacazes. Ele reúne indicadores descritivos de Chikungunya, Dengue e Zika, permitindo observar a magnitude dos registros, o perfil dos casos, a completude das notificações e a distribuição espacial da dengue por bairro."),
+            p("Este painel foi criado para apoiar a leitura epidemiológica das arboviroses em Campos dos Goytacazes. Ele reúne indicadores descritivos de Chikungunya, Dengue e Zika, permitindo observar a magnitude dos registros, o perfil dos casos, a completude das notificações e a distribuição espacial da dengue por bairro. Para detalhes sobre fontes, métodos e limitações, consulte a aba Métodos."),
             tags$ol(
               tags$li("Escolha a doença no menu lateral: Chikungunya, Dengue ou Zika."),
-              tags$li("Use o filtro de período para analisar todos os anos juntos ou focar em um ano específico."),
+              tags$li("Use o filtro de período no menu lateral para focar em um ano ou ver todos os dados."),
               tags$li("Comece pelos cartões-resumo para entender rapidamente curas, óbitos, casos confirmados, descartados, inconclusivos e campos ignorados/brancos."),
               tags$li("Compare os gráficos de série temporal, sexo, faixa etária, gestação, raça/cor e escolaridade para reconhecer padrões e diferenças entre os grupos."),
               tags$li("Na aba de Dengue, explore também o mapa por bairros e o ranking dos bairros com maior número de registros."),
@@ -772,22 +785,6 @@ ui <- dashboardPage(skin = "black",
                   tags$li("Quando houver muitos registros ignorados/brancos, destaque essa limitação junto da interpretação.")
                 )
               )
-            ),
-            h4("Metodologia"),
-            tags$ul(
-              tags$li("Chikungunya: dados provenientes do SINAN, organizados em tabela agregada para o período analisado."),
-              tags$li("Dengue e Zika: dados baixados e processados com o pacote microdatasus, filtrados para Campos dos Goytacazes e agregados por ano e variáveis epidemiológicas."),
-              tags$li("Mapa de dengue: utiliza planilha fornecida pela Subsecretaria de Vigilância Epidemiológica de Campos e malha de bairros do geobr/IBGE."),
-              tags$li("População: estimativas municipais consultadas via pacote sidrar na tabela 6579 do IBGE/SIDRA, variável 9324, com cache local e registro de auditoria."),
-              tags$li("Indicadores: casos absolutos, incidência por 100 mil habitantes e percentuais de campos ignorados, brancos ou ausentes.")
-            ),
-            h4("Limitações metodológicas"),
-            tags$ul(
-              tags$li("Os dados representam notificações registradas, não necessariamente todos os casos reais ocorridos no município."),
-              tags$li("Subnotificação, atraso de digitação, mudanças de definição de caso e diferenças de acesso aos serviços podem alterar a leitura temporal e territorial."),
-              tags$li("Campos ignorados, brancos ou ausentes reduzem a precisão das análises por sexo, idade, raça/cor, escolaridade e gestação."),
-              tags$li("Associações observadas nos gráficos são descritivas e não estabelecem causalidade."),
-              tags$li("A incidência por 100 mil usa população estimada; por isso deve ser lida como padronização aproximada para comparação entre anos.")
             )
           )
         ),
@@ -802,12 +799,14 @@ ui <- dashboardPage(skin = "black",
           )
         ),
         fluidRow(
-          column(2, uiOutput("home_card_total")),
-          column(2, uiOutput("home_card_incidencia")),
-          column(2, uiOutput("home_card_obitos")),
-          column(2, uiOutput("home_card_pico")),
-          column(2, uiOutput("home_card_predominante")),
-          column(2, uiOutput("home_card_atualizacao"))
+          column(4, uiOutput("home_card_total")),
+          column(4, uiOutput("home_card_incidencia")),
+          column(4, uiOutput("home_card_obitos"))
+        ),
+        fluidRow(
+          column(4, uiOutput("home_card_pico")),
+          column(4, uiOutput("home_card_predominante")),
+          column(4, uiOutput("home_card_atualizacao"))
         ),
         div(class = "landing-section",
           h4("Comparador entre agravos"),
@@ -898,7 +897,8 @@ ui <- dashboardPage(skin = "black",
         tabName = "chik",
         div(class = "doenca-titulo",
           div(class = "mosquito-icon", tags$img(src = "mosquito.svg", width = "28", height = "28", alt = "Mosquito")),
-          span("CHIKUNGUNYA")
+          span("CHIKUNGUNYA"),
+          uiOutput("chik_titulo_ano")
         ),
         fluidRow(
           column(3, selectInput("chik_ano", "PERÍODO", choices = c("Todos", sort(unique(dados$Chikungunya$Ano))), selected = "Todos")),
@@ -983,7 +983,8 @@ ui <- dashboardPage(skin = "black",
         tabName = "dengue",
         div(class = "doenca-titulo",
           div(class = "mosquito-icon", tags$img(src = "mosquito.svg", width = "28", height = "28", alt = "Mosquito")),
-          span("DENGUE")
+          span("DENGUE"),
+          uiOutput("dengue_titulo_ano")
         ),
         fluidRow(
           column(3, selectInput("dengue_ano", "PERÍODO", choices = c("Todos", sort(unique(dados$Dengue$Ano))), selected = "Todos")),
@@ -1071,7 +1072,8 @@ ui <- dashboardPage(skin = "black",
         tabName = "zika",
         div(class = "doenca-titulo",
           div(class = "mosquito-icon", tags$img(src = "mosquito.svg", width = "28", height = "28", alt = "Mosquito")),
-          span("ZIKA")
+          span("ZIKA"),
+          uiOutput("zika_titulo_ano")
         ),
         fluidRow(
           column(3, selectInput("zika_ano", "PERÍODO", choices = c("Todos", sort(unique(dados$Zika$Ano))), selected = "Todos")),

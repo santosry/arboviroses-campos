@@ -31,9 +31,8 @@ if (dir.exists("dados_sinan_campos/outputs")) {
 
 required_files <- c(
   "app.R",
-  list.files("R", pattern = "\\.R$", full.names = TRUE),
+  setdiff(list.files("R", pattern = "\\.R$", full.names = TRUE), "R/app_legacy_original.R"),
   list.files("www", full.names = TRUE),
-  list.files("www", pattern = "\\.svg$", full.names = TRUE),
   list.files("data/app_cache", full.names = TRUE)
 )
 required_files <- unique(required_files[file.exists(required_files)])
