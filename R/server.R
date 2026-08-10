@@ -313,9 +313,18 @@ server <- function(input, output, session) {
     if(nrow(df) == 0) return(df)
     ano <- ano_selecionado("dengue_ano")
     if(ano != "Todos") df <- df[df$Ano == as.numeric(ano), , drop = FALSE]
+    # Agrega por bairro_key (mesma logica da tabela de correspondencia)
     df %>%
-      group_by(NM_BAIRRO) %>%
+      mutate(bairro_key = normalizar_chave_bairro(NM_BAIRRO)) %>%
+      group_by(bairro_key, NM_BAIRRO) %>%
       summarise(Casos = sum(Casos, na.rm = TRUE), .groups = "drop") %>%
+      group_by(bairro_key) %>%
+      mutate(
+        Casos_total = sum(Casos),
+        NM_BAIRRO = first(NM_BAIRRO)  # usa o nome mais frequente
+      ) %>%
+      ungroup() %>%
+      distinct(bairro_key, NM_BAIRRO, Casos = Casos_total) %>%
       arrange(desc(Casos), NM_BAIRRO)
   })
 
