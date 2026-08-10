@@ -128,7 +128,7 @@ preparar_correspondencia_bairros <- function(df_bairros) {
       Status = ifelse(is.na(NM_BAIRRO_GEOBR), "Não mapeado", "Mapeado"),
       NM_BAIRRO_GEOBR = ifelse(is.na(NM_BAIRRO_GEOBR), "", NM_BAIRRO_GEOBR)
     ) %>%
-    arrange(Status, desc(Casos), NM_BAIRRO_PLANILHA)
+    arrange(Status, NM_BAIRRO_PLANILHA)
 }
 
 grafico_mapa_bairros_geobr <- function(mapa_sf, periodo_label) {

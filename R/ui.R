@@ -827,7 +827,7 @@ ui <- dashboardPage(skin = "black",
               )
             )
           ),
-          plotlyOutput("home_comparador_plot", height = "360px"),
+          plotOutput("home_comparador_plot", height = "400px"),
           DTOutput("home_comparador_tabela")
         ),
         div(class = "landing-section",

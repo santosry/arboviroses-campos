@@ -127,10 +127,53 @@ server <- function(input, output, session) {
     df %>% select(Agravo, all_of(cols)) %>% tidyr::pivot_longer(-Agravo, names_to = "Categoria", values_to = "Casos") %>% group_by(Agravo, Categoria) %>% summarise(Casos = sum(Casos, na.rm = TRUE), .groups = "drop")
   })
 
-  output$home_comparador_plot <- renderPlotly({
+  output$home_comparador_plot <- renderPlot({
     tab <- tabela_comparador_home()
-    plot_ly(tab, x = ~Categoria, y = ~Casos, color = ~Agravo, type = "bar") %>%
-      layout(barmode = "group", xaxis = list(title = ""), yaxis = list(title = "Casos confirmados"))
+    if (nrow(tab) == 0) {
+      return(ggplot() + annotate("text", x=1, y=1, label="Sem dados") + theme_void())
+    }
+    
+    cores <- c("Chikungunya" = "#2E86AB", "Dengue" = "#C73E1D", "Zika" = "#A23B72")
+    
+    # Ordena categorias por total de casos (decrescente)
+    ordem <- tab %>%
+      group_by(Categoria) %>%
+      summarise(total = sum(Casos, na.rm = TRUE), .groups = "drop") %>%
+      arrange(desc(total)) %>%
+      pull(Categoria)
+    tab$Categoria <- factor(tab$Categoria, levels = ordem)
+    
+    ggplot(tab, aes(x = Casos, y = Categoria, fill = Agravo)) +
+      geom_col(position = position_dodge(width = 0.8), width = 0.7, alpha = 0.92) +
+      geom_text(
+        aes(label = ifelse(Casos > 0, format_number(Casos), ""), group = Agravo),
+        position = position_dodge(width = 0.8),
+        hjust = -0.1, size = 2.8, color = "#334155"
+      ) +
+      scale_fill_manual(values = cores) +
+      scale_x_continuous(
+        expand = expansion(mult = c(0, 0.20)),
+        labels = format_number
+      ) +
+      labs(
+        title = "Comparação entre agravos por variável selecionada",
+        subtitle = "Número de casos confirmados — barras agrupadas por doença",
+        x = "Casos confirmados",
+        y = NULL,
+        fill = NULL
+      ) +
+      theme_minimal(base_size = 13) +
+      theme(
+        plot.title = element_text(face = "bold", size = 15, color = "#1A2535"),
+        plot.subtitle = element_text(size = 11, color = "#64748B", margin = margin(b = 8)),
+        axis.text.y = element_text(size = 12, color = "#1A2535", face = "bold"),
+        axis.text.x = element_text(size = 10, color = "#475569"),
+        legend.position = "top",
+        legend.text = element_text(size = 12),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.margin = margin(10, 60, 10, 10)
+      )
   })
 
   output$home_comparador_tabela <- renderDT({
