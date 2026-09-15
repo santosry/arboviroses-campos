@@ -756,8 +756,194 @@ server <- function(input, output, session) {
   output$chik_periodo   <- render_periodo(dados$Chikungunya, "chik_ano")
   output$dengue_periodo <- render_periodo(dados$Dengue, "dengue_ano")
   output$zika_periodo   <- render_periodo(dados$Zika, "zika_ano")
-  
-  
+
+  # ============================================================
+  # CLASSIFICACAO DE RISCO / GRAVIDADE (MS)
+  # ============================================================
+
+  vazio_para_char <- function(x) if (is.null(x)) character(0) else x
+
+  resumo_grupos_dengue <- function(df) {
+    cores <- c(A = COR_GRUPO_A, B = COR_GRUPO_B, C = COR_GRUPO_C, D = COR_GRUPO_D)
+    rotulos <- c(
+      A = "GRUPO A — sem sinais de alarme",
+      B = "GRUPO B — risco intermediário",
+      C = "GRUPO C — sinais de alarme",
+      D = "GRUPO D — dengue grave"
+    )
+    base <- data.frame(Grupo = c("A", "B", "C", "D"), stringsAsFactors = FALSE)
+    agg <- if (nrow(df) > 0 && "Grupo" %in% names(df)) {
+      df %>% group_by(Grupo) %>% summarise(Casos = sum(Casos, na.rm = TRUE), .groups = "drop")
+    } else {
+      data.frame(Grupo = character(), Casos = integer(), stringsAsFactors = FALSE)
+    }
+    base <- base %>%
+      left_join(agg, by = "Grupo") %>%
+      mutate(Casos = ifelse(is.na(Casos), 0L, as.integer(Casos)))
+    base$Cor <- unname(cores[base$Grupo])
+    base$Rotulo <- unname(rotulos[base$Grupo])
+    base
+  }
+
+  risco_dengue_filtrado <- reactive({
+    df <- dengue_risco
+    ano <- input$risco_dengue_ano
+    if (is.null(ano) || ano == "Todos") return(df)
+    df[df$Ano == as.numeric(ano), , drop = FALSE]
+  })
+
+  render_risco_card <- function(grupo) {
+    renderUI({
+      res <- resumo_grupos_dengue(risco_dengue_filtrado())
+      linha <- res[res$Grupo == grupo, , drop = FALSE]
+      if (nrow(linha) == 0) return(NULL)
+      div(class = "custom-card", style = paste0("border-top: 3px solid ", linha$Cor, " !important;"),
+        div(class = "card-value", style = paste0("color: ", linha$Cor, ";"), format_number(linha$Casos)),
+        div(class = "card-label", style = paste0("color: ", linha$Cor, ";"), linha$Rotulo)
+      )
+    })
+  }
+
+  output$risco_card_A <- render_risco_card("A")
+  output$risco_card_B <- render_risco_card("B")
+  output$risco_card_C <- render_risco_card("C")
+  output$risco_card_D <- render_risco_card("D")
+
+  output$risco_dengue_donut <- renderPlotly({
+    res <- resumo_grupos_dengue(risco_dengue_filtrado())
+    criar_donut(res$Casos, res$Rotulo, res$Cor, exibir_rotulo_detalhado = TRUE)
+  })
+
+  output$risco_dengue_serie <- renderPlotly({
+    df <- risco_dengue_filtrado()
+    if (nrow(df) == 0) {
+      return(plot_ly() %>% layout(
+        xaxis = list(visible = FALSE), yaxis = list(visible = FALSE),
+        annotations = list(list(text = "Sem dados de risco para o período selecionado.", x = 0.5, y = 0.5, xref = "paper", yref = "paper", showarrow = FALSE))
+      ))
+    }
+    df$Ano <- as.integer(df$Ano)
+    df$Grupo <- factor(df$Grupo, levels = c("A", "B", "C", "D"))
+    plot_ly(df, x = ~Ano, y = ~Casos, color = ~Grupo, type = "bar",
+      colors = c(COR_GRUPO_A, COR_GRUPO_B, COR_GRUPO_C, COR_GRUPO_D),
+      hovertemplate = "<b>%{x}</b><br>%{fullData.name}: %{y}<extra></extra>") %>%
+      layout(
+        barmode = "stack",
+        xaxis = list(title = "", tickvals = sort(unique(df$Ano))),
+        yaxis = list(title = "Casos"),
+        legend = list(orientation = "h", y = 1.15, x = 0.5, xanchor = "center"),
+        margin = list(l = 50, r = 20, t = 20, b = 50)
+      )
+  })
+
+  risco_dengue_bairros_filtrado <- reactive({
+    df <- dengue_risco_bairros
+    ano <- input$risco_dengue_ano
+    if (!is.null(ano) && ano != "Todos") df <- df[df$Ano == as.numeric(ano), , drop = FALSE]
+    df
+  })
+
+  output$risco_dengue_bairros_dt <- renderDT({
+    df <- risco_dengue_bairros_filtrado()
+    if (nrow(df) == 0) {
+      return(datatable(data.frame(Mensagem = "Sem dados de risco por bairro para o período selecionado."), rownames = FALSE, options = list(dom = "t")))
+    }
+    tab <- df %>%
+      group_by(NM_BAIRRO, Grupo) %>%
+      summarise(Casos = sum(Casos, na.rm = TRUE), .groups = "drop") %>%
+      tidyr::pivot_wider(names_from = Grupo, values_from = Casos, values_fill = list(Casos = 0L))
+    for (g in c("A", "B", "C", "D")) {
+      if (!g %in% names(tab)) tab[[g]] <- 0L
+    }
+    tab$Total <- tab$A + tab$B + tab$C + tab$D
+    tab$Graves_alarme <- tab$C + tab$D
+    tab <- tab %>%
+      select(NM_BAIRRO, A, B, C, D, Graves_alarme, Total) %>%
+      arrange(desc(Total), desc(Graves_alarme), NM_BAIRRO) %>%
+      rename(
+        Bairro = NM_BAIRRO,
+        "Grupo A" = A,
+        "Grupo B" = B,
+        "Grupo C" = C,
+        "Grupo D" = D,
+        "C+D (alarme/grave)" = Graves_alarme
+      )
+    datatable(tab, rownames = FALSE, filter = "top", options = list(pageLength = 15, scrollX = TRUE))
+  })
+
+  output$risco_dengue_bairros_download <- downloadHandler(
+    filename = function() paste0("dengue_risco_bairros_", Sys.Date(), ".csv"),
+    content = function(file) {
+      df <- risco_dengue_bairros_filtrado()
+      tab <- if (nrow(df) == 0) {
+        data.frame(Bairro = character(), stringsAsFactors = FALSE)
+      } else {
+        df %>%
+          group_by(NM_BAIRRO, Grupo) %>%
+          summarise(Casos = sum(Casos, na.rm = TRUE), .groups = "drop") %>%
+          tidyr::pivot_wider(names_from = Grupo, values_from = Casos, values_fill = list(Casos = 0L))
+      }
+      for (g in c("A", "B", "C", "D")) if (!g %in% names(tab)) tab[[g]] <- 0L
+      tab$Total <- tab$A + tab$B + tab$C + tab$D
+      write.csv(tab, file, row.names = FALSE, fileEncoding = "UTF-8")
+    }
+  )
+
+  # Cards informativos de chikungunya (microdados individuais ainda em migracao)
+  card_chik_info <- function(cor, rotulo, texto) {
+    div(class = "custom-card", style = paste0("border-top: 3px solid ", cor, " !important;"),
+      div(class = "card-value", style = paste0("color: ", cor, "; font-size: 22px;"), "—"),
+      div(class = "card-label", style = paste0("color: ", cor, ";"), rotulo),
+      div(class = "quality-note", texto)
+    )
+  }
+  output$risco_card_chik_sem <- renderUI({ card_chik_info(COR_CHIK_SEM_GRAVIDADE, "Sem gravidade (ambulatorial)", "Acompanhamento ambulatorial com hidratação e controle de dor/artralgia.") })
+  output$risco_card_chik_extra <- renderUI({ card_chik_info(COR_CHIK_EXTRA_ARTICULAR, "Com manifestações extra-articulares", "Acompanhamento ambulatorial com atenção à evolução clínica.") })
+  output$risco_card_chik_grave <- renderUI({ card_chik_info(COR_CHIK_GRAVE, "Grave (internação / alto risco)", "Internação hospitalar e manejo de suporte em unidade de maior complexidade.") })
+
+  # Calculadora interativa
+  calc_dengue_resultado <- reactive({
+    classificar_dengue(
+      idade_anos = input$calc_dengue_idade,
+      gestante = isTRUE(input$calc_dengue_gestante),
+      comorbidades = vazio_para_char(input$calc_dengue_comorbidades),
+      risco_social = isTRUE(input$calc_dengue_risco_social),
+      sangramento_pele = isTRUE(input$calc_dengue_sangramento_pele),
+      prova_laco = isTRUE(input$calc_dengue_prova_laco),
+      sinais_alarme = vazio_para_char(input$calc_dengue_alarme),
+      sinais_gravidade = vazio_para_char(input$calc_dengue_gravidade)
+    )
+  })
+
+  output$calc_dengue_resultado <- renderUI({
+    res <- calc_dengue_resultado()
+    div(class = "custom-card", style = paste0("border-top: 3px solid ", res$cor, " !important; margin-top: 12px;"),
+      div(class = "card-value", style = paste0("color: ", res$cor, "; font-size: 20px;"), res$rotulo),
+      div(class = "quality-note", res$descricao),
+      div(class = "card-label", style = paste0("color: ", res$cor, "; margin-top: 8px; text-transform: none; letter-spacing: 0;"), paste("Conduta:", res$conduta))
+    )
+  })
+
+  calc_chik_resultado <- reactive({
+    classificar_chikungunya(
+      idade_anos = input$calc_chik_idade,
+      gestante = isTRUE(input$calc_chik_gestante),
+      comorbidades = isTRUE(input$calc_chik_comorbidades),
+      sinais_gravidade = vazio_para_char(input$calc_chik_gravidade),
+      manifestacoes_extra = vazio_para_char(input$calc_chik_extra)
+    )
+  })
+
+  output$calc_chik_resultado <- renderUI({
+    res <- calc_chik_resultado()
+    div(class = "custom-card", style = paste0("border-top: 3px solid ", res$cor, " !important; margin-top: 12px;"),
+      div(class = "card-value", style = paste0("color: ", res$cor, "; font-size: 20px;"), res$rotulo),
+      div(class = "quality-note", res$descricao),
+      div(class = "card-label", style = paste0("color: ", res$cor, "; margin-top: 8px; text-transform: none; letter-spacing: 0;"), paste("Conduta:", res$conduta))
+    )
+  })
+
+
   session$onSessionEnded(function() {
     registrar_log(LOG_SESSAO, data.frame(
       evento = "fim_sessao",

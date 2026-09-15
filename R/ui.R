@@ -15,7 +15,8 @@ ui <- dashboardPage(skin = "black",
       menuItem("EQUIPE", tabName = "equipe", icon = icon("users")),
       menuItem("CHIKUNGUNYA", tabName = "chik"),
       menuItem("DENGUE", tabName = "dengue"),
-      menuItem("ZIKA", tabName = "zika")
+      menuItem("ZIKA", tabName = "zika"),
+      menuItem("CLASSIFICAÇÃO DE RISCO", tabName = "risco", icon = icon("exclamation-triangle"))
     ),
     hr(),
     tags$div(class = "sidebar-filtro-global",
@@ -1150,6 +1151,142 @@ ui <- dashboardPage(skin = "black",
               plotlyOutput("zika_escolaridade", height = "320px"),
               botao_download_grafico("zika_download_escolaridade")
               ,div(class="fig-caption","Figura 6. Casos de Zika vírus por nível de escolaridade. O ensino médio completo e o grupo ignorado/branco predominam; interpretações sobre vulnerabilidade socioeconômica devem considerar o elevado sub-registro. Período: 2021-2025. Fonte: SINAN/SVS.")
+          )
+        )
+      ),
+      tabItem(
+        tabName = "risco",
+        div(class = "doenca-titulo",
+          div(class = "mosquito-icon", span(class = "mosquito-emoji", "⚠️")),
+          span("CLASSIFICAÇÃO DE RISCO / GRAVIDADE (MS)")
+        ),
+        div(class = "landing-section",
+          h4("Índice de risco baseado em sinais e sintomas"),
+          p("Classificação oficial do Ministério da Saúde aplicada a cada caso confirmado, baseada exclusivamente em sinais e sintomas e fatores de risco (idade, gestação, comorbidades). Referências: ", tags$em("Dengue: diagnóstico e manejo clínico — adulto e criança"), " 6ª ed. (MS, 2024) e ", tags$em("Chikungunya: manejo clínico"), " (MS, 2017).")
+        ),
+
+        # ---- DENGUE ----
+        div(class = "landing-section",
+          h4("Dengue — Grupos oficiais A/B/C/D"),
+          fluidRow(
+            column(3, selectInput("risco_dengue_ano", "PERÍODO", choices = c("Todos", 2020, 2021, 2022, 2023, 2024, 2025), selected = "Todos"))
+          ),
+          fluidRow(
+            column(3, uiOutput("risco_card_A")),
+            column(3, uiOutput("risco_card_B")),
+            column(3, uiOutput("risco_card_C")),
+            column(3, uiOutput("risco_card_D"))
+          ),
+          fluidRow(
+            column(6, class = "graph-box",
+              div(class = "graph-title", "Distribuição por grupo de risco"),
+              plotlyOutput("risco_dengue_donut", height = "320px")
+            ),
+            column(6, class = "graph-box",
+              div(class = "graph-title", "Evolução anual por grupo de risco"),
+              plotlyOutput("risco_dengue_serie", height = "320px")
+            )
+          ),
+          div(class = "graph-box",
+            div(class = "graph-title", "Tabela por bairro — casos por grupo de risco"),
+            p("Distribuição dos casos classificados por bairro de residência. Bairros com casos nos Grupos C (sinais de alarme) e D (dengue grave) concentram maior gravidade."),
+            downloadButton("risco_dengue_bairros_download", "Baixar CSV"),
+            DTOutput("risco_dengue_bairros_dt")
+          ),
+          div(class = "context-box",
+            tags$strong("Nota metodológica: "),
+            "a classificação é recalculada a partir dos campos de sinais de alarme (ALRM_*) e gravidade (GRAV_*) do SINAN-DENGUE, além de idade, gestação, comorbidades, petéquias (sangramento de pele) e prova do laço. Casos com campos de alarme/gravidade não preenchidos são classificados como A ou B conforme os demais fatores de risco presentes."
+          )
+        ),
+
+        # ---- CHIKUNGUNYA ----
+        div(class = "landing-section",
+          h4("Chikungunya — categorias de gravidade"),
+          p("Três categorias oficiais: sem gravidade (acompanhamento ambulatorial), com manifestações extra-articulares e grave (critério de internação / alto risco). A distribuição agregada por categoria depende de microdados individuais de chikungunya, ainda em migração no pipeline; utilize a calculadora abaixo para classificar casos individuais."),
+          fluidRow(
+            column(4, uiOutput("risco_card_chik_sem")),
+            column(4, uiOutput("risco_card_chik_extra")),
+            column(4, uiOutput("risco_card_chik_grave"))
+          ),
+          div(class = "context-box",
+            tags$strong("Sinais de gravidade e critérios de internação (qualquer um eleva o risco): "),
+            "acometimento neurológico; sinais de choque (extremidades frias, cianose, tontura, hipotensão, enchimento capilar lento, instabilidade hemodinâmica); dispneia/dor torácica; vômitos persistentes; sangramentos de mucosas; descompensação de doença de base; neonatos; outras manifestações com insuficiência de órgão/sistema com risco de morte ou necessidade de internação.",
+            tags$br(),
+            tags$strong("Grupos de risco (aumentam a prioridade): "),
+            "gestantes, ≥65 anos, <2 anos (especialmente neonatos) e comorbidades."
+          )
+        ),
+
+        # ---- CALCULADORA ----
+        div(class = "landing-section",
+          h4("Calculadora de classificação (apoio ao ensino e à vigilância)"),
+          p("Selecione os sinais, sintomas e fatores de risco para obter a classificação oficial. Nenhum score numérico é aplicado: a lógica segue exatamente os critérios do Ministério da Saúde."),
+          fluidRow(
+            column(6,
+              h5("Dengue"),
+              numericInput("calc_dengue_idade", "Idade (anos)", value = 30, min = 0, max = 120),
+              checkboxInput("calc_dengue_gestante", "Gestante", value = FALSE),
+              checkboxInput("calc_dengue_risco_social", "Risco social", value = FALSE),
+              checkboxInput("calc_dengue_sangramento_pele", "Sangramento espontâneo de pele (petéquias)", value = FALSE),
+              checkboxInput("calc_dengue_prova_laco", "Prova do laço positiva", value = FALSE),
+              checkboxGroupInput("calc_dengue_comorbidades", "Comorbidades",
+                choices = c(
+                  "Hipertensão" = "hipertensao",
+                  "Diabetes" = "diabetes",
+                  "Doença hematológica" = "doenca_hematologica",
+                  "Hepatopatia" = "hepatopatia",
+                  "Doença renal" = "doenca_renal",
+                  "Doença ácido-péptica" = "doenca_acido_peptica",
+                  "Doença autoimune" = "doenca_autoimune"
+                )),
+              checkboxGroupInput("calc_dengue_alarme", "Sinais de alarme",
+                choices = c(
+                  "Dor abdominal intensa e contínua" = "dor_abdominal_intensa",
+                  "Vômitos persistentes" = "vomitos_persistentes",
+                  "Acúmulo de líquidos" = "acumulo_liquidos",
+                  "Hipotensão postural/lipotimia" = "hipotensao_postural",
+                  "Hepatomegalia >2cm" = "hepatomegalia",
+                  "Sangramento de mucosas" = "sangramento_mucosas",
+                  "Letargia/irritabilidade" = "letargia_irritabilidade",
+                  "Aumento progressivo do hematócrito" = "aumento_hematocrito"
+                )),
+              checkboxGroupInput("calc_dengue_gravidade", "Sinais de gravidade",
+                choices = c(
+                  "Choque (extravasamento plasmático grave)" = "choque",
+                  "Sangramento grave" = "sangramento_grave",
+                  "Comprometimento grave de órgãos" = "comprometimento_orgaos"
+                )),
+              uiOutput("calc_dengue_resultado")
+            ),
+            column(6,
+              h5("Chikungunya"),
+              numericInput("calc_chik_idade", "Idade (anos)", value = 30, min = 0, max = 120),
+              checkboxInput("calc_chik_gestante", "Gestante", value = FALSE),
+              checkboxInput("calc_chik_comorbidades", "Comorbidades", value = FALSE),
+              checkboxGroupInput("calc_chik_gravidade", "Sinais de gravidade / critérios de internação",
+                choices = c(
+                  "Acometimento neurológico" = "acometimento_neurologico",
+                  "Sinais de choque" = "choque",
+                  "Dispneia" = "dispneia",
+                  "Dor torácica" = "dor_toracica",
+                  "Vômitos persistentes" = "vomitos_persistentes",
+                  "Sangramentos de mucosas" = "sangramento_mucosas",
+                  "Descompensação de doença de base" = "descompensacao_doenca_base",
+                  "Neonato" = "neonato",
+                  "Insuficiência de órgão/sistema" = "insuficiencia_orgao"
+                )),
+              checkboxGroupInput("calc_chik_extra", "Manifestações extra-articulares",
+                choices = c(
+                  "Exantema" = "exantema",
+                  "Cefaleia" = "cefaleia",
+                  "Conjuntivite" = "conjuntivite",
+                  "Náusea" = "nausea",
+                  "Vômito" = "vomito",
+                  "Mialgia" = "mialgia",
+                  "Dor retro-ocular" = "dor_retro_ocular"
+                )),
+              uiOutput("calc_chik_resultado")
+            )
           )
         )
       ),

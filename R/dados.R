@@ -175,6 +175,43 @@ dengue_bairros <- tryCatch(
 )
 
 # ============================================================
+# Caches de classificacao de risco (gerados por scripts/07_risco.R)
+# Distribuicao de dengue por Grupo A/B/C/D (MS) e por bairro.
+# ============================================================
+
+carregar_risco_dengue <- function(
+  cache_path = file.path("data", "app_cache", "dengue_risco_campos_v1.rds")
+) {
+  cache <- ler_rds_seguro_local(cache_path, "dengue_risco")
+  if (is.null(cache) || nrow(cache) == 0) {
+    warning("Cache de risco de dengue indisponivel em ", cache_path)
+    return(data.frame(Ano = integer(), Grupo = character(), Casos = integer(), stringsAsFactors = FALSE))
+  }
+  cache
+}
+
+carregar_risco_dengue_bairros <- function(
+  cache_path = file.path("data", "app_cache", "dengue_risco_bairros_campos_v1.rds")
+) {
+  cache <- ler_rds_seguro_local(cache_path, "dengue_risco_bairros")
+  if (is.null(cache) || nrow(cache) == 0) {
+    warning("Cache de risco de dengue por bairro indisponivel em ", cache_path)
+    return(data.frame(Ano = integer(), NM_BAIRRO = character(), Grupo = character(), Casos = integer(), stringsAsFactors = FALSE))
+  }
+  cache
+}
+
+dengue_risco <- tryCatch(carregar_risco_dengue(), error = function(e) {
+  warning("Falha ao carregar risco de dengue: ", conditionMessage(e))
+  data.frame(Ano = integer(), Grupo = character(), Casos = integer(), stringsAsFactors = FALSE)
+})
+
+dengue_risco_bairros <- tryCatch(carregar_risco_dengue_bairros(), error = function(e) {
+  warning("Falha ao carregar risco de dengue por bairro: ", conditionMessage(e))
+  data.frame(Ano = integer(), NM_BAIRRO = character(), Grupo = character(), Casos = integer(), stringsAsFactors = FALSE)
+})
+
+# ============================================================
 # Funcoes de agregacao (usadas pelo pipeline)
 # NOTA: normalizar_texto_sinan, primeira_coluna_existente,
 # criterio_confirmado_sinan e preparar_serie_temporal_sinan

@@ -38,6 +38,7 @@ O trabalho é desenvolvido no âmbito do **Instituto Federal Fluminense (IFF), C
 | Raça/cor e escolaridade | Como se distribuem os casos segundo raça/cor e escolaridade? Os campos ignorados permitem inferência? |
 | Qualidade da notificação | Quais variáveis apresentam maior incompletude? A qualidade melhorou ou piorou ao longo dos anos? |
 | Espacial (dengue) | Quais bairros acumulam mais registros? Há bairros sem correspondência na malha cartográfica? |
+| Risco/gravidade | Como os casos de dengue se distribuem nos grupos oficiais A/B/C/D e os de chikungunya nas categorias de gravidade, segundo sinais e sintomas? |
 | Comparação entre agravos | Chikungunya, dengue e Zika apresentam perfis sociodemográficos semelhantes ou distintos no mesmo município? |
 
 ---
@@ -50,6 +51,47 @@ O trabalho é desenvolvido no âmbito do **Instituto Federal Fluminense (IFF), C
 *   A **qualidade da notificação** é heterogênea: sexo e idade têm boa completude (>99%), enquanto **escolaridade e raça/cor** chegam a ultrapassar 60% de ignorados/brancos em alguns anos, comprometendo análises de desigualdade.
 *   O **mapa de dengue por bairro** evidencia concentração espacial em bairros centrais e populosos, mas a correspondência entre nomes de bairro da planilha e da malha do IBGE revela **divergências de grafia e localidades sem polígono** que exigem ajuste manual contínuo.
 *   A **comparação direta entre os três agravos** na mesma plataforma (com mesmo recorte temporal, territorial e metodológico) é uma contribuição distintiva deste painel frente a outros dashboards públicos.
+
+---
+
+## Índice de risco e classificação de gravidade (MS)
+
+O painel incorpora um **índice de risco / classificação de gravidade** para dengue e chikungunya, **baseado exclusivamente em sinais e sintomas + fatores de risco** (idade, gestação e comorbidades), sem scores numéricos arbitrários.
+
+### Dengue — grupos oficiais A/B/C/D
+
+Implementado em `R/classificacao_risco.R` (função `classificar_dengue()` e versão vetorizada `classificar_dengue_df()`), seguindo a classificação do **Ministério da Saúde — Dengue: diagnóstico e manejo clínico – adulto e criança (6ª ed., 2024)**:
+
+| Grupo | Cor | Critério oficial |
+|:---|---:|---|
+| **Grupo A** | Azul | Dengue sem sinais de alarme, sem condições especiais, sem risco social e sem comorbidades |
+| **Grupo B** | Verde | Dengue sem sinais de alarme **com** condição especial, risco social ou comorbidade (ex.: idade < 2 anos ou > 65 anos, gestante, hipertensão, diabetes, doenças hematológicas, hepatopatias etc.) **ou** sangramento espontâneo de pele / prova do laço positiva |
+| **Grupo C** | Amarelo | Presença de **qualquer sinal de alarme** (urgência) |
+| **Grupo D** | Vermelho | **Dengue grave** (emergência) |
+
+**Sinais de alarme (qualquer um = Grupo C):** dor abdominal intensa e contínua; vômitos persistentes; acúmulo de líquidos (ascite, derrame pleural/pericárdico); hipotensão postural e/ou lipotimia; hepatomegalia > 2 cm abaixo do rebordo costal; sangramento de mucosas; letargia e/ou irritabilidade; aumento progressivo do hematócrito.
+
+**Critérios de dengue grave (qualquer um = Grupo D):** choque por extravasamento plasmático grave; sangramento grave (hematêmese, melena, metrorragia volumosa, sangramento do SNC); comprometimento grave de órgãos (fígado AST/ALT > 1000, SNC, coração, rins).
+
+### Chikungunya — categorias oficiais
+
+Implementado em `R/classificacao_risco.R` (função `classificar_chikungunya()` e versão vetorizada `classificar_chikungunya_df()`), seguindo **Chikungunya: manejo clínico (MS, 2017)** e documentos equivalentes:
+
+1. **Chikungunya (sem gravidade / acompanhamento ambulatorial)**
+2. **Chikungunya com manifestações extra-articulares**
+3. **Chikungunya grave (critério de internação / alto risco)**
+
+**Sinais de gravidade e critérios de internação (qualquer um eleva o risco):** acometimento neurológico; sinais de choque; dispneia/dor torácica; vômitos persistentes; sangramentos de mucosas; descompensação de doença de base; neonatos; outras manifestações de insuficiência de órgão/sistema com risco de morte ou necessidade de internação.
+
+**Grupos de risco (aumentam a prioridade mesmo sem sinais de gravidade):** gestantes, ≥ 65 anos, < 2 anos (especialmente neonatos) e comorbidades.
+
+### Como aparece no dashboard
+
+- Aba **“Classificação de Risco”** com cards coloridos (azul/verde/amarelo/vermelho), distribuição por grupo, evolução anual e **tabela por bairro** com o índice (casos por grupo e soma C+D de alarme/grave).
+- **Calculadora interativa** de dengue e chikungunya para classificação de casos individuais (apoio ao ensino e à vigilância).
+- A classificação de dengue é **recalculada a partir dos campos SINAN-DENGUE** (`ALRM_*` para sinais de alarme, `GRAV_*` para gravidade, além de idade, gestação, comorbidades, petéquias e prova do laço) pelo script `scripts/07_risco.R`.
+
+> ⚠️ **Nota metodológica:** os campos de sinais de alarme/gravidade do SINAN-DENGUE apresentam preenchimento incompleto na base local. Casos sem esses campos preenchidos são classificados como A ou B conforme os demais fatores de risco. A distribuição agregada de chikungunya por categoria depende de microdados individuais, ainda em migração no pipeline.
 
 ---
 
@@ -105,6 +147,7 @@ arboviroses-campos/
 ├── app_arboviroses.R            # App monolitico legado (referencia funcional)
 ├── R/
 │   ├── app_legacy_original.R    # Copia fiel do original pre-modularizacao
+│   ├── classificacao_risco.R    # Indice de risco MS (dengue A/B/C/D; chikungunya)
 │   ├── dados.R                  # Leitura de caches, fallback e estruturas de dados
 │   ├── graficos.R               # Funcoes de visualizacao (graficos, qualidade, downloads)
 │   ├── mapas.R                  # Malha de bairros, correspondencia espacial, Leaflet
@@ -119,6 +162,7 @@ arboviroses-campos/
 │   ├── 04_mapas.R               # Preparacao de bases espaciais
 │   ├── 05_validacao.R           # Auditoria de totais, completude, bairros nao mapeados
 │   ├── 06_export_app.R          # Exportacao dos .rds finais para data/app_cache/
+│   ├── 07_risco.R               # Classificacao de risco MS (dengue/chikungunya) -> cache
 │   ├── update_data.R            # Orquestrador do pipeline completo
 │   ├── deploy.R                 # Publicacao no shinyapps.io com protecao contra conta antiga
 │   └── fix_encoding_text.R      # Correcao de encoding em textos do projeto
@@ -128,7 +172,7 @@ arboviroses-campos/
 │   ├── raw/                     # Dados brutos baixados (nao versionados)
 │   ├── interim/                 # Dados limpos intermediarios (nao versionados)
 │   └── processed/               # Agregados processados (nao versionados)
-├── tests/testthat/              # Testes automatizados (11 testes, 0 falhas)
+├── tests/testthat/              # Testes automatizados (46 testes, 0 falhas)
 ├── www/style.css                # Estilos incrementais (design visual principal preservado)
 ├── .github/workflows/           # CI/CD (GitHub Actions)
 ├── renv.lock                    # Ambiente R reprodutivel

@@ -4,7 +4,8 @@ etapas <- c(
   "scripts/03_agregacao.R",
   "scripts/04_mapas.R",
   "scripts/05_validacao.R",
-  "scripts/06_export_app.R"
+  "scripts/06_export_app.R",
+  "scripts/07_risco.R"
 )
 
 for (etapa in etapas) {
