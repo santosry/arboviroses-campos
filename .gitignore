@@ -32,6 +32,9 @@ renv/cellar/
 renv/python/
 renv/staging/
 
+# Previews de mapas gerados localmente
+previews_mapas/
+
 # Artefatos de sistema
 .DS_Store
 Thumbs.db
