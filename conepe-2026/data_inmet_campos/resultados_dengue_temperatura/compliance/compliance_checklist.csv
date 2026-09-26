@@ -1,0 +1,14 @@
+requisito,status
+Sem publicacao em GitHub,OK
+Somente correlacao de Spearman,OK
+Dias sem casos excluidos da associacao,OK
+Tabela diaria sem dias com zero casos,OK
+P-valores mensais reais em notacao cientifica quando pequenos,OK
+Graficos individuais em PNG,OK
+Sem graficos exportados em PDF,OK
+"Relatorio com materiais, metodologia e resultados",OK
+Fonte de dengue declarada,OK: Subsecretaria de Saude de Campos dos Goytacazes
+Fonte de temperatura declarada,OK: INMET
+Declaracao de uso de IA incluída,OK: ChatGPT 5.5 e Codex; Portaria CNPq 2664/2026
+Auditoria de recalculo Spearman gravada,OK
+Benchmark gravado,OK

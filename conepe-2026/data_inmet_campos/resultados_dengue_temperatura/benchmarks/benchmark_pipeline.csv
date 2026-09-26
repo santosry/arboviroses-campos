@@ -1,0 +1,2 @@
+iniciado_em,finalizado_em,duracao_segundos,linhas_base_diaria,linhas_base_associacao_com_casos,linhas_tabela_diaria_associacao,meses_correlacao_total,meses_correlacao_estimavel,meses_correlacao_p_menor_0_05,maior_abs_rho_mensal,maior_abs_rho_mensal_mes,menor_p_valor_mensal
+2026-07-03 14:55:50.80903,2026-07-03 14:56:36.737618,45.928587913513184,2184,1110,1110,63,53,2,0.894427190999916,2021-11-01,0.006484148690715117

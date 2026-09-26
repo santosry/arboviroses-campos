@@ -1,0 +1,167 @@
+---
+title: "Dengue e temperatura média diária em Campos dos Goytacazes, RJ"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    toc: false
+    number_sections: true
+    fig_caption: true
+    keep_tex: true
+fontsize: 12pt
+mainfont: "Times New Roman"
+geometry: "a4paper,left=3cm,right=2cm,top=3cm,bottom=2cm"
+linestretch: 1.5
+header-includes:
+  - \usepackage{indentfirst}
+  - \usepackage{booktabs}
+  - \usepackage{longtable}
+  - \usepackage{caption}
+  - \usepackage{xcolor}
+  - \setlength{\parindent}{1.25cm}
+  - \setlength{\parskip}{0pt}
+  - \captionsetup{font=small,labelfont=bf,justification=centering}
+  - \AtBeginDocument{\color{black}}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center",
+  dpi = 320,
+  out.width = "100%"
+)
+
+root_dir <- if (dir.exists("../data_inmet_campos")) normalizePath("..", winslash = "/") else normalizePath(".", winslash = "/")
+out_dir <- file.path(root_dir, "data_inmet_campos", "resultados_dengue_temperatura")
+dirs <- list(
+  dados = file.path(out_dir, "dados"),
+  tabelas = file.path(out_dir, "tabelas"),
+  figuras = file.path(out_dir, "figuras")
+)
+
+read_csv2 <- function(path) readr::read_csv(path, show_col_types = FALSE)
+descritivo <- read_csv2(file.path(dirs$tabelas, "descritivo.csv"))
+correlacoes <- read_csv2(file.path(dirs$tabelas, "correlacoes_spearman.csv"))
+cor_mensal <- read_csv2(file.path(dirs$tabelas, "correlacoes_spearman_mensais.csv"))
+tabela_diaria <- read_csv2(file.path(dirs$tabelas, "tabela_diaria_associacao.csv"))
+metadados <- read_csv2(file.path(dirs$tabelas, "metadados_analise.csv"))
+
+fmt_num <- function(x, digits = 2) formatC(x, format = "f", digits = digits, decimal.mark = ",", big.mark = ".")
+fmt_int <- function(x) format(as.integer(round(x)), big.mark = ".", decimal.mark = ",", scientific = FALSE, trim = TRUE)
+fmt_p <- function(p) ifelse(
+  is.na(p),
+  "NA",
+  ifelse(p < 0.001, gsub("\\.", ",", formatC(p, format = "e", digits = 2)), fmt_num(p, 3))
+)
+fmt_rho <- function(x) fmt_num(x, 3)
+get_meta <- function(key) metadados$valor[match(key, metadados$item)]
+
+cor_print <- correlacoes |>
+  dplyr::mutate(rho = fmt_rho(rho), p_valor = fmt_p(p_valor)) |>
+  dplyr::select(
+    Análise = analise,
+    Método = metodo,
+    n,
+    `Rho de Spearman` = rho,
+    `p-valor` = p_valor
+  )
+
+tabela_diaria_print <- tabela_diaria |>
+  dplyr::mutate(
+    temp_media = fmt_num(temp_media, 2),
+    rho_spearman_mensal = fmt_rho(rho_spearman_mensal),
+    p_valor_spearman_mensal = fmt_p(p_valor_spearman_mensal)
+  ) |>
+  dplyr::select(
+    Data = date,
+    Mês = mes_ref,
+    Casos = casos,
+    `Temp. média` = temp_media,
+    `n mensal` = n_correlacao_mensal,
+    `Rho mensal` = rho_spearman_mensal,
+    `p mensal` = p_valor_spearman_mensal
+  )
+
+daily <- correlacoes |> dplyr::filter(analise == "Diaria: temperatura media vs casos") |> dplyr::slice(1)
+maior_abs_rho_mensal <- cor_mensal |> dplyr::filter(!is.na(rho)) |> dplyr::slice_max(order_by = abs(rho), n = 1, with_ties = FALSE)
+```
+
+# Materiais
+
+Foram utilizadas tabelas anuais de dengue em formato *Excel* (`DENGUE2020.xlsx` a `DENGUE2025.xlsx`), fornecidas pela Subsecretaria de Saúde de Campos dos Goytacazes, e a base `temperatura_diaria_campos.csv`, derivada de dados meteorológicos do Instituto Nacional de Meteorologia (INMET). A unidade geográfica analisada foi o município de `r get_meta("municipio")`, `r get_meta("uf")`, código IBGE `r get_meta("codigo_ibge")`.
+
+A variável de desfecho foi o número diário de notificações de dengue, agregado pela data `r get_meta("data_evento")`. A variável de exposição foi a temperatura média diária em graus Celsius. O período comum analisado foi de `r get_meta("periodo_inicio")` a `r get_meta("periodo_fim")`. Todos os arquivos foram mantidos localmente.
+
+# Metodologia
+
+A análise foi conduzida em R 4.6.0. As bases anuais de dengue foram importadas de planilhas *Excel*, padronizadas quanto aos nomes das colunas e filtradas para Campos dos Goytacazes pelo código municipal de notificação. As datas de notificação foram convertidas para formato calendário e os registros foram agregados por dia, resultando na contagem diária de notificações.
+
+A base meteorológica do INMET foi processada como série diária, com temperatura média, mínima e máxima. A série final manteve apenas o período comum entre as notificações de dengue e a temperatura. Para estatísticas descritivas, a série temporal completa foi mantida; para a tabela de associação e para os cálculos de correlação, foram incluídos somente os dias com casos de dengue.
+
+Foi utilizada exclusivamente correlação de Spearman. O coeficiente foi escolhido por ser adequado a contagens assimétricas e possíveis relações monotônicas não lineares. A associação principal foi calculada mês a mês a partir dos pares diários com casos de dengue: em cada mês, os dias com casos formaram o conjunto usado para estimar rho e p-valor entre temperatura média diária e número diário de casos. Meses com menos de quatro pares válidos ou sem variação suficiente foram classificados como não estimáveis.
+
+Declaração de uso de inteligência artificial: houve uso de *ChatGPT 5.5* e *Codex* como apoio técnico para organização de *scripts*, estruturação do relatório, revisão de código e geração automatizada dos artefatos locais, em observância à declaração de uso de IA solicitada conforme a Portaria CNPq 2664/2026, disponível em <http://memoria2.cnpq.br/web/guest/view/-/journal_content/56_INSTANCE_0oED/10157/23142775>. A curadoria dos dados, a interpretação epidemiológica e a responsabilidade final permanecem humanas.
+
+# Resultados
+
+```{r tabela-descritivo}
+desc_print <- descritivo |>
+  dplyr::transmute(
+    `Dias analisados` = fmt_int(n_dias),
+    `Casos totais` = fmt_int(casos_total),
+    `Média diária de casos` = fmt_num(casos_media, 2),
+    `Mediana diária de casos` = fmt_num(casos_mediana, 2),
+    `Máximo diário de casos` = fmt_int(casos_max),
+    `Dias com zero casos (%)` = fmt_num(100 * proporcao_dias_zero, 1),
+    `Temperatura média geral` = fmt_num(temp_media_geral, 2)
+  )
+knitr::kable(desc_print, booktabs = TRUE, caption = "Resumo descritivo da base diária analisada.")
+```
+
+```{r tabela-correlacoes}
+knitr::kable(cor_print, booktabs = TRUE, caption = "Correlações de Spearman estimadas.")
+```
+
+A correlação diária bruta auxiliar, calculada somente entre dias com casos de dengue, foi positiva e fraca (rho = `r fmt_rho(daily$rho)`, p `r fmt_p(daily$p_valor)`). A maior correlação mensal em módulo ocorreu em `r maior_abs_rho_mensal$mes_ref` (rho = `r fmt_rho(maior_abs_rho_mensal$rho)`, p `r fmt_p(maior_abs_rho_mensal$p_valor)`).
+
+Na tabela diária, rho mensal e p mensal correspondem ao mês daquela data. Eles são iguais dentro de um mesmo mês porque a correlação é calculada sobre o conjunto de dias do mês, não sobre uma única observação isolada.
+
+```{r tabela-mensal}
+cor_mensal_print <- cor_mensal |>
+  dplyr::mutate(
+    rho = fmt_rho(rho),
+    p_valor = fmt_p(p_valor)
+  ) |>
+  dplyr::select(Mês = mes_ref, `n dias` = n, `Rho mensal` = rho, `p mensal` = p_valor, Interpretação = interpretacao)
+knitr::kable(cor_mensal_print, booktabs = TRUE, longtable = TRUE, caption = "Correlações mensais de Spearman calculadas a partir dos dias com casos.")
+```
+
+```{r tabela-diaria}
+knitr::kable(tabela_diaria_print, booktabs = TRUE, longtable = TRUE, caption = "Tabela diária com casos, temperatura, rho de Spearman e p-valor.")
+```
+
+```{r fig-serie, fig.cap="Série diária de notificações de dengue e temperatura média diária."}
+knitr::include_graphics(file.path(dirs$figuras, "01_serie_diaria_casos_temperatura.png"))
+```
+
+```{r fig-dispersao, fig.cap="Associação diária bruta entre temperatura média e notificações."}
+knitr::include_graphics(file.path(dirs$figuras, "02_dispersao_diaria_spearman.png"))
+```
+
+```{r fig-rho-mensal, fig.cap="Rho de Spearman mensal calculado a partir dos dias com casos."}
+knitr::include_graphics(file.path(dirs$figuras, "03_rho_spearman_mensal.png"))
+```
+
+```{r fig-p-mensal, fig.cap="p-valor mensal da associação de Spearman."}
+knitr::include_graphics(file.path(dirs$figuras, "04_pvalor_spearman_mensal.png"))
+```
+
+```{r fig-anual, fig.cap="Associação anual exploratória entre temperatura média anual e notificações anuais."}
+knitr::include_graphics(file.path(dirs$figuras, "05_agregado_anual_spearman.png"))
+```
+
+```{r fig-anomalias, fig.cap="Associação entre anomalias mensais de temperatura e de notificações."}
+knitr::include_graphics(file.path(dirs$figuras, "06_anomalias_mensais_spearman.png"))
+```

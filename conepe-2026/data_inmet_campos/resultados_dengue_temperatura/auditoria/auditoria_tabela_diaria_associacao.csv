@@ -1,0 +1,7 @@
+item,valor,status
+linhas_tabela_diaria_associacao,1110,OK
+linhas_com_casos_zero,0,OK se 0
+meses_com_correlacao_estimavel,53,OK
+meses_com_correlacao_nao_estimavel,10,OK/documentar
+linhas_com_rho_mensal_ausente,27,OK/documentar
+interpretacao_rho_p_mensais,Rho e p-valor sao calculados dentro de cada mes usando os pares diarios com casos daquele mes.,DOCUMENTADO

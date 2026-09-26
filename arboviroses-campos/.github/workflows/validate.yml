@@ -1,4 +1,4 @@
-name: Validate Pipeline and Tests (arboviroses-campos)
+name: Validate Pipeline and Tests
 
 on:
   push:
@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [main, master]
   workflow_dispatch:
-
-defaults:
-  run:
-    working-directory: arboviroses-campos
 
 jobs:
   validate:
@@ -71,5 +67,5 @@ jobs:
         with:
           name: audit-report
           path: |
-            arboviroses-campos/data/audit/
-            arboviroses-campos/data/app_cache/metadata.json
+            data/audit/
+            data/app_cache/metadata.json

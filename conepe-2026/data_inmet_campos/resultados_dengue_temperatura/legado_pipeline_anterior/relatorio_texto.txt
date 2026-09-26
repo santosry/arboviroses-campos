@@ -1,0 +1,35 @@
+Análise dengue-temperatura
+==========================
+Path: C:/Users/oorie/OneDrive/Documentos/TRABALHOS/TEMPERATURA/data_inmet_campos
+Município analisado: 330100
+Filtro municipal: notificacao [id_municip]
+Data usada para agregação: dt_notific
+Confirmados apenas: FALSE
+
+Método recomendado entre Pearson, Spearman e Kendall: Spearman.
+Justificativa: os casos diários são contagens assimétricas, com muitos zeros e surtos epidêmicos. Pearson pressupõe relação linear e é sensível a extremos. Kendall é robusto, mas perde potência com muitos empates. Spearman preserva robustez e melhor potência para associação monotônica.
+
+Descritivo:
+# A tibble: 1 × 12
+  n_dias casos_total casos_media casos_mediana casos_max proporcao_dias_zero
+   <int>       <int>       <dbl>         <dbl>     <int>               <dbl>
+1   2184       38143        17.5             1       458               0.492
+# ℹ 6 more variables: assimetria_casos <dbl>, temp_media_geral <dbl>,
+#   temp_mediana <dbl>, temp_min_observada <dbl>, temp_max_observada <dbl>,
+#   assimetria_temp <dbl>
+
+Correlações diárias:
+# A tibble: 3 × 6
+  metodo       n estimativa  p_valor   estatistica interpretacao
+  <chr>    <int>      <dbl>    <dbl>         <dbl> <chr>        
+1 pearson   2184     0.163  1.53e-14          7.74 fraca        
+2 spearman  2184     0.118  3.05e- 8 1531072199.   fraca        
+3 kendall   2184     0.0855 3.37e- 8          5.52 muito fraca  
+
+Melhor lag por Spearman:
+# A tibble: 1 × 6
+  lag_dias metodo       n estimativa  p_valor estatistica
+     <int> <chr>    <int>      <dbl>    <dbl>       <dbl>
+1       42 spearman  2142      0.189 1.32e-18 1329022754.
+
+Atenção: correlação não prova efeito causal. Para inferência mais forte, priorize modelo de contagem com defasagem, sazonalidade e tendência temporal, ou DLNM.

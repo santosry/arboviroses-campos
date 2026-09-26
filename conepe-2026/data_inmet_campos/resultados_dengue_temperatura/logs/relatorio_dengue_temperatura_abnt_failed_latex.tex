@@ -1,0 +1,464 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+  12pt,
+]{article}
+\usepackage{xcolor}
+\usepackage[a4paper,left=3cm,right=2cm,top=3cm,bottom=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+  \setmainfont[]{Times New Roman}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage{setspace}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{indentfirst}
+\usepackage{setspace}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0pt}
+\captionsetup{font=small,labelfont=bf,justification=centering}
+\titleformat{\section}{\normalfont\bfseries\uppercase}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalfont\bfseries}{\thesubsection}{1em}{}
+\renewcommand{\contentsname}{Sumário}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Associação entre notificações de dengue e temperatura média diária em Campos dos Goytacazes{,} RJ},
+  pdfauthor={Análise local},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Associação entre notificações de dengue e temperatura média
+diária em Campos dos Goytacazes, RJ}
+\author{Análise local}
+\date{03/07/2026}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\setstretch{1.5}
+\begin{titlepage}
+\begin{center}
+\vspace*{2cm}
+{\bfseries\MakeUppercase{Associação entre notificações de dengue e temperatura média diária em Campos dos Goytacazes, RJ}\par}
+\vspace{3cm}
+Relatório técnico-analítico elaborado a partir de bases locais de notificações de dengue e de temperatura média diária.
+\vfill
+Campos dos Goytacazes, RJ\\
+2026
+\end{center}
+\end{titlepage}
+
+\newpage
+
+\section{Resumo}\label{resumo}
+
+Este relatório avaliou a associação entre notificações diárias de dengue
+e temperatura média diária em Campos dos Goytacazes, RJ, no período
+comum de 2020-01-08 a 2025-12-30. A análise utilizou exclusivamente
+correlação de Spearman, escolhida por sua robustez frente à assimetria
+das contagens, presença de muitos dias com zero casos e possibilidade de
+associação monotônica não linear. Foram avaliadas associações diárias,
+anomalias mensais, agregação mensal, agregação anual exploratória e
+defasagens de temperatura de 0 a 45 dias. A base final incluiu 2.184
+dias e 38.143 notificações. A correlação diária bruta foi positiva e
+fraca (rho = 0,118, p \textless{} 0,001). A maior correlação em módulo
+ocorreu com defasagem de 42 dias (rho = 0,189, p \textless{} 0,001).
+
+\noindent\textbf{Palavras-chave:} dengue; temperatura; Spearman;
+vigilância epidemiológica; séries temporais.
+
+\newpage
+
+\section{Materiais}\label{materiais}
+
+Foram utilizados arquivos locais de notificações de dengue em formato
+Excel (\texttt{DENGUE2020.xlsx} a \texttt{DENGUE2025.xlsx}) e a base
+\texttt{temperatura\_diaria\_campos.csv}, derivada das estações
+automáticas do INMET disponíveis no projeto local. A unidade geográfica
+de análise foi o município de Campos dos Goytacazes, RJ, código IBGE
+330100.
+
+A variável de desfecho foi o número diário de notificações de dengue,
+agregado pela data dt\_notific. A variável de exposição foi a
+temperatura média diária em graus Celsius. O filtro municipal foi
+baseado em notificacao. Não houve publicação, sincronização ou envio de
+artefatos para GitHub.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.0731}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.0594}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1005}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1096}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1050}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1096}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1324}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1553}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1553}}@{}}
+\caption{Resumo descritivo da base diária analisada.}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Dias analisados
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Casos totais
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Média diária de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Mediana diária de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Máximo diário de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Dias com zero casos (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Temperatura média geral (°C)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Temperatura mínima observada (°C)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Temperatura máxima observada (°C)
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Dias analisados
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Casos totais
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Média diária de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Mediana diária de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Máximo diário de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Dias com zero casos (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Temperatura média geral (°C)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Temperatura mínima observada (°C)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Temperatura máxima observada (°C)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+2.184 & 38.143 & 17,46 & 1,00 & 458 & 49,2 & 23,84 & 15,29 & 30,49 \\
+\end{longtable}
+
+\section{Metodologia}\label{metodologia}
+
+O processamento foi conduzido em R 4.6.0. As planilhas anuais de dengue
+foram padronizadas com nomes de colunas em minúsculas, conversão de
+datas, normalização dos códigos municipais e agregação diária. A base
+meteorológica foi lida em formato CSV, com conversão da coluna de data e
+das variáveis de temperatura para formato numérico. A série final
+manteve apenas o intervalo comum entre as notificações e a temperatura.
+
+A associação principal foi estimada por correlação de Spearman. Esse
+coeficiente foi utilizado em todas as análises por não exigir
+normalidade das variáveis, por reduzir a influência de extremos e por
+capturar relações monotônicas. Para investigar atraso temporal plausível
+entre exposição térmica e notificação, foram calculadas correlações
+entre casos no dia e temperatura média observada no próprio dia e nos 45
+dias anteriores.
+
+As figuras foram produzidas com uma paleta própria inspirada em estilo
+editorial Cell Press, com tons de azul profundo, verde-azulado, laranja
+e dourado, fundo branco, grade leve, títulos curtos e p-valores
+apresentados diretamente em cada gráfico. Este relatório segue os
+elementos centrais das normas ABNT aplicáveis a trabalhos acadêmicos e
+relatórios técnicos: folha de rosto, resumo, sumário, numeração
+progressiva, margens em papel A4, fonte tamanho 12, espaçamento 1,5,
+recuo de parágrafo e referências normativas.
+
+\section{Resultados}\label{resultados}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.4598}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1034}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.0575}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1839}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.0920}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1034}}@{}}
+\caption{Correlações de Spearman estimadas no pipeline.}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Análise
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Método
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Rho de Spearman
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+p-valor
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+lag\_dias
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Análise
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Método
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Rho de Spearman
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+p-valor
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+lag\_dias
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Diaria: temperatura media vs casos & spearman & 2184 & 0,118 &
+\textless{} 0,001 & NA \\
+Anomalias mensais: temperatura vs casos & spearman & 2184 & 0,190 &
+\textless{} 0,001 & NA \\
+Mensal: temperatura media vs casos & spearman & 72 & 0,155 & 0,195 &
+NA \\
+Anual: temperatura media vs casos & spearman & 6 & 0,829 & 0,042 & NA \\
+Melhor defasagem diaria & spearman & 2142 & 0,189 & \textless{} 0,001 &
+42 \\
+\end{longtable}
+
+A associação diária bruta entre temperatura média e notificações foi
+positiva e fraca (rho = 0,118, p \textless{} 0,001). A análise por
+anomalias mensais apresentou rho = 0,190 e p \textless{} 0,001,
+sugerindo que parte da associação persiste após remoção simples do
+padrão médio mensal. Na agregação mensal, a associação foi rho = 0,155 e
+p 0,195.
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{../data_inmet_campos/resultados_dengue_temperatura/figuras/00_painel_principal_cellpress} 
+
+}
+
+\caption{Painel principal das associações entre notificações de dengue e temperatura. Todos os painéis apresentam p-valor da correlação de Spearman correspondente.}\label{fig:fig-painel}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{../data_inmet_campos/resultados_dengue_temperatura/figuras/01_serie_diaria_casos_temperatura} 
+
+}
+
+\caption{Série diária de notificações de dengue e temperatura média diária.}\label{fig:fig-serie}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{../data_inmet_campos/resultados_dengue_temperatura/figuras/02_dispersao_diaria_spearman} 
+
+}
+
+\caption{Associação diária bruta entre temperatura média e notificações.}\label{fig:fig-dispersao}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{../data_inmet_campos/resultados_dengue_temperatura/figuras/03_spearman_por_lag} 
+
+}
+
+\caption{Correlação de Spearman por defasagem da temperatura média diária.}\label{fig:fig-lag}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{../data_inmet_campos/resultados_dengue_temperatura/figuras/04_agregado_mensal_spearman} 
+
+}
+
+\caption{Associação mensal entre temperatura média e notificações agregadas.}\label{fig:fig-mensal}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{../data_inmet_campos/resultados_dengue_temperatura/figuras/05_agregado_anual_spearman} 
+
+}
+
+\caption{Associação anual exploratória entre temperatura média anual e notificações anuais.}\label{fig:fig-anual}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{../data_inmet_campos/resultados_dengue_temperatura/figuras/06_anomalias_mensais_spearman} 
+
+}
+
+\caption{Associação entre anomalias mensais de temperatura e de notificações.}\label{fig:fig-anomalias}
+\end{figure}
+
+\begin{longtable}[]{@{}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.0575}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2529}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2759}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1494}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2644}}@{}}
+\caption{Resumo anual de notificações e temperatura
+média.}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedleft
+Ano
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Média diária de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Mediana diária de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Casos no ano
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Temperatura média (°C)
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedleft
+Ano
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Média diária de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Mediana diária de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Casos no ano
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Temperatura média (°C)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+2020 & 0,03 & 0,00 & 11 & 23,60 \\
+2021 & 0,22 & 0,00 & 82 & 23,25 \\
+2022 & 3,11 & 1,00 & 1.134 & 23,57 \\
+2023 & 23,47 & 16,00 & 8.565 & 24,23 \\
+2024 & 73,50 & 37,50 & 26.902 & 24,66 \\
+2025 & 3,98 & 1,00 & 1.449 & 23,72 \\
+\end{longtable}
+
+\section{Discussão}\label{discussuxe3o}
+
+Os resultados apontam associação positiva, porém fraca, entre
+temperatura média diária e notificações de dengue. O maior coeficiente
+foi observado em defasagens próximas a seis semanas, o que pode refletir
+uma combinação de dinâmica vetorial, incubação, busca por atendimento e
+fluxo de notificação. Ainda assim, a correlação isolada não permite
+inferência causal, não ajusta simultaneamente chuva, umidade, sorotipos,
+ações de controle, feriados, autocorrelação ou mudanças no sistema de
+vigilância.
+
+A leitura mais prudente é que a temperatura apresentou sinal estatístico
+compatível com sazonalidade e dinâmica temporal da dengue, mas a
+magnitude da associação foi baixa. Para inferência etiológica mais
+robusta, recomenda-se etapa posterior com modelo de contagem, ajuste de
+sazonalidade, tendência temporal, autocorrelação e, se houver dados
+suficientes, modelo de defasagem distribuída.
+
+\section{Conclusão}\label{conclusuxe3o}
+
+No período analisado, as notificações de dengue em Campos dos Goytacazes
+apresentaram associação positiva e fraca com a temperatura média diária.
+A maior associação de Spearman ocorreu na análise defasada, com lag de
+42 dias. Todos os resultados devem ser interpretados como análise
+exploratória de associação, não como estimativa causal.
+
+\section{Referências normativas}\label{referuxeancias-normativas}
+
+ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. NBR 14724: Informação e
+documentação - Trabalhos acadêmicos - Apresentação. Rio de Janeiro:
+ABNT.
+
+ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. NBR 6023: Informação e
+documentação - Referências - Elaboração. Rio de Janeiro: ABNT.
+
+ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. NBR 6024: Informação e
+documentação - Numeração progressiva das seções de um documento -
+Apresentação. Rio de Janeiro: ABNT.
+
+ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. NBR 6027: Informação e
+documentação - Sumário - Apresentação. Rio de Janeiro: ABNT.
+
+ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. NBR 6028: Informação e
+documentação - Resumo, resenha e recensão - Apresentação. Rio de
+Janeiro: ABNT.
+
+ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. NBR 10520: Informação e
+documentação - Citações em documentos - Apresentação. Rio de Janeiro:
+ABNT.
+
+\end{document}

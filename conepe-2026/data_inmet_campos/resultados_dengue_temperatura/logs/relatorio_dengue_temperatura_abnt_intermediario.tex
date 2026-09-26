@@ -1,0 +1,373 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+  12pt,
+]{article}
+\usepackage{xcolor}
+\usepackage[a4paper,left=3cm,right=2cm,top=3cm,bottom=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+  \setmainfont[]{Times New Roman}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage{setspace}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{indentfirst}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{caption}
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0pt}
+\captionsetup{font=small,labelfont=bf,justification=centering}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Dengue e temperatura media diaria em Campos dos Goytacazes{,} RJ},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Dengue e temperatura media diaria em Campos dos Goytacazes, RJ}
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+\maketitle
+
+\setstretch{1.5}
+\section{Materiais}\label{materiais}
+
+Foram utilizados arquivos locais de notificacoes de dengue em formato
+Excel (\texttt{DENGUE2020.xlsx} a \texttt{DENGUE2025.xlsx}) e a base
+\texttt{temperatura\_diaria\_campos.csv}, contendo temperatura media
+diaria para Campos dos Goytacazes, RJ. A unidade geografica analisada
+foi o municipio de Campos dos Goytacazes, RJ, codigo IBGE 330100.
+
+A variavel de desfecho foi o numero diario de notificacoes de dengue,
+agregado pela data dt\_notific. A variavel de exposicao foi a
+temperatura media diaria em graus Celsius. O periodo comum analisado foi
+de 2020-01-08 a 2025-12-30. Todos os arquivos foram mantidos localmente.
+
+\section{Metodologia}\label{metodologia}
+
+A analise foi conduzida em R 4.6.0. As bases anuais de dengue foram
+padronizadas, os codigos municipais foram normalizados e os registros
+foram agregados por dia. A base meteorologica foi lida em formato CSV,
+com conversao das variaveis de temperatura para formato numerico.
+
+Foi utilizada exclusivamente correlacao de Spearman. O coeficiente foi
+escolhido por ser adequado a contagens assimetricas, com muitos zeros e
+valores extremos, e por avaliar associacao monotonica sem pressupor
+relacao linear. Foram estimadas associacoes diaria, mensal, anual
+exploratoria, por anomalias mensais e por defasagem de temperatura de 0
+a 45 dias. O melhor lag foi definido pelo maior valor absoluto de rho de
+Spearman.
+
+Os graficos foram exportados apenas como imagens PNG individuais, em
+estilo editorial com paleta propria inspirada em Cell Press. Cada
+grafico apresenta diretamente o rho de Spearman e o p-valor
+correspondente.
+
+\section{Resultados}\label{resultados}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1096}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.0890}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1507}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1644}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1575}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1644}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1644}}@{}}
+\caption{Resumo descritivo da base diaria analisada.}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Dias analisados
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Casos totais
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Media diaria de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Mediana diaria de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Maximo diario de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Dias com zero casos (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Temperatura media geral
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Dias analisados
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Casos totais
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Media diaria de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Mediana diaria de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Maximo diario de casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Dias com zero casos (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Temperatura media geral
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+2.184 & 38.143 & 17,46 & 1,00 & 458 & 49,2 & 23,84 \\
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.4598}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1034}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.0575}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1839}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.0920}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1034}}@{}}
+\caption{Correlacoes de Spearman estimadas.}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Analise
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Metodo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Rho de Spearman
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+p-valor
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+lag\_dias
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Analise
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Metodo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Rho de Spearman
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+p-valor
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+lag\_dias
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Diaria: temperatura media vs casos & spearman & 2184 & 0,118 &
+\textless{} 0,001 & NA \\
+Anomalias mensais: temperatura vs casos & spearman & 2184 & 0,190 &
+\textless{} 0,001 & NA \\
+Mensal: temperatura media vs casos & spearman & 72 & 0,155 & 0,195 &
+NA \\
+Anual: temperatura media vs casos & spearman & 6 & 0,829 & 0,042 & NA \\
+Melhor defasagem diaria & spearman & 2142 & 0,189 & \textless{} 0,001 &
+42 \\
+\end{longtable}
+
+A correlacao diaria bruta foi positiva e fraca (rho = 0,118, p
+\textless{} 0,001). A maior correlacao em modulo foi observada com lag
+de 42 dias (rho = 0,189, p \textless{} 0,001). A tabela diaria completa
+foi salva em \texttt{tabelas/tabela\_diaria\_associacao.csv}; abaixo
+esta uma amostra inicial.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1594}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.0870}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1739}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1304}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1449}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1884}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1159}}@{}}
+\caption{Amostra da tabela diaria com casos, temperatura, rho de
+Spearman e p-valor.}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Data
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Temp. media
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Lag dias
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Temp. lag
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Rho Spearman
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+p-valor
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Data
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Casos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Temp. media
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Lag dias
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Temp. lag
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Rho Spearman
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+p-valor
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+2020-01-08 & 1 & 27,95 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-09 & 0 & 27,48 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-10 & 2 & 27,88 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-11 & 0 & 28,35 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-12 & 0 & 28,44 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-13 & 0 & 27,17 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-14 & 0 & 25,41 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-15 & 0 & 25,20 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-16 & 0 & 27,64 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-17 & 0 & 26,54 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-18 & 0 & 24,06 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-19 & 0 & 24,74 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-20 & 0 & 22,68 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-21 & 0 & 23,60 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-22 & 0 & 24,83 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-23 & 0 & 24,48 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-24 & 0 & 22,40 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-25 & 0 & 23,12 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-26 & 0 & 24,40 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-27 & 0 & 24,98 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-28 & 1 & 27,65 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-29 & 0 & 28,58 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-30 & 0 & 28,15 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-01-31 & 0 & 28,23 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-02-01 & 0 & 28,68 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-02-02 & 0 & 27,86 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-02-03 & 0 & 27,46 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-02-04 & 0 & 27,16 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-02-05 & 0 & 27,18 & 42 & NA & 0,189 & \textless{} 0,001 \\
+2020-02-06 & 0 & 26,50 & 42 & NA & 0,189 & \textless{} 0,001 \\
+\end{longtable}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{../data_inmet_campos/resultados_dengue_temperatura/figuras/01_serie_diaria_casos_temperatura} 
+
+}
+
+\caption{Serie diaria de notificacoes de dengue e temperatura media diaria.}\label{fig:fig-serie}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{../data_inmet_campos/resultados_dengue_temperatura/figuras/02_dispersao_diaria_spearman} 
+
+}
+
+\caption{Associacao diaria bruta entre temperatura media e notificacoes.}\label{fig:fig-dispersao}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{../data_inmet_campos/resultados_dengue_temperatura/figuras/03_spearman_por_lag} 
+
+}
+
+\caption{Correlacao de Spearman por defasagem da temperatura media diaria.}\label{fig:fig-lag}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{../data_inmet_campos/resultados_dengue_temperatura/figuras/04_agregado_mensal_spearman} 
+
+}
+
+\caption{Associacao mensal entre temperatura media e notificacoes agregadas.}\label{fig:fig-mensal}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{../data_inmet_campos/resultados_dengue_temperatura/figuras/05_agregado_anual_spearman} 
+
+}
+
+\caption{Associacao anual exploratoria entre temperatura media anual e notificacoes anuais.}\label{fig:fig-anual}
+\end{figure}
+
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{../data_inmet_campos/resultados_dengue_temperatura/figuras/06_anomalias_mensais_spearman} 
+
+}
+
+\caption{Associacao entre anomalias mensais de temperatura e de notificacoes.}\label{fig:fig-anomalias}
+\end{figure}
+
+\end{document}

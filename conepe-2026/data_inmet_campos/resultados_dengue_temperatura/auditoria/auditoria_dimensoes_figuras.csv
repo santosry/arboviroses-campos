@@ -1,0 +1,7 @@
+arquivo,largura_px,altura_px,bytes,status
+01_serie_diaria_casos_temperatura.png,3360,2304,393911,OK
+02_dispersao_diaria_spearman.png,3360,2304,571571,OK
+03_rho_spearman_mensal.png,3360,2304,274948,OK
+04_pvalor_spearman_mensal.png,3360,2304,262222,OK
+05_agregado_anual_spearman.png,3360,2304,183014,OK
+06_anomalias_mensais_spearman.png,3360,2304,616541,OK

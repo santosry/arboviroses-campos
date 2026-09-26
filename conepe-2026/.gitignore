@@ -1,0 +1,12 @@
+# R
+.Rhistory
+.RData
+.Ruserdata
+.Renviron
+.Rproj.user/
+
+# Dados brutos do SINAN (nao versionar - dados sensiveis e volumosos)
+data_inmet_campos/*.xlsx
+
+# Logs de compilacao (LaTeX/RMarkdown)
+*.log

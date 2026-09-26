@@ -1,0 +1,61 @@
+
+Call:
+MASS::glm.nb(formula = casos ~ splines::ns(temp_lag, df = 3) + 
+    splines::ns(tempo, df = 8) + dia_semana, data = base_modelo, 
+    init.theta = 1.03580178, link = log)
+
+Coefficients:
+                               Estimate Std. Error z value             Pr(>|z|)
+(Intercept)                    -4.66220    0.83856  -5.560    0.000000027012301
+splines::ns(temp_lag, df = 3)1  0.78011    0.17816   4.379    0.000011934916224
+splines::ns(temp_lag, df = 3)2  0.71585    0.73514   0.974             0.330175
+splines::ns(temp_lag, df = 3)3  1.34902    0.27849   4.844    0.000001272338326
+splines::ns(tempo, df = 8)1     2.83695    0.76595   3.704             0.000212
+splines::ns(tempo, df = 8)2     4.51195    0.81862   5.512    0.000000035551018
+splines::ns(tempo, df = 8)3     7.05446    0.77375   9.117 < 0.0000000000000002
+splines::ns(tempo, df = 8)4     6.71169    0.78848   8.512 < 0.0000000000000002
+splines::ns(tempo, df = 8)5    10.26419    0.77947  13.168 < 0.0000000000000002
+splines::ns(tempo, df = 8)6     4.08079    0.53197   7.671    0.000000000000017
+splines::ns(tempo, df = 8)7     4.39025    1.68345   2.608             0.009110
+splines::ns(tempo, df = 8)8     4.50726    0.40233  11.203 < 0.0000000000000002
+dia_semana.L                   -0.23839    0.08437  -2.825             0.004721
+dia_semana.Q                   -2.37089    0.08482 -27.951 < 0.0000000000000002
+dia_semana.C                    0.30343    0.07832   3.874             0.000107
+dia_semana^4                   -1.20866    0.07372 -16.396 < 0.0000000000000002
+dia_semana^5                    0.12477    0.07169   1.740             0.081814
+dia_semana^6                   -0.27926    0.07134  -3.915    0.000090535306071
+                                  
+(Intercept)                    ***
+splines::ns(temp_lag, df = 3)1 ***
+splines::ns(temp_lag, df = 3)2    
+splines::ns(temp_lag, df = 3)3 ***
+splines::ns(tempo, df = 8)1    ***
+splines::ns(tempo, df = 8)2    ***
+splines::ns(tempo, df = 8)3    ***
+splines::ns(tempo, df = 8)4    ***
+splines::ns(tempo, df = 8)5    ***
+splines::ns(tempo, df = 8)6    ***
+splines::ns(tempo, df = 8)7    ** 
+splines::ns(tempo, df = 8)8    ***
+dia_semana.L                   ** 
+dia_semana.Q                   ***
+dia_semana.C                   ***
+dia_semana^4                   ***
+dia_semana^5                   .  
+dia_semana^6                   ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for Negative Binomial(1.0358) family taken to be 1)
+
+    Null deviance: 9144.3  on 2141  degrees of freedom
+Residual deviance: 1826.7  on 2124  degrees of freedom
+AIC: 9660.1
+
+Number of Fisher Scoring iterations: 1
+
+
+              Theta:  1.0358 
+          Std. Err.:  0.0502 
+
+ 2 x log-likelihood:  -9622.1030 

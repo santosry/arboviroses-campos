@@ -1,0 +1,15 @@
+metrica,valor
+Data de execução,2026-06-22 19:21:06
+R version,R version 4.6.0 (2026-04-24 ucrt)
+Estações utilizadas,"A607, A620"
+ZIPs INMET processados,6
+Registros horários brutos,"52,608"
+Registros horários limpos,"52,608"
+Dias processados,2192
+Período coberto,2020-01-01 a 2025-12-31
+Temperatura média,23.85 °C
+Temperatura mínima absoluta,10.20 °C
+Temperatura máxima absoluta,40.00 °C
+Outliers IQR removidos,10
+Gaps > 1 dia,0
+Arquivo de auditoria,audit/audit_20260622_191937.log

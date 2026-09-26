@@ -1,0 +1,10 @@
+item,valor
+municipio,Campos dos Goytacazes
+codigo_ibge,330100
+uf,RJ
+periodo_inicio,2020-01-08
+periodo_fim,2025-12-30
+municipio_base,notificacao
+data_evento,dt_notific
+confirmados_apenas,FALSE
+metodo,Spearman
