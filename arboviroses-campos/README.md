@@ -56,7 +56,7 @@ O trabalho é desenvolvido no âmbito do **Instituto Federal Fluminense (IFF), C
 
 ## Índice de risco e classificação de gravidade (MS)
 
-O painel incorpora um **índice de risco / classificação de gravidade** para dengue e chikungunya, **baseado exclusivamente em sinais e sintomas + fatores de risco** (idade, gestação e comorbidades), sem scores numéricos arbitrários.
+O painel incorpora um **índice de risco / classificação de gravidade** para dengue, **baseado exclusivamente em sinais e sintomas + fatores de risco** (idade, gestação e comorbidades), sem scores numéricos arbitrários.
 
 ### Dengue — grupos oficiais A/B/C/D
 
@@ -73,25 +73,13 @@ Implementado em `R/classificacao_risco.R` (função `classificar_dengue()` e ver
 
 **Critérios de dengue grave (qualquer um = Grupo D):** choque por extravasamento plasmático grave; sangramento grave (hematêmese, melena, metrorragia volumosa, sangramento do SNC); comprometimento grave de órgãos (fígado AST/ALT > 1000, SNC, coração, rins).
 
-### Chikungunya — categorias oficiais
-
-Implementado em `R/classificacao_risco.R` (função `classificar_chikungunya()` e versão vetorizada `classificar_chikungunya_df()`), seguindo **Chikungunya: manejo clínico (MS, 2017)** e documentos equivalentes:
-
-1. **Chikungunya (sem gravidade / acompanhamento ambulatorial)**
-2. **Chikungunya com manifestações extra-articulares**
-3. **Chikungunya grave (critério de internação / alto risco)**
-
-**Sinais de gravidade e critérios de internação (qualquer um eleva o risco):** acometimento neurológico; sinais de choque; dispneia/dor torácica; vômitos persistentes; sangramentos de mucosas; descompensação de doença de base; neonatos; outras manifestações de insuficiência de órgão/sistema com risco de morte ou necessidade de internação.
-
-**Grupos de risco (aumentam a prioridade mesmo sem sinais de gravidade):** gestantes, ≥ 65 anos, < 2 anos (especialmente neonatos) e comorbidades.
-
 ### Como aparece no dashboard
 
-- Aba **“Classificação de Risco”** com cards coloridos (azul/verde/amarelo/vermelho), distribuição por grupo, evolução anual e **tabela por bairro** com o índice (casos por grupo e soma C+D de alarme/grave).
-- **Calculadora interativa** de dengue e chikungunya para classificação de casos individuais (apoio ao ensino e à vigilância).
+- A classificação de dengue está integrada à **aba “Dengue”**, com cards coloridos (azul/verde/amarelo/vermelho), distribuição por grupo, evolução anual e **tabela por bairro** com o índice (casos por grupo e soma C+D de alarme/grave).
 - A classificação de dengue é **recalculada a partir dos campos SINAN-DENGUE** (`ALRM_*` para sinais de alarme, `GRAV_*` para gravidade, além de idade, gestação, comorbidades, petéquias e prova do laço) pelo script `scripts/07_risco.R`.
+- As funções de classificação de chikungunya e a calculadora interativa foram **removidas do dashboard** (o código-fonte em `R/classificacao_risco.R` é mantido apenas como referência metodológica).
 
-> ⚠️ **Nota metodológica:** os campos de sinais de alarme/gravidade do SINAN-DENGUE apresentam preenchimento incompleto na base local. Casos sem esses campos preenchidos são classificados como A ou B conforme os demais fatores de risco. A distribuição agregada de chikungunya por categoria depende de microdados individuais, ainda em migração no pipeline.
+> ⚠️ **Nota metodológica:** os campos de sinais de alarme/gravidade do SINAN-DENGUE apresentam preenchimento incompleto na base local. Casos sem esses campos preenchidos são classificados como A ou B conforme os demais fatores de risco.
 
 ---
 

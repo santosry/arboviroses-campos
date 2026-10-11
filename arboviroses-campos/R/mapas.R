@@ -200,7 +200,7 @@ mapa_leaflet_bairros_geobr <- function(mapa_sf, periodo_label) {
   )
   
   leaflet::leaflet(mapa_sf, options = leaflet::leafletOptions(preferCanvas = TRUE)) %>%
-    leaflet::addProviderTiles("CartoDB.Positron", group = "Base clara") %>%
+    leaflet::addProviderTiles("Esri.WorldGrayCanvas", group = "Base clara") %>%
     leaflet::addProviderTiles("OpenStreetMap.Mapnik", group = "OpenStreetMap") %>%
     leaflet::addPolygons(
       group = "Dengue por bairro",

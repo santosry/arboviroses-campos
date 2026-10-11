@@ -559,7 +559,7 @@ server <- function(input, output, session) {
       mapa_leaflet_bairros_geobr(dengue_mapa_geobr()$mapa, periodo_label)
     }, error = function(e) {
       leaflet::leaflet() %>%
-        leaflet::addProviderTiles("CartoDB.Positron") %>%
+        leaflet::addProviderTiles("Esri.WorldGrayCanvas") %>%
         leaflet::addControl(
           html = paste(
             "<strong>Não foi possível carregar a malha de bairros.</strong><br>",
@@ -761,8 +761,6 @@ server <- function(input, output, session) {
   # CLASSIFICACAO DE RISCO / GRAVIDADE (MS)
   # ============================================================
 
-  vazio_para_char <- function(x) if (is.null(x)) character(0) else x
-
   resumo_grupos_dengue <- function(df) {
     cores <- c(A = COR_GRUPO_A, B = COR_GRUPO_B, C = COR_GRUPO_C, D = COR_GRUPO_D)
     rotulos <- c(
@@ -888,61 +886,6 @@ server <- function(input, output, session) {
       write.csv(tab, file, row.names = FALSE, fileEncoding = "UTF-8")
     }
   )
-
-  # Cards informativos de chikungunya (microdados individuais ainda em migracao)
-  card_chik_info <- function(cor, rotulo, texto) {
-    div(class = "custom-card", style = paste0("border-top: 3px solid ", cor, " !important;"),
-      div(class = "card-value", style = paste0("color: ", cor, "; font-size: 22px;"), "—"),
-      div(class = "card-label", style = paste0("color: ", cor, ";"), rotulo),
-      div(class = "quality-note", texto)
-    )
-  }
-  output$risco_card_chik_sem <- renderUI({ card_chik_info(COR_CHIK_SEM_GRAVIDADE, "Sem gravidade (ambulatorial)", "Acompanhamento ambulatorial com hidratação e controle de dor/artralgia.") })
-  output$risco_card_chik_extra <- renderUI({ card_chik_info(COR_CHIK_EXTRA_ARTICULAR, "Com manifestações extra-articulares", "Acompanhamento ambulatorial com atenção à evolução clínica.") })
-  output$risco_card_chik_grave <- renderUI({ card_chik_info(COR_CHIK_GRAVE, "Grave (internação / alto risco)", "Internação hospitalar e manejo de suporte em unidade de maior complexidade.") })
-
-  # Calculadora interativa
-  calc_dengue_resultado <- reactive({
-    classificar_dengue(
-      idade_anos = input$calc_dengue_idade,
-      gestante = isTRUE(input$calc_dengue_gestante),
-      comorbidades = vazio_para_char(input$calc_dengue_comorbidades),
-      risco_social = isTRUE(input$calc_dengue_risco_social),
-      sangramento_pele = isTRUE(input$calc_dengue_sangramento_pele),
-      prova_laco = isTRUE(input$calc_dengue_prova_laco),
-      sinais_alarme = vazio_para_char(input$calc_dengue_alarme),
-      sinais_gravidade = vazio_para_char(input$calc_dengue_gravidade)
-    )
-  })
-
-  output$calc_dengue_resultado <- renderUI({
-    res <- calc_dengue_resultado()
-    div(class = "custom-card", style = paste0("border-top: 3px solid ", res$cor, " !important; margin-top: 12px;"),
-      div(class = "card-value", style = paste0("color: ", res$cor, "; font-size: 20px;"), res$rotulo),
-      div(class = "quality-note", res$descricao),
-      div(class = "card-label", style = paste0("color: ", res$cor, "; margin-top: 8px; text-transform: none; letter-spacing: 0;"), paste("Conduta:", res$conduta))
-    )
-  })
-
-  calc_chik_resultado <- reactive({
-    classificar_chikungunya(
-      idade_anos = input$calc_chik_idade,
-      gestante = isTRUE(input$calc_chik_gestante),
-      comorbidades = isTRUE(input$calc_chik_comorbidades),
-      sinais_gravidade = vazio_para_char(input$calc_chik_gravidade),
-      manifestacoes_extra = vazio_para_char(input$calc_chik_extra)
-    )
-  })
-
-  output$calc_chik_resultado <- renderUI({
-    res <- calc_chik_resultado()
-    div(class = "custom-card", style = paste0("border-top: 3px solid ", res$cor, " !important; margin-top: 12px;"),
-      div(class = "card-value", style = paste0("color: ", res$cor, "; font-size: 20px;"), res$rotulo),
-      div(class = "quality-note", res$descricao),
-      div(class = "card-label", style = paste0("color: ", res$cor, "; margin-top: 8px; text-transform: none; letter-spacing: 0;"), paste("Conduta:", res$conduta))
-    )
-  })
-
 
   session$onSessionEnded(function() {
     registrar_log(LOG_SESSAO, data.frame(
