@@ -57,6 +57,7 @@ limpar_sinan <- function(df, agravo, municipio = Sys.getenv("ARBOVIROSES_MUNICIP
     ))
     df <- df[!is.na(mun_chr) & mun_chr %in% c(municipio, paste0(municipio, "9")), , drop = FALSE]
   }
+  if (nrow(df) == 0) return(data.frame())
   col_data <- primeira_coluna(df, c("DT_NOTIFIC", "DT_SIN_PRI"))
   data_notificacao <- if (!is.na(col_data)) parse_data_sinan(df[[col_data]]) else rep(as.Date(NA), nrow(df))
   ano <- suppressWarnings(as.integer(col_ou_na(df, "NU_ANO")))
