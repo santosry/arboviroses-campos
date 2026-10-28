@@ -8,6 +8,11 @@ etapas <- c(
   "scripts/07_risco.R"
 )
 
+if (identical(tolower(Sys.getenv("ARBOVIROSES_SKIP_RISCO", "false")), "true")) {
+  etapas <- setdiff(etapas, "scripts/07_risco.R")
+  message("Etapa 07_risco ignorada por ARBOVIROSES_SKIP_RISCO=true.")
+}
+
 for (etapa in etapas) {
   message("Executando ", etapa)
   sys.source(etapa, envir = globalenv(), keep.source = FALSE)
