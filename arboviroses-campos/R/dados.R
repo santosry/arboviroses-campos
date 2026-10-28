@@ -123,6 +123,78 @@ populacao_campos <- tryCatch(
   }
 )
 
+# ============================================================
+# BENCHMARKS EXTERNOS (RJ e Brasil)
+# ------------------------------------------------------------
+# Referências anuais de incidência para comparação contextual.
+# Arquivo gerado por scripts/08_benchmarks.R (microdatasus/TabNet e
+# população IBGE/SIDRA). O app apenas lê o cache; nunca baixa no startup.
+# ============================================================
+
+carregar_benchmarks_referencia <- function(
+  cache_path = file.path("data", "app_cache", "benchmarks_uf_br.csv")
+) {
+  vazio <- data.frame(
+    Agravo = character(), Ano = integer(), Local = character(),
+    Casos_confirmados = numeric(), Populacao = numeric(),
+    Incidencia_100mil = numeric(), Fonte = character(),
+    Atualizado_em = character(), stringsAsFactors = FALSE
+  )
+  if (!file.exists(cache_path)) {
+    warning("Benchmarks externos indisponíveis em ", cache_path,
+            ". O painel seguirá sem as linhas de referência RJ/Brasil.")
+    return(vazio)
+  }
+  df <- tryCatch(
+    utils::read.csv(cache_path, stringsAsFactors = FALSE, fileEncoding = "UTF-8",
+                    check.names = FALSE),
+    error = function(e) {
+      warning("Falha ao ler benchmarks externos: ", conditionMessage(e))
+      NULL
+    }
+  )
+  if (is.null(df) || nrow(df) == 0) return(vazio)
+  obrigatorias <- c("Agravo", "Ano", "Local", "Casos_confirmados", "Populacao", "Incidencia_100mil")
+  if (!all(obrigatorias %in% names(df))) {
+    warning("Benchmarks externos sem colunas obrigatórias; ignorando.")
+    return(vazio)
+  }
+  for (col in c("Fonte", "Atualizado_em")) {
+    if (!col %in% names(df)) df[[col]] <- NA_character_
+  }
+  df$Ano <- suppressWarnings(as.integer(df$Ano))
+  df$Casos_confirmados <- suppressWarnings(as.numeric(df$Casos_confirmados))
+  df$Populacao <- suppressWarnings(as.numeric(df$Populacao))
+  df$Incidencia_100mil <- suppressWarnings(as.numeric(df$Incidencia_100mil))
+  df$Local <- as.character(df$Local)
+  df$Agravo <- as.character(df$Agravo)
+  df[!is.na(df$Ano) & !is.na(df$Local), , drop = FALSE]
+}
+
+benchmarks_referencia <- tryCatch(
+  carregar_benchmarks_referencia(),
+  error = function(e) {
+    warning("Falha ao carregar benchmarks externos: ", conditionMessage(e))
+    data.frame(
+      Agravo = character(), Ano = integer(), Local = character(),
+      Casos_confirmados = numeric(), Populacao = numeric(),
+      Incidencia_100mil = numeric(), Fonte = character(),
+      Atualizado_em = character(), stringsAsFactors = FALSE
+    )
+  }
+)
+
+obter_benchmarks <- function(agravo, anos = NULL) {
+  df <- benchmarks_referencia
+  if (nrow(df) == 0) return(df)
+  df <- df[tolower(df$Agravo) == tolower(as.character(agravo)[1]), , drop = FALSE]
+  if (!is.null(anos)) {
+    anos <- suppressWarnings(as.integer(anos))
+    df <- df[df$Ano %in% anos, , drop = FALSE]
+  }
+  df[order(df$Ano, factor(df$Local, levels = c("RJ", "Brasil"))), , drop = FALSE]
+}
+
 # Normalizacao de bairro
 normalizar_bairro <- function(x) {
   x <- as.character(x)
@@ -330,6 +402,243 @@ agregar_dengue_sinan <- function(df, anos = 2020:2025, agravo = "dengue") {
   })
 
   dplyr::bind_rows(linhas)
+}
+
+# ============================================================
+# FASE 2: agregacao a partir dos microdados LIMPOS (02_limpeza)
+# ------------------------------------------------------------
+# Recebe o data.frame padronizado de 02_limpeza (Sexo, Gestacao,
+# Raca_cor, Escolaridade, Idade, Classificacao, Evolucao, Sorotipo,
+# Bairro) e devolve o mesmo esquema dos caches agregados do app.
+# ============================================================
+agregar_microdados_limpos <- function(limpo, anos = 2020:2025, agravo = "dengue") {
+  agravo <- tolower(as.character(agravo)[1])
+  anos <- unique(suppressWarnings(as.integer(anos)))
+  anos <- anos[is.finite(anos)]
+  if (length(anos) == 0) anos <- 2020:2025
+
+  colunas <- c(
+    "Ano", "Masculino", "Feminino", "Ignorado_sexo", "Cura_evolucao",
+    "Obitos_Agr", "Obitos_Out", "Menor_1_Ano", "Faixa_1_4", "Faixa_5_9",
+    "Faixa_10_14", "Faixa_15_19", "Faixa_20_39", "Faixa_40_59",
+    "Faixa_60_64", "Faixa_65_69", "Faixa_70_79", "Faixa_80_mais",
+    "Ignorado_idade", "Ign_Branco_escolaridade", "Analfabeto",
+    "Primeira_a_quarta_serie_incompleta_EF", "Quarta_serie_completa_EF",
+    "Quinta_a_oitava_serie_incompleta_EF", "Ensino_fundamental_completo",
+    "Ensino_medio_incompleto", "Ensino_medio_completo",
+    "Educacao_superior_incompleta", "Educacao_superior_completa",
+    "Nao_se_aplica_escolaridade", "Primeiro_trimestre", "Segundo_trimestre",
+    "Terceiro_trimestre", "Nao_gestacao", "Nao_se_aplica_gestacao",
+    "Idade_gestacional", "Ign_Branco_gestacao", "Inconclusivo_casos",
+    "Branca", "Preta", "Amarela", "Parda", "Indigena", "Ign_Branco_etnia",
+    "Confirmado_casos", "Descartado_casos", "Ign_Branco_casos",
+    "Ign_Branco_sorotipo", "DEN_1", "DEN_2"
+  )
+
+  vazio <- function(ano) {
+    linha <- as.list(rep(0L, length(colunas)))
+    names(linha) <- colunas
+    linha$Ano <- as.integer(ano)
+    linha$Ign_Branco_sorotipo <- NA_integer_
+    linha$DEN_1 <- NA_integer_
+    linha$DEN_2 <- NA_integer_
+    as.data.frame(linha, stringsAsFactors = FALSE)
+  }
+
+  if (is.null(limpo) || nrow(limpo) == 0) {
+    return(dplyr::bind_rows(lapply(anos, vazio)))
+  }
+
+  norm <- function(x) {
+    x <- as.character(x)
+    x[is.na(x)] <- ""
+    x <- suppressWarnings(iconv(x, from = "", to = "ASCII//TRANSLIT", sub = ""))
+    tolower(trimws(gsub("\\s+", " ", x)))
+  }
+
+  ano <- suppressWarnings(as.integer(as.character(limpo$Ano)))
+  if ("Data_notificacao" %in% names(limpo)) {
+    data_notificacao <- suppressWarnings(as.Date(limpo$Data_notificacao))
+    ano_data <- suppressWarnings(as.integer(format(data_notificacao, "%Y")))
+    ano[is.na(ano)] <- ano_data[is.na(ano)]
+  }
+
+  mascara_confirmado <- function(classi) {
+    descartado <- switch(
+      agravo,
+      dengue = classi %in% c("5") | grepl("descartado", classi),
+      chikungunya = classi %in% c("5") | grepl("descartado", classi),
+      zika = classi %in% c("2") | grepl("descartado", classi),
+      grepl("descartado", classi)
+    )
+    inconclusivo <- switch(
+      agravo,
+      dengue = classi %in% c("6", "8") | grepl("inconclusivo", classi),
+      chikungunya = classi %in% c("6", "8") | grepl("inconclusivo", classi),
+      zika = classi %in% c("8") | grepl("inconclusivo", classi),
+      grepl("inconclusivo", classi)
+    )
+    confirmado <- switch(
+      agravo,
+      dengue = classi %in% c("10", "11", "12") |
+        (grepl("dengue|febre hemorr", classi) & !grepl("descartado|chikungunya", classi)),
+      chikungunya = classi %in% c("13") |
+        (grepl("chikungunya", classi) & !grepl("descartado|dengue", classi)),
+      zika = classi %in% c("1") |
+        (grepl("zika|confirm", classi) & !grepl("descartado|inconclusivo", classi)),
+      FALSE
+    )
+    list(
+      confirmado = confirmado & !descartado & !inconclusivo,
+      descartado = descartado,
+      inconclusivo = inconclusivo
+    )
+  }
+
+  linhas <- lapply(anos, function(ano_i) {
+    d <- limpo[!is.na(ano) & ano == ano_i, , drop = FALSE]
+    if (nrow(d) == 0) return(vazio(ano_i))
+
+    sexo <- norm(d$Sexo)
+    gest <- norm(d$Gestacao)
+    raca <- norm(d$Raca_cor)
+    esc <- norm(d$Escolaridade)
+    classi <- norm(d$Classificacao)
+    evol <- norm(d$Evolucao)
+    idade <- suppressWarnings(as.numeric(d$Idade))
+    classes <- mascara_confirmado(classi)
+    confirmado <- classes$confirmado
+    ignorado_classi <- classi == "" | classi %in% c("9") | grepl("ignorado|branco", classi)
+    obito_agravo <- evol %in% c("2") | grepl("obito.*(agravo|notific|dengue|chik|zika)", evol)
+    obito_outro <- evol %in% c("3") | grepl("obito.*outr|outr", evol)
+    cura <- evol %in% c("1") | grepl("cura", evol)
+
+    linha <- as.list(c(
+      Ano = as.integer(ano_i),
+      Masculino = sum(sexo %in% c("masculino", "m"), na.rm = TRUE),
+      Feminino = sum(sexo %in% c("feminino", "f"), na.rm = TRUE),
+      Ignorado_sexo = sum(sexo == "" | sexo %in% c("ignorado", "i"), na.rm = TRUE),
+      Cura_evolucao = sum(cura, na.rm = TRUE),
+      Obitos_Agr = sum(obito_agravo, na.rm = TRUE),
+      Obitos_Out = sum(obito_outro, na.rm = TRUE),
+      Menor_1_Ano = sum(!is.na(idade) & idade < 1),
+      Faixa_1_4 = sum(!is.na(idade) & idade >= 1 & idade <= 4),
+      Faixa_5_9 = sum(!is.na(idade) & idade >= 5 & idade <= 9),
+      Faixa_10_14 = sum(!is.na(idade) & idade >= 10 & idade <= 14),
+      Faixa_15_19 = sum(!is.na(idade) & idade >= 15 & idade <= 19),
+      Faixa_20_39 = sum(!is.na(idade) & idade >= 20 & idade <= 39),
+      Faixa_40_59 = sum(!is.na(idade) & idade >= 40 & idade <= 59),
+      Faixa_60_64 = sum(!is.na(idade) & idade >= 60 & idade <= 64),
+      Faixa_65_69 = sum(!is.na(idade) & idade >= 65 & idade <= 69),
+      Faixa_70_79 = sum(!is.na(idade) & idade >= 70 & idade <= 79),
+      Faixa_80_mais = sum(!is.na(idade) & idade >= 80),
+      Ignorado_idade = sum(is.na(idade)),
+      Ign_Branco_escolaridade = sum(esc == "" | esc %in% c("09", "9", "ignorado"), na.rm = TRUE),
+      Analfabeto = sum(esc %in% c("00", "0", "analfabeto") | grepl("analf", esc), na.rm = TRUE),
+      Primeira_a_quarta_serie_incompleta_EF = sum(esc %in% c("01", "1") | grepl("1.*4|primeira.*quarta", esc), na.rm = TRUE),
+      Quarta_serie_completa_EF = sum(esc %in% c("02", "2") | grepl("4.*comp|quarta.*compl", esc), na.rm = TRUE),
+      Quinta_a_oitava_serie_incompleta_EF = sum(esc %in% c("03", "3") | grepl("5.*8|quinta.*oitava", esc), na.rm = TRUE),
+      Ensino_fundamental_completo = sum(esc %in% c("04", "4") | grepl("fund.*compl", esc), na.rm = TRUE),
+      Ensino_medio_incompleto = sum(esc %in% c("05", "5") | grepl("medio.*incomp", esc), na.rm = TRUE),
+      Ensino_medio_completo = sum(esc %in% c("06", "6") | grepl("medio.*comp", esc), na.rm = TRUE),
+      Educacao_superior_incompleta = sum(esc %in% c("07", "7") | grepl("superior.*incomp", esc), na.rm = TRUE),
+      Educacao_superior_completa = sum(esc %in% c("08", "8") | grepl("superior.*comp", esc), na.rm = TRUE),
+      Nao_se_aplica_escolaridade = sum(esc %in% c("10", "nao se aplica"), na.rm = TRUE),
+      Primeiro_trimestre = sum(gest %in% c("1", "1o trimestre", "1 trimestre") | grepl("primeiro|1.*trim", gest), na.rm = TRUE),
+      Segundo_trimestre = sum(gest %in% c("2", "2o trimestre", "2 trimestre") | grepl("segundo|2.*trim", gest), na.rm = TRUE),
+      Terceiro_trimestre = sum(gest %in% c("3", "3o trimestre", "3 trimestre") | grepl("terceiro|3.*trim", gest), na.rm = TRUE),
+      Nao_gestacao = sum(gest %in% c("nao", "5"), na.rm = TRUE),
+      Nao_se_aplica_gestacao = sum(gest %in% c("nao se aplica", "6"), na.rm = TRUE),
+      Idade_gestacional = sum(gest %in% c("4") | grepl("idade", gest), na.rm = TRUE),
+      Ign_Branco_gestacao = sum(gest == "" | gest %in% c("ignorado", "9"), na.rm = TRUE),
+      Inconclusivo_casos = sum(classes$inconclusivo, na.rm = TRUE),
+      Branca = sum(raca %in% c("branca", "1"), na.rm = TRUE),
+      Preta = sum(raca %in% c("preta", "2"), na.rm = TRUE),
+      Amarela = sum(raca %in% c("amarela", "3"), na.rm = TRUE),
+      Parda = sum(raca %in% c("parda", "4"), na.rm = TRUE),
+      Indigena = sum(raca %in% c("indigena", "5"), na.rm = TRUE),
+      Ign_Branco_etnia = sum(raca == "" | raca %in% c("ignorado", "9"), na.rm = TRUE),
+      Confirmado_casos = sum(confirmado, na.rm = TRUE),
+      Descartado_casos = sum(classes$descartado, na.rm = TRUE),
+      Ign_Branco_casos = sum(ignorado_classi, na.rm = TRUE)
+    ))
+
+    if ("Sorotipo" %in% names(d)) {
+      soro <- norm(d$Sorotipo)
+      linha$Ign_Branco_sorotipo <- sum(soro == "" | soro %in% c("ignorado", "9"), na.rm = TRUE)
+      linha$DEN_1 <- sum(soro %in% c("1", "den 1", "den-1", "denv 1", "denv-1"), na.rm = TRUE)
+      linha$DEN_2 <- sum(soro %in% c("2", "den 2", "den-2", "denv 2", "denv-2"), na.rm = TRUE)
+    } else {
+      linha$Ign_Branco_sorotipo <- NA_integer_
+      linha$DEN_1 <- NA_integer_
+      linha$DEN_2 <- NA_integer_
+    }
+
+    as.data.frame(linha, stringsAsFactors = FALSE)
+  })
+
+  dplyr::bind_rows(linhas)
+}
+
+agregar_bairros_microdados_limpos <- function(limpo, anos = 2020:2025, agravo = "dengue") {
+  agravo <- tolower(as.character(agravo)[1])
+  if (is.null(limpo) || nrow(limpo) == 0 || !"Bairro" %in% names(limpo)) {
+    return(data.frame(Ano = integer(), NM_BAIRRO = character(), Casos = integer()))
+  }
+  norm <- function(x) {
+    x <- as.character(x)
+    x[is.na(x)] <- ""
+    x <- suppressWarnings(iconv(x, from = "", to = "ASCII//TRANSLIT", sub = ""))
+    tolower(trimws(gsub("\\s+", " ", x)))
+  }
+  classi <- norm(limpo$Classificacao)
+  descartado <- switch(
+    agravo,
+    dengue = classi %in% c("5") | grepl("descartado", classi),
+    chikungunya = classi %in% c("5") | grepl("descartado", classi),
+    zika = classi %in% c("2") | grepl("descartado", classi),
+    grepl("descartado", classi)
+  )
+  inconclusivo <- switch(
+    agravo,
+    dengue = classi %in% c("6", "8") | grepl("inconclusivo", classi),
+    chikungunya = classi %in% c("6", "8") | grepl("inconclusivo", classi),
+    zika = classi %in% c("8") | grepl("inconclusivo", classi),
+    grepl("inconclusivo", classi)
+  )
+  confirmado <- switch(
+    agravo,
+    dengue = classi %in% c("10", "11", "12") |
+      (grepl("dengue|febre hemorr", classi) & !grepl("descartado|chikungunya", classi)),
+    chikungunya = classi %in% c("13") |
+      (grepl("chikungunya", classi) & !grepl("descartado|dengue", classi)),
+    zika = classi %in% c("1") |
+      (grepl("zika|confirm", classi) & !grepl("descartado|inconclusivo", classi)),
+    FALSE
+  )
+  confirmado <- confirmado & !descartado & !inconclusivo
+
+  ano <- suppressWarnings(as.integer(as.character(limpo$Ano)))
+  if ("Data_notificacao" %in% names(limpo)) {
+    data_notificacao <- suppressWarnings(as.Date(limpo$Data_notificacao))
+    ano_data <- suppressWarnings(as.integer(format(data_notificacao, "%Y")))
+    ano[is.na(ano)] <- ano_data[is.na(ano)]
+  }
+  bairro <- norm(limpo$Bairro)
+  valido <- confirmado & !is.na(ano) & ano %in% anos &
+    nzchar(bairro) & !grepl("ignorado|sem informa|nao informado", bairro)
+
+  if (!any(valido)) {
+    return(data.frame(Ano = integer(), NM_BAIRRO = character(), Casos = integer()))
+  }
+
+  data.frame(
+    Ano = ano[valido],
+    NM_BAIRRO = tools::toTitleCase(bairro[valido]),
+    stringsAsFactors = FALSE
+  ) %>%
+    dplyr::count(Ano, NM_BAIRRO, name = "Casos") %>%
+    dplyr::arrange(Ano, dplyr::desc(Casos), NM_BAIRRO)
 }
 
 # Lista de dados

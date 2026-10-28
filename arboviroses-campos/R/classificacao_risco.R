@@ -22,15 +22,16 @@
 # ensino. A decisao assistencial e sempre do profissional de saude.
 # ============================================================================
 
-# Cores oficiais de classificacao de risco do MS
-COR_GRUPO_A <- "#1D9BF0"  # azul
-COR_GRUPO_B <- "#2E8B57"  # verde
-COR_GRUPO_C <- "#F1C40F"  # amarelo
-COR_GRUPO_D <- "#DC2626"  # vermelho
+# Cores de classificacao de risco em paleta viridis (segura para daltonismo).
+# A gravidade tambem e sempre informada por rotulo textual nos cards e graficos.
+COR_GRUPO_A <- substr(viridisLite::viridis(4, begin = 0.10, end = 0.88, option = "D")[1], 1, 7)
+COR_GRUPO_B <- substr(viridisLite::viridis(4, begin = 0.10, end = 0.88, option = "D")[2], 1, 7)
+COR_GRUPO_C <- substr(viridisLite::viridis(4, begin = 0.10, end = 0.88, option = "D")[3], 1, 7)
+COR_GRUPO_D <- substr(viridisLite::viridis(4, begin = 0.10, end = 0.88, option = "D")[4], 1, 7)
 
-COR_CHIK_SEM_GRAVIDADE <- "#2E86AB"          # azul (acompanhamento ambulatorial)
-COR_CHIK_EXTRA_ARTICULAR <- "#F18F01"        # laranja (atencao)
-COR_CHIK_GRAVE <- "#DC2626"                  # vermelho (internacao / alto risco)
+COR_CHIK_SEM_GRAVIDADE <- substr(viridisLite::viridis(3, begin = 0.12, end = 0.82, option = "D")[1], 1, 7)
+COR_CHIK_EXTRA_ARTICULAR <- substr(viridisLite::viridis(3, begin = 0.12, end = 0.82, option = "D")[2], 1, 7)
+COR_CHIK_GRAVE <- substr(viridisLite::viridis(3, begin = 0.12, end = 0.82, option = "D")[3], 1, 7)
 
 # ============================================================================
 # DENGUE — sinais oficiais

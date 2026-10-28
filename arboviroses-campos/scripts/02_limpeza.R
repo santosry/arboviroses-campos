@@ -48,15 +48,22 @@ decode_idade_sinan <- function(x) {
 limpar_sinan <- function(df, agravo, municipio = Sys.getenv("ARBOVIROSES_MUNICIPIO", "330100")) {
   if (is.null(df) || nrow(df) == 0) return(data.frame())
   names(df) <- toupper(names(df))
-  col_municipio <- primeira_coluna(df, c("ID_MUNICIP", "ID_MN_RESI"))
+  # Prioriza municipio de RESIDENCIA; ID_MUNICIP e o municipio de notificacao.
+  col_municipio <- primeira_coluna(df, c("ID_MN_RESI", "ID_MUNICIP"))
   if (!is.na(col_municipio)) {
-    df <- df[as.character(df[[col_municipio]]) %in% c(municipio, paste0(municipio, "9")), , drop = FALSE]
+    mun_chr <- suppressWarnings(iconv(
+      as.character(df[[col_municipio]]),
+      from = "", to = "ASCII//TRANSLIT", sub = ""
+    ))
+    df <- df[!is.na(mun_chr) & mun_chr %in% c(municipio, paste0(municipio, "9")), , drop = FALSE]
   }
   col_data <- primeira_coluna(df, c("DT_NOTIFIC", "DT_SIN_PRI"))
   data_notificacao <- if (!is.na(col_data)) parse_data_sinan(df[[col_data]]) else rep(as.Date(NA), nrow(df))
   ano <- suppressWarnings(as.integer(col_ou_na(df, "NU_ANO")))
   ano_fallback <- suppressWarnings(as.integer(col_ou_na(df, "ANO_ARQUIVO")))
   ano[is.na(ano)] <- ano_fallback[is.na(ano)]
+  ano_data <- suppressWarnings(as.integer(format(data_notificacao, "%Y")))
+  ano[is.na(ano)] <- ano_data[is.na(ano)]
 
   data.frame(
     Agravo = agravo,
@@ -69,6 +76,7 @@ limpar_sinan <- function(df, agravo, municipio = Sys.getenv("ARBOVIROSES_MUNICIP
     Idade = decode_idade_sinan(col_ou_na(df, "NU_IDADE_N")),
     Classificacao = normalizar_texto(col_ou_na(df, "CLASSI_FIN")),
     Evolucao = normalizar_texto(col_ou_na(df, "EVOLUCAO")),
+    Sorotipo = normalizar_texto(col_ou_na(df, "SOROTIPO")),
     Bairro = if ("NM_BAIRRO" %in% names(df)) normalizar_texto(df$NM_BAIRRO) else "",
     stringsAsFactors = FALSE
   )

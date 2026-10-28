@@ -13,7 +13,10 @@ required_packages <- c(
   "ggplot2",
   "readxl",
   "sf",
-  "leaflet"
+  "leaflet",
+  "viridisLite",
+  "jsonlite",
+  "httr"
 )
 
 missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]

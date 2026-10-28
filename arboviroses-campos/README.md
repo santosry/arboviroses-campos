@@ -8,6 +8,46 @@
 
 **Licença:** MIT
 
+> Plano de ação, decisões e critérios de verificação: [`documentacao/PLANO_ACAO_DASHBOARD.md`](documentacao/PLANO_ACAO_DASHBOARD.md).
+
+[![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-21918C.svg)](LICENSE)
+[![FAIR](https://img.shields.io/badge/princ%C3%ADpios-FAIR-3B528B.svg)](#licença-citação-e-reuso-princípios-fair)
+[![R](https://img.shields.io/badge/R-4.4%2B-440154.svg)](https://www.r-project.org/)
+[![Shiny](https://img.shields.io/badge/Shiny-interativo-5EC962.svg)](https://shiny.posit.co/)
+[![Acessibilidade](https://img.shields.io/badge/cores-viridis-FDE725.svg)](#acessibilidade-e-visualização)
+
+---
+
+## Licença, citação e reuso (princípios FAIR)
+
+Este repositório foi organizado para ser **localizável, acessível, interoperável e reutilizável** (FAIR), com limites explícitos sobre o que pode e o que não pode ser reutilizado.
+
+| Princípio | Como é atendido |
+|:---|:---|
+| **Findable** | README com fontes, período, recorte territorial, versão do pipeline, `data/app_cache/metadata.json` e `CITATION.cff`. |
+| **Accessible** | Aplicativo público, repositório aberto, caches agregados versionados e licença MIT. |
+| **Interoperable** | Variáveis padronizadas, saídas em CSV/JSON, funções R modulares e documentação metodológica. |
+| **Reusable** | Licença MIT, script de atualização, testes automatizados, notas de limitação e guia rápido de reuso. |
+
+### O que pode ser reutilizado
+
+- **Código-fonte:** sim, sob a licença MIT, com atribuição aos autores.
+- **Indicadores agregados e figuras:** sim, com citação deste painel e da fonte original (SINAN/SVS, IBGE/SIDRA).
+- **Dados brutos individuais e planilhas locais da vigilância:** não são publicados por restrições de privacidade e governança de dados.
+
+### Como citar
+
+> SANTOS, R. P.; MOREIRA, B. V.; SOUZA, M. G. L.; MELLO, M. R.; RIBEIRO, K. R. **Painel de Inteligência Epidemiológica para Arboviroses em Campos dos Goytacazes (2020-2025)**. Instituto Federal Fluminense, Campus Campos Guarus, 2026. Disponível em: <https://github.com/santosry/arboviroses-campos>. Licença MIT.
+
+O arquivo [`CITATION.cff`](CITATION.cff) contém a versão legível por máquina. Para reutilizar o código:
+
+```bash
+git clone https://github.com/santosry/arboviroses-campos.git
+cd arboviroses-campos
+Rscript -e 'renv::restore()'
+Rscript -e 'shiny::runApp()'
+```
+
 ---
 
 ## Contexto científico
@@ -93,7 +133,8 @@ Implementado em `R/classificacao_risco.R` (função `classificar_dengue()` e ver
 | Chikungunya (registros individuais) | SINAN-CHIKUNGUNYA via pacote [`microdatasus`](https://github.com/rfsaldanha/microdatasus) | Download parametrizável; cache local em `data/app_cache/`; fallback estático se cache indisponível |
 | Dengue por bairro | Planilhas locais `DENGUEYYYY.xlsx` fornecidas pela **Subsecretaria de Vigilância Epidemiológica de Campos dos Goytacazes** | `dados_sinan_campos/` (não versionado) |
 | Malha territorial | `geobr` / IBGE: bairros de 2010 | Cache em `neighborhoods_2010_simplified.gpkg` |
-| População residente | IBGE/SIDRA: tabela 6579, variável 9324 | Cache com fallback embutido |
+| População residente | IBGE/SIDRA: tabela 6579, variável 9324; Censo 2022 (tabela 4714) para 2022-2023 | Cache com fallback embutido |
+| Referências RJ e Brasil | SINAN/SVS via `microdatasus` (chikungunya e atualização nacional) e TabNet/DataSUS (dengue e Zika); população IBGE/SIDRA | `data/app_cache/benchmarks_uf_br.csv`, gerado por `scripts/08_benchmarks.R` |
 
 ### Critérios de inclusão e definição de caso
 
@@ -107,11 +148,12 @@ Implementado em `R/classificacao_risco.R` (função `classificar_dengue()` e ver
 O pipeline é integralmente reprodutível e modular:
 
 ```
-01_ingestao.R -> 02_limpeza.R -> 03_agregacao.R
+01_ingestao.R -> 02_limpeza.R -> 03_agregacao.R (fase 2)
 04_mapas.R    -> 05_validacao.R -> 06_export_app.R
 ```
 
 *   A ingestão suporta modo **com e sem download** das APIs externas, controlado pela variável de ambiente `ARBOVIROSES_DOWNLOAD`.
+*   O `03_agregacao.R` implementa a **fase 2**: quando existem microdados limpos em `data/interim/`, agrega `Sexo`, `Idade`, `Raça/cor`, `Escolaridade`, `Gestação`, `Classificação final`, `Evolução` e `Bairro` diretamente dos registros do SINAN. Se os microdados não estiverem disponíveis, mantém o fallback validado.
 *   O app Shiny **não baixa dados no startup**: lê exclusivamente caches `.rds` e `.gpkg` pré-processados.
 *   A validação gera automaticamente relatório de auditoria (`data/audit/relatorio_auditoria.html`) com totais, completude e bairros não pareados.
 
@@ -124,6 +166,17 @@ O pipeline é integralmente reprodutível e modular:
 *   **Tutorial integrado** à página inicial (colapsável) com instruções de uso e interpretação.
 *   **Filtro global de período** na barra lateral que sincroniza todas as abas.
 *   **Ícone de mosquito** como identidade visual em todas as abas do painel.
+*   **Comparação com o Estado do RJ e o Brasil:** linhas tracejadas de referência nos gráficos de incidência, com dados anuais e população IBGE/SIDRA.
+*   **Avaliação de usabilidade e co-design:** aba própria com questionário Likert, registro local das respostas e envio por endpoint ou e-mail pré-preenchido.
+*   **Avisos formais de uso:** banner global e nota metodológica em todas as abas, reforçando que notificação não é incidência real e que os indicadores não estabelecem causalidade.
+
+### Acessibilidade e visualização
+
+- **Paleta viridis** em todos os gráficos, mapas e componentes de interface, escolhida por ser perceptualmente uniforme e segura para pessoas com daltonismo.
+- **Codificação redundante:** as categorias são identificadas por rótulos, legendas e posição, não apenas por cor.
+- **Contraste e legibilidade:** tipografia ampliada nos eixos, legendas curtas, menos sombras e mais espaço em branco.
+- **Navegação por teclado:** foco visível e estrutura semântica nos formulários e controles.
+- **Textos de escopo:** cada aba informa o que o indicador mostra, como interpretar e quais são os limites metodológicos.
 
 ---
 
@@ -151,6 +204,7 @@ arboviroses-campos/
 │   ├── 05_validacao.R           # Auditoria de totais, completude, bairros nao mapeados
 │   ├── 06_export_app.R          # Exportacao dos .rds finais para data/app_cache/
 │   ├── 07_risco.R               # Classificacao de risco MS (dengue/chikungunya) -> cache
+│   ├── 08_benchmarks.R          # Referencias externas RJ/Brasil (microdatasus/TabNet + IBGE)
 │   ├── update_data.R            # Orquestrador do pipeline completo
 │   ├── deploy.R                 # Publicacao no shinyapps.io com protecao contra conta antiga
 │   └── fix_encoding_text.R      # Correcao de encoding em textos do projeto
@@ -160,11 +214,14 @@ arboviroses-campos/
 │   ├── raw/                     # Dados brutos baixados (nao versionados)
 │   ├── interim/                 # Dados limpos intermediarios (nao versionados)
 │   └── processed/               # Agregados processados (nao versionados)
-├── tests/testthat/              # Testes automatizados (46 testes, 0 falhas)
+├── tests/testthat/              # Testes automatizados (53 testes, 0 falhas)
 ├── www/style.css                # Estilos incrementais (design visual principal preservado)
 ├── .github/workflows/           # CI/CD (GitHub Actions)
 ├── renv.lock                    # Ambiente R reprodutivel
 ├── LICENSE                      # MIT License
+├── CITATION.cff                 # Metadados de citacao (FAIR)
+├── data/app_cache/benchmarks_uf_br.csv  # Referencias RJ/Brasil por ano
+├── .github/workflows/           # CI e atualizacao semestral
 └── README.md
 ```
 
@@ -197,6 +254,44 @@ Para iniciar o app localmente:
 shiny::runApp()
 ```
 
+### Atualização semestral automatizada
+
+O workflow [`atualizacao-semestral.yml`](../.github/workflows/atualizacao-semestral.yml) executa a atualização dos caches e dos benchmarks a cada seis meses (janeiro e julho) e também pode ser disparado manualmente (`workflow_dispatch`). Ele restaura o ambiente `renv`, executa `scripts/update_data.R` e `scripts/08_benchmarks.R`, roda os testes e publica os artefatos de auditoria. O app **nunca baixa dados no startup**: lê apenas os caches versionados em `data/app_cache/`.
+
+Para reproduzir localmente a etapa de referências externas:
+
+```r
+Sys.setenv(ARBOVIROSES_DOWNLOAD = "true")
+source("scripts/08_benchmarks.R")
+```
+
+### Avaliação de usabilidade e envio de respostas
+
+A aba **Avaliação** contém um questionário Likert de oito itens, perfil de uso, comentários e consentimento. As respostas são sempre registradas localmente em `logs/07_feedback.csv` (quando o diretório é gravável).
+
+O envio automático já vem configurado por padrão com o **FormSubmit**, um serviço gratuito e sem chave de API:
+
+```text
+Destino: ryan.paulo@gsuite.iff.edu.br
+Endpoint: https://formsubmit.co/ajax/ryan.paulo@gsuite.iff.edu.br
+```
+
+> **Ativação única:** no primeiro envio, o FormSubmit envia um e-mail de ativação para `ryan.paulo@gsuite.iff.edu.br`. Clique no link de confirmação uma única vez. Depois disso, todas as respostas chegam automaticamente à caixa de entrada, com os campos do formulário em formato de tabela.
+
+As variáveis podem ser sobrescritas no servidor:
+
+```r
+Sys.setenv(
+  ARBOVIROSES_FEEDBACK_ENDPOINT = "https://formsubmit.co/ajax/ryan.paulo@gsuite.iff.edu.br",
+  ARBOVIROSES_FEEDBACK_EMAIL = "ryan.paulo@gsuite.iff.edu.br",
+  ARBOVIROSES_FEEDBACK_REFERER = "https://arbovirosescamposiff.shinyapps.io/arboviroses/"
+)
+```
+
+O arquivo [`.Renviron.example`](.Renviron.example) documenta a configuração local. O script [`scripts/deploy.R`](scripts/deploy.R) envia essas variáveis ao shinyapps.io via `envVars`. Para desativar o envio automático em testes, use `ARBOVIROSES_FEEDBACK_AUTOSEND=false`.
+
+Se o envio automático falhar ou o FormSubmit estiver temporariamente indisponível, o painel oferece um e-mail pré-preenchido para `ryan.paulo@gsuite.iff.edu.br` e um CSV para envio manual. O app tenta o envio via navegador com `no-cors` e duas tentativas; a resposta do FormSubmit é usada apenas como confirmação de envio. Nenhum dado clínico ou identificável de paciente deve ser inserido no formulário.
+
 ---
 
 ## Auditoria e metadados
@@ -210,6 +305,9 @@ O pipeline gera automaticamente:
 | `data/audit/completude_variaveis.csv` | Percentual de campos ignorados/brancos por variável, agravo e ano |
 | `data/audit/bairros_nao_mapeados.csv` | Bairros da planilha sem correspondência na malha geobr/IBGE |
 | `data/audit/relatorio_auditoria.html` | Relatório HTML consolidado com alertas metodológicos |
+| `data/audit/benchmarks_uf_br_auditoria.csv` | Casos confirmados por ano, agravo e local (RJ/Brasil), códigos de classificação e data de processamento |
+| `data/app_cache/benchmarks_uf_br.csv` | Referências anuais de incidência do RJ e do Brasil usadas nas linhas tracejadas |
+| `logs/07_feedback.csv` | Respostas voluntárias da avaliação de usabilidade (quando o diretório é gravável) |
 
 ---
 
@@ -219,7 +317,9 @@ O pipeline gera automaticamente:
 *   **Incompletude diferencial.** Campos como escolaridade e raça/cor têm proporções elevadas de ignorados/brancos: as distribuições observadas nesses recortes devem ser interpretadas com cautela e sempre acompanhadas do indicador de completude.
 *   **Incidência aproximada.** O denominador populacional provém do IBGE/SIDRA (tabela 6579) e pode não estar disponível para todos os anos; quando ausente, replica-se o último valor conhecido, o que introduz imprecisão na taxa.
 *   **Malha territorial desatualizada.** A malha de bairros do IBGE data de 2010. Mudanças na delimitação ou nomenclatura de bairros desde então podem gerar desencontros com os registros das planilhas de notificação.
-*   **Chikungunya em fluxo de migração.** Diferentemente de dengue e Zika (que já possuem registros individuais cacheados), os dados de chikungunya estão em processo de migração para o pipeline via microdatasus/SINAN-CHIKUNGUNYA. Até a validação completa com download, utiliza-se fallback estático pré-validado.
+*   **Chikungunya em fluxo de migração.** Diferentemente de dengue e Zika (que já possuem registros individuais cacheados), os dados de chikungunya estão em processo de migração para o pipeline via microdatasus/SINAN-CHIKUNGUNYA. A fase 2 já agrega os microdados limpos quando eles existem; se o download não tiver sido executado, utiliza-se fallback estático pré-validado.
+*   **Benchmarks externos não substituem análise local.** As linhas de RJ e Brasil são referências contextuais anuais; diferenças de população, critérios de confirmação e qualidade de notificação limitam comparações diretas.
+*   **Feedback não é amostra probabilística.** A avaliação de usabilidade é voluntária e serve para melhoria contínua, não para inferência sobre todos os profissionais de vigilância.
 *   **Associações descritivas, não causais.** Todos os gráficos e tabelas são descritivos. Padrões observados não estabelecem nexo causal e devem ser ponto de partida para investigações complementares.
 
 ---

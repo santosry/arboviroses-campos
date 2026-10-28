@@ -1,0 +1,10 @@
+# Configuração do formulário de avaliação (copie para .Renviron).
+# O endpoint padrão usa FormSubmit e não contém chave/segredo.
+ARBOVIROSES_FEEDBACK_ENDPOINT=https://formsubmit.co/ajax/ryan.paulo@gsuite.iff.edu.br
+ARBOVIROSES_FEEDBACK_EMAIL=ryan.paulo@gsuite.iff.edu.br
+
+# Para desativar o envio automático em testes locais:
+# ARBOVIROSES_FEEDBACK_AUTOSEND=false
+
+# Para usar Formspree em vez do FormSubmit:
+# ARBOVIROSES_FEEDBACK_ENDPOINT=https://formspree.io/f/SEU_ID

@@ -183,7 +183,7 @@ criar_barras_verticais <- function(valores, rotulos, cores = NULL) {
   }
   
   if(is.null(cores)) {
-    cores <- colorRampPalette(c("#2E86AB", "#A23B72", "#F18F01", "#C73E1D", "#3B1F2B", "#7C6A0A"))(length(valores))
+    cores <- paleta_viridis(length(valores), begin = 0.08, end = 0.92)
   }
   
   df_plot <- data.frame(
@@ -252,7 +252,7 @@ criar_grafico_serie <- function(df, cor, nome) {
     margin = list(l = 45, r = 35, t = 30, b = 55))
 }
 
-criar_grafico_incidencia <- function(df, cor, nome) {
+criar_grafico_incidencia <- function(df, cor, nome, benchmarks = NULL) {
   df_plot <- adicionar_populacao(df)
   if(all(is.na(df_plot$Incidencia_100mil))) {
     return(plot_ly() %>% layout(
@@ -267,8 +267,25 @@ criar_grafico_incidencia <- function(df, cor, nome) {
     ))
   }
   df_plot$rotulo_texto <- ifelse(is.na(df_plot$Incidencia_100mil), "", format_rate(df_plot$Incidencia_100mil))
-  y_max <- max(df_plot$Incidencia_100mil, na.rm = TRUE) * 1.18
-  plot_ly(df_plot, x = ~Ano, y = ~Incidencia_100mil,
+
+  bench <- NULL
+  if (!is.null(benchmarks) && nrow(benchmarks) > 0) {
+    bench <- benchmarks
+    bench$Ano <- suppressWarnings(as.integer(bench$Ano))
+    bench$Incidencia_100mil <- suppressWarnings(as.numeric(bench$Incidencia_100mil))
+    bench <- bench[
+      !is.na(bench$Ano) & bench$Ano %in% df_plot$Ano & is.finite(bench$Incidencia_100mil),
+      , drop = FALSE
+    ]
+  }
+  if (!is.null(bench) && nrow(bench) == 0) bench <- NULL
+
+  y_max <- max(
+    c(df_plot$Incidencia_100mil, if (!is.null(bench)) bench$Incidencia_100mil else NA_real_),
+    na.rm = TRUE
+  ) * 1.18
+
+  p <- plot_ly(df_plot, x = ~Ano, y = ~Incidencia_100mil,
           type = "scatter", mode = "lines+markers+text",
           line = list(color = cor, width = 3),
           marker = list(color = cor, size = 9),
@@ -276,14 +293,38 @@ criar_grafico_incidencia <- function(df, cor, nome) {
           textposition = "top center",
           cliponaxis = FALSE,
           textfont = list(size = 13, color = "#1e293b"),
-          name = "Incidência/100 mil",
+          name = paste0(nome, " (município)"),
           hovertemplate = "<b>Ano: %{x}</b><br>Incidência: %{y:.1f}/100 mil<br>População: %{customdata}<extra></extra>",
-          customdata = ~format_number(Populacao)) %>%
-    layout(
-      xaxis = list(title = "", tickfont = list(size = 10), tickmode = "array", tickvals = sort(unique(df_plot$Ano))),
+          customdata = ~format_number(Populacao))
+
+  if (!is.null(bench)) {
+    referencias <- list(
+      RJ = list(cor = COR_REFERENCIA_RJ, rotulo = "RJ (referência)"),
+      Brasil = list(cor = COR_REFERENCIA_BR, rotulo = "Brasil (referência)")
+    )
+    for (local in names(referencias)) {
+      b <- bench[bench$Local == local, , drop = FALSE]
+      if (nrow(b) == 0) next
+      p <- p %>% add_trace(
+        data = b, x = ~Ano, y = ~Incidencia_100mil,
+        type = "scatter", mode = "lines+markers",
+        name = referencias[[local]]$rotulo,
+        line = list(color = referencias[[local]]$cor, width = 2, dash = "dash"),
+        marker = list(color = referencias[[local]]$cor, size = 6, symbol = "diamond"),
+        hovertemplate = paste0("<b>", referencias[[local]]$rotulo, "</b><br>Ano: %{x}<br>Incidência: %{y:.1f}/100 mil<extra></extra>"),
+        inherit = FALSE
+      )
+    }
+  }
+
+  p %>% layout(
+      xaxis = list(title = "", tickfont = list(size = 10), tickmode = "array",
+                   tickvals = sort(unique(df_plot$Ano)), ticktext = as.character(sort(unique(df_plot$Ano)))),
       yaxis = list(title = "Casos por 100 mil habitantes", tickfont = list(size = 10), range = c(0, y_max), automargin = TRUE),
-      showlegend = FALSE,
-      margin = list(l = 55, r = 25, t = 20, b = 55)
+      showlegend = !is.null(bench),
+      legend = list(orientation = "h", x = 0.5, xanchor = "center", y = 1.18, font = list(size = 11)),
+      hovermode = "x unified",
+      margin = list(l = 55, r = 25, t = if (is.null(bench)) 20 else 42, b = 55)
     )
 }
 
@@ -393,7 +434,7 @@ criar_grafico_sexo <- function(df, destacar_feminino_2024 = FALSE, organizar_rot
       y = ~Masculino,
       width = largura_barra,
       name = "Masculino",
-      marker = list(color = "#2E86AB"),
+      marker = list(color = CORES_SEXO[["Masculino"]]),
       hovertext = ~paste0("Ano ", Ano_num, "<br>Masculino: ", format_number(Masculino)),
       hoverinfo = "text"
     ) %>%
@@ -403,7 +444,7 @@ criar_grafico_sexo <- function(df, destacar_feminino_2024 = FALSE, organizar_rot
       y = ~Feminino,
       width = largura_barra,
       name = "Feminino",
-      marker = list(color = "#A23B72"),
+      marker = list(color = CORES_SEXO[["Feminino"]]),
       hovertext = ~paste0("Ano ", Ano_num, "<br>Feminino: ", format_number(Feminino)),
       hoverinfo = "text"
     ) %>%
@@ -413,7 +454,7 @@ criar_grafico_sexo <- function(df, destacar_feminino_2024 = FALSE, organizar_rot
       y = ~Ignorado_sexo,
       width = largura_barra,
       name = "Ign/Branco",
-      marker = list(color = "#ea8a0e"),
+      marker = list(color = CORES_SEXO[["Ign/Branco"]]),
       hovertext = ~paste0("Ano ", Ano_num, "<br>Ign/Branco: ", format_number(Ignorado_sexo)),
       hoverinfo = "text"
     )
@@ -547,23 +588,12 @@ criar_grafico_faixa_etaria <- function(df) {
     )
   }
   
-  cores_categorias <- c(
-    "<1" = "#F6C85F",
-    "1-4" = "#FF8C42",
-    "5-9" = "#E4572E",
-    "10-14" = "#76B041",
-    "15-19" = "#4B8F8C",
-    "0-19" = "#F18F01",
-    "20-39" = "#C73E1D",
-    "40-59" = "#2E86AB",
-    "20-59" = "#C73E1D",
-    "60-64" = "#3B1F2B",
-    "65-69" = "#1ABC9C",
-    "70-79" = "#7C6A0A",
-    "80+" = "#A23B72",
-    "60+" = "#3B1F2B",
-    "Ign/Branco" = "#95A5A6"
+  categorias_etarias <- setdiff(unique(rotulos), "Ign/Branco")
+  cores_categorias <- setNames(
+    paleta_viridis(length(categorias_etarias), begin = 0.08, end = 0.90),
+    categorias_etarias
   )
+  cores_categorias["Ign/Branco"] <- COR_IGNORADO
 
   criar_barras_verticais(
     valores = valores,
@@ -581,7 +611,7 @@ criar_grafico_faixa_etaria <- function(df) {
 criar_grafico_etnia <- function(df) {
   valores <- c(sum(df$Branca), sum(df$Preta), sum(df$Amarela), sum(df$Parda), sum(df$Indigena), sum(df$Ign_Branco_etnia))
   rotulos <- c("Branca", "Preta", "Amarela", "Parda", "Indígena", "Ign/Branco")
-  cores <- c("#2E86AB", "#A23B72", "#F18F01", "#C73E1D", "#3B1F2B", "#7C6A0A")
+  cores <- c(paleta_viridis(5, begin = 0.08, end = 0.88), COR_IGNORADO)
   criar_donut(valores, rotulos, cores, exibir_rotulo_detalhado = TRUE)
 }
 
@@ -606,8 +636,10 @@ criar_grafico_escolaridade <- function(df) {
     sum(df$Educacao_superior_completa),
     sum(df$Nao_se_aplica_escolaridade)
   )
-  cores <- c("#7C6A0A", "#95A5A6", "#2E86AB", "#A23B72", "#F18F01", "#C73E1D", 
-             "#3B1F2B", "#1ABC9C", "#9B59B6", "#E67E22", "#3498DB")
+  cores <- c(
+    COR_IGNORADO,
+    paleta_viridis(length(rotulos) - 1, begin = 0.08, end = 0.90)
+  )
   
   criar_barras_horizontais <- function(valores, rotulos, cores) {
     df_plot <- data.frame(
@@ -652,7 +684,10 @@ criar_grafico_gestacao <- function(df) {
     sum(df$Segundo_trimestre),
     sum(df$Primeiro_trimestre)
   )
-  cores <- c("#7C6A0A", "#95A5A6", "#2E86AB", "#A23B72", "#F18F01", "#C73E1D", "#3B1F2B")
+  cores <- c(
+    COR_IGNORADO,
+    paleta_viridis(length(rotulos) - 1, begin = 0.08, end = 0.90)
+  )
   
   criar_barras_verticais(valores, rotulos, cores)
 }
@@ -788,61 +823,90 @@ metadados_figura <- function(nome_doenca, visualizacao, periodo_label = "Períod
   )
   atencao <- "Atenção metodológica: dados notificados não equivalem à incidência real; subnotificação e campos ignorados/brancos podem alterar a interpretação."
   fonte <- if(visualizacao == "incidencia") {
-    "Fonte: SINAN/SVS; população IBGE/SIDRA, tabela 6579, variável 9324."
+    "Fonte: SINAN/SVS; população IBGE/SIDRA (tabela 6579/9324; Censo 2022 para 2022-2023). Linhas tracejadas: referências RJ e Brasil."
   } else {
     "Fonte: SINAN/SVS."
   }
   paste(o_que, interpretar, atencao, fonte, periodo_label, sep = "\n")
 }
 
-grafico_publicacao <- function(df, visualizacao, titulo, nome_doenca = titulo, periodo_label = "Período analisado") {
+grafico_publicacao <- function(df, visualizacao, titulo, nome_doenca = titulo,
+                               periodo_label = "Período analisado", benchmarks = NULL) {
   tab <- tabela_visualizacao(df, visualizacao)
   caption <- metadados_figura(nome_doenca, visualizacao, periodo_label)
-  tema_publicacao <- theme_minimal(base_size = 13) +
-    theme(
-      plot.title = element_text(face = "bold", size = 17, color = "#1A2535"),
-      plot.subtitle = element_text(size = 11, color = "#475569"),
-      plot.caption = element_text(size = 9, color = "#475569", hjust = 0, lineheight = 1.15),
-      legend.position = "bottom",
-      legend.title = element_blank(),
-      panel.grid.minor = element_blank()
-    )
+  tema_publicacao <- tema_publicacao_viridis(base_size = 13)
 
-  if(visualizacao == "serie") {
+  if (visualizacao == "serie") {
     tab_long <- tab %>% tidyr::pivot_longer(-Ano, names_to = "Categoria", values_to = "Casos")
+    cores <- setNames(
+      paleta_viridis(length(unique(tab_long$Categoria)), begin = 0.08, end = 0.88),
+      unique(tab_long$Categoria)
+    )
     return(
       ggplot(tab_long, aes(x = Ano, y = Casos, color = Categoria, group = Categoria)) +
         geom_line(linewidth = 0.9) + geom_point(size = 2.2) +
+        scale_color_manual(values = cores) +
         labs(title = titulo, subtitle = periodo_label, x = "Ano", y = "Casos", caption = caption) +
         tema_publicacao
     )
   }
-  if(visualizacao == "sexo") {
+  if (visualizacao == "sexo") {
     tab_long <- tab %>% tidyr::pivot_longer(-Ano, names_to = "Categoria", values_to = "Casos")
+    cores <- setNames(
+      paleta_viridis(length(unique(tab_long$Categoria)), begin = 0.08, end = 0.88),
+      unique(tab_long$Categoria)
+    )
     return(
       ggplot(tab_long, aes(x = factor(Ano), y = Casos, fill = Categoria)) +
         geom_col(position = position_dodge(width = 0.75), width = 0.68) +
         geom_text(aes(label = ifelse(Casos > 0, format_number(Casos), "")), position = position_dodge(width = 0.75), vjust = -0.25, size = 3.1, color = "#1e293b") +
+        scale_fill_manual(values = cores) +
         scale_y_continuous(expand = expansion(mult = c(0, 0.16))) +
         labs(title = titulo, subtitle = periodo_label, x = "Ano", y = "Casos", caption = caption) +
         tema_publicacao
     )
   }
-  if(visualizacao == "incidencia") {
+  if (visualizacao == "incidencia") {
     tab$rotulo <- format_rate(tab$Incidencia_100mil)
-    return(
-      ggplot(tab, aes(x = Ano, y = Incidencia_100mil)) +
-        geom_line(linewidth = 1, color = "#1B3A6B") +
-        geom_point(size = 2.5, color = "#1B3A6B") +
-        geom_text(aes(label = rotulo), vjust = -0.7, size = 3.4, color = "#1e293b") +
-        scale_x_continuous(breaks = tab$Ano) +
-        labs(title = titulo, subtitle = periodo_label, x = "Ano", y = "Casos por 100 mil habitantes", caption = caption) +
-        tema_publicacao
-    )
+    p <- ggplot(tab, aes(x = Ano, y = Incidencia_100mil)) +
+      geom_line(linewidth = 1, color = cor_agravo(nome_doenca)) +
+      geom_point(size = 2.5, color = cor_agravo(nome_doenca)) +
+      geom_text(aes(label = rotulo), vjust = -0.7, size = 3.4, color = "#1e293b") +
+      scale_x_continuous(breaks = tab$Ano) +
+      labs(title = titulo, subtitle = periodo_label, x = "Ano", y = "Casos por 100 mil habitantes", caption = caption) +
+      tema_publicacao
+
+    bench <- benchmarks
+    if (!is.null(bench) && nrow(bench) > 0) {
+      bench$Ano <- suppressWarnings(as.integer(bench$Ano))
+      bench$Incidencia_100mil <- suppressWarnings(as.numeric(bench$Incidencia_100mil))
+      bench <- bench[
+        !is.na(bench$Ano) & bench$Ano %in% tab$Ano & is.finite(bench$Incidencia_100mil),
+        , drop = FALSE
+      ]
+      if (nrow(bench) > 0) {
+        p <- p +
+          geom_line(data = bench, aes(x = Ano, y = Incidencia_100mil, color = Local),
+                    linetype = "dashed", linewidth = 0.8) +
+          geom_point(data = bench, aes(x = Ano, y = Incidencia_100mil, color = Local),
+                     size = 1.8, shape = 18) +
+          scale_color_manual(
+            values = c(RJ = COR_REFERENCIA_RJ, Brasil = COR_REFERENCIA_BR),
+            name = NULL
+          )
+      }
+    }
+    return(p)
   }
-  ggplot(tab, aes(x = reorder(Categoria, Casos), y = Casos)) +
-    geom_col(fill = "#1B3A6B") +
+
+  cores <- setNames(
+    paleta_viridis(nrow(tab), begin = 0.08, end = 0.90),
+    as.character(tab$Categoria)
+  )
+  ggplot(tab, aes(x = reorder(Categoria, Casos), y = Casos, fill = Categoria)) +
+    geom_col(show.legend = FALSE) +
     geom_text(aes(label = format_number(Casos)), hjust = -0.08, size = 3.3, color = "#1e293b") +
+    scale_fill_manual(values = cores) +
     coord_flip() +
     scale_y_continuous(expand = expansion(mult = c(0, 0.16))) +
     labs(title = titulo, subtitle = periodo_label, x = "", y = "Casos", caption = caption) +
@@ -922,14 +986,7 @@ criar_grafico_qualidade_temporal <- function(df_list, agravo = NULL) {
     ))
   }
 
-  cores <- c(
-    "Sexo" = "#2E86AB",
-    "Idade" = "#C73E1D",
-    "Escolaridade" = "#A23B72",
-    "Raça/cor" = "#F18F01",
-    "Gestação" = "#1ABC9C",
-    "Classificação final" = "#3B1F2B"
-  )
+  cores <- CORES_QUALIDADE
 
   comp$Variavel_label <- comp$Variavel
   comp$hover_text <- paste0(

@@ -1,5 +1,37 @@
 # UI
 
+# Aviso metodológico/legal reutilizável. Presente em todas as abas para
+# atender ao requisito de guardrails de comunicação (Bloco A, item 1).
+aviso_uso_dados <- function(compacto = FALSE) {
+  div(class = if (compacto) "tab-disclaimer tab-disclaimer-compact" else "tab-disclaimer",
+    role = "note",
+    tags$i(class = "fa fa-shield-alt", `aria-hidden` = "true"),
+    tags$div(
+      tags$strong("Uso responsável: "),
+      if (compacto) {
+        "dados de notificação do SINAN/SVS, sujeitos a subnotificação e atraso. Indicadores descritivos não provam causalidade e não substituem avaliação clínica individual."
+      } else {
+        tagList(
+          "este painel apresenta registros notificados, não a incidência real. Subnotificação, atraso de digitação, encerramento incompleto e mudanças de critério afetam os números. ",
+          tags$strong("Os indicadores são descritivos e não estabelecem causalidade."),
+          " Não use os resultados para decisões clínicas individuais nem para concluir risco sem validação local. Ao citar, informe período, agravo, fonte e recorte territorial."
+        )
+      }
+    )
+  )
+}
+
+campo_likert <- function(id, pergunta) {
+  div(class = "likert-row",
+    div(class = "likert-question", pergunta),
+    radioButtons(
+      id, NULL,
+      choices = c("1" = "1", "2" = "2", "3" = "3", "4" = "4", "5" = "5"),
+      selected = character(0), inline = TRUE, width = "100%"
+    )
+  )
+}
+
 ui <- dashboardPage(skin = "black",
   dashboardHeader(
     title = "",
@@ -11,11 +43,12 @@ ui <- dashboardPage(skin = "black",
     width = 220,
     sidebarMenu(
       menuItem("INÍCIO", tabName = "inicio", icon = icon("home")),
-      menuItem("MÉTODOS", tabName = "metodos", icon = icon("flask")),
-      menuItem("EQUIPE", tabName = "equipe", icon = icon("users")),
       menuItem("CHIKUNGUNYA", tabName = "chik"),
       menuItem("DENGUE", tabName = "dengue"),
-      menuItem("ZIKA", tabName = "zika")
+      menuItem("ZIKA", tabName = "zika"),
+      menuItem("AVALIAÇÃO", tabName = "feedback", icon = icon("clipboard-check")),
+      menuItem("MÉTODOS", tabName = "metodos", icon = icon("flask")),
+      menuItem("EQUIPE", tabName = "equipe", icon = icon("users"))
     ),
     hr(),
     tags$div(class = "sidebar-filtro-global",
@@ -730,9 +763,285 @@ ui <- dashboardPage(skin = "black",
           border-radius: 6px;
           vertical-align: middle;
         }
+
+        /* ===== ACESSIBILIDADE VISUAL E CLAREZA (VIRIDIS) ===== */
+        :root {
+          --viridis-1: #440154;
+          --viridis-2: #3B528B;
+          --viridis-3: #21918C;
+          --viridis-4: #5EC962;
+          --viridis-5: #FDE725;
+          --ink: #0F172A;
+          --muted: #475569;
+          --line: #DCE3EA;
+          --surface: #FFFFFF;
+          --bg: #F7F9FB;
+          --accent: #21918C;
+          --accent-dark: #146C6A;
+        }
+        body { color: var(--ink); }
+        .content-wrapper, .right-side { background: var(--bg) !important; }
+        .content { padding: 20px 22px 12px 22px; }
+        .skin-black .main-header .logo,
+        .skin-black .main-header .navbar {
+          background-color: #17313B !important;
+          border-bottom: 3px solid var(--accent) !important;
+        }
+        .skin-black .main-sidebar, .skin-black .left-side { background-color: #10252D !important; }
+        .skin-black .sidebar-menu > li > a {
+          color: #C7D7DE !important;
+          font-size: 11px;
+          letter-spacing: 1.2px;
+          padding: 13px 18px;
+          border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        }
+        .skin-black .sidebar-menu > li:hover > a {
+          background: rgba(33,145,140,0.20) !important;
+          border-left-color: var(--viridis-4) !important;
+          color: #FFFFFF !important;
+        }
+        .skin-black .sidebar-menu > li.active > a,
+        .skin-black .sidebar-menu > li.active > a:hover {
+          background: rgba(33,145,140,0.32) !important;
+          border-left-color: var(--viridis-5) !important;
+          color: #FFFFFF !important;
+        }
+        .doenca-titulo {
+          font-size: 31px;
+          color: var(--ink);
+          border-bottom: 3px solid var(--accent);
+          margin-bottom: 12px;
+        }
+        .mosquito-icon { background: var(--accent-dark); box-shadow: 0 2px 6px rgba(15,23,42,0.18); }
+        .custom-card, .graph-box, .landing-section, .context-box,
+        .download-panel, .quality-panel, .team-profile, .home-hero,
+        .feedback-card {
+          background: var(--surface);
+          border: 1px solid var(--line) !important;
+          border-top-color: var(--accent) !important;
+          border-radius: 10px;
+          box-shadow: 0 1px 3px rgba(15,23,42,0.06);
+        }
+        .custom-card { border-top-width: 3px !important; }
+        .custom-card .card-label { color: var(--accent-dark); }
+        .custom-card .card-value { color: var(--ink); }
+        .custom-card.card-obitos { border-top-color: var(--viridis-2) !important; }
+        .custom-card.card-obitos .card-label { color: var(--viridis-2) !important; }
+        .custom-card.card-obitos .card-value { color: var(--viridis-1); }
+        .graph-title { color: var(--ink); border-bottom: 1px solid var(--line); font-weight: 700; }
+        .fig-caption {
+          font-size: 12px;
+          color: var(--muted);
+          border-left: 2px solid var(--viridis-3);
+          line-height: 1.45;
+          margin-top: 8px;
+          padding-left: 9px;
+        }
+        .context-box { color: #334155; line-height: 1.5; }
+        .context-box strong, .method-note dt { color: var(--ink); }
+        .home-hero { border-top-width: 4px; }
+        .home-hero h3, .landing-section h3, .landing-section h4,
+        .team-profile h4, .quality-panel h4, .feedback-card h4 {
+          color: var(--ink);
+        }
+        .hero-metric { background: #F8FAFC; border-color: var(--line); }
+        .hero-metric strong { color: var(--accent-dark); }
+        .periodo-badge, .titulo-ano-badge {
+          background: #E8F4F2; color: var(--accent-dark); border-color: #B9DDD9;
+        }
+        .plot-download .btn, .contact-button, .tutorial-close-btn {
+          background: var(--accent-dark) !important;
+          border-color: #0F5B59 !important;
+          color: #FFFFFF !important;
+        }
+        .plot-download .btn:hover, .contact-button:hover, .tutorial-close-btn:hover {
+          background: #0F5B59 !important;
+        }
+        .tutorial-collapsible { background: #F2FAF8; border-color: var(--accent); }
+        .team-avatar { color: var(--accent-dark); background: #E8F4F2; border-color: #B9DDD9; }
+        .team-link-btn:hover, .team-link-btn:focus { background: var(--accent-dark); border-color: var(--accent-dark); }
+        .quality-card { background: #F8FAFC; border-color: var(--line); }
+        .quality-label { color: var(--muted); }
+        .quality-value { color: var(--ink); }
+        .quality-note { color: #64748B; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); }
+
+        /* Avisos e rótulos de escopo */
+        .global-disclaimer {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          background: #FFF9E8;
+          border: 1px solid #E8D48A;
+          border-left: 5px solid var(--viridis-5);
+          border-radius: 8px;
+          padding: 10px 14px;
+          margin: 0 0 14px 0;
+          color: #3F3A1F;
+          font-size: 13px;
+          line-height: 1.45;
+        }
+        .global-disclaimer .fa { color: #8A6D00; margin-top: 2px; }
+        .global-disclaimer-badge {
+          margin-left: auto;
+          background: #8A6D00;
+          color: #FFFFFF;
+          border-radius: 20px;
+          padding: 2px 10px;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: .6px;
+          text-transform: uppercase;
+          white-space: nowrap;
+        }
+        .tab-disclaimer {
+          display: flex;
+          align-items: flex-start;
+          gap: 9px;
+          background: #F4F8FB;
+          border: 1px solid var(--line);
+          border-left: 4px solid var(--viridis-2);
+          border-radius: 8px;
+          padding: 10px 12px;
+          margin: 0 0 12px 0;
+          color: var(--muted);
+          font-size: 12px;
+          line-height: 1.45;
+        }
+        .tab-disclaimer .fa { color: var(--viridis-2); margin-top: 2px; }
+        .tab-disclaimer-compact { font-size: 11.5px; padding: 8px 11px; }
+        .benchmark-note {
+          background: #F2FAF8;
+          border: 1px dashed #9CCFC8;
+          border-radius: 6px;
+          padding: 7px 9px;
+          margin: 7px 0 0 0;
+          font-size: 11px;
+          color: #335C59;
+          line-height: 1.4;
+        }
+        .app-footer {
+          margin: 10px 0 2px 0;
+          padding: 14px 16px;
+          border-top: 1px solid var(--line);
+          color: var(--muted);
+          font-size: 12px;
+          line-height: 1.5;
+          background: transparent;
+        }
+        .app-footer a { color: var(--accent-dark); font-weight: 600; }
+        .app-footer-note { color: #64748B; font-size: 11px; margin-top: 3px; }
+
+        /* Formulário de avaliação */
+        .feedback-intro { border-top-color: var(--viridis-3) !important; }
+        .feedback-meta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; color: var(--muted); font-size: 12px; }
+        .feedback-meta .fa { color: var(--accent-dark); margin-right: 4px; }
+        .feedback-card { padding: 18px; margin-bottom: 14px; }
+        .feedback-card h4 { margin-top: 0; }
+        .feedback-help { color: var(--muted); font-size: 12.5px; }
+        .feedback-card hr { border-top: 1px solid var(--line); margin: 18px 0 14px 0; }
+        .likert-scale { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 11px; margin: 4px 0 8px 0; }
+        .likert-row {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 14px;
+          align-items: center;
+          padding: 8px 0;
+          border-bottom: 1px solid #EEF2F6;
+        }
+        .likert-row:last-child { border-bottom: 0; }
+        .likert-question { font-size: 13px; color: var(--ink); line-height: 1.35; }
+        .likert-row .form-group { margin-bottom: 0; }
+        .likert-row .shiny-options-group { display: flex; gap: 6px; align-items: center; margin: 0; }
+        .likert-row .radio { margin: 0; }
+        .likert-row .radio label { padding-left: 0; }
+        .likert-row .radio input { position: static; margin: 0 3px 0 0; }
+        .feedback-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+        .feedback-actions .btn-primary {
+          background: var(--accent-dark) !important;
+          border-color: var(--accent-dark) !important;
+          color: #FFFFFF !important;
+          font-weight: 700;
+        }
+        .feedback-actions .btn-default { border-color: var(--line); color: var(--ink); }
+        .feedback-status { margin-top: 14px; padding: 11px 13px; border-radius: 8px; font-size: 13px; line-height: 1.5; }
+        .feedback-status.ok { background: #E8F7EE; border: 1px solid #A7DDB9; color: #14532D; }
+        .feedback-status.warn { background: #FFF9E8; border: 1px solid #E8D48A; color: #5B4A08; }
+        .feedback-status.err { background: #FDECEC; border: 1px solid #F2B8B8; color: #7F1D1D; }
+        .feedback-status a { font-weight: 700; color: var(--accent-dark); }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+        *:focus-visible { outline: 3px solid var(--viridis-5) !important; outline-offset: 2px; }
+        @media (max-width: 900px) {
+          .global-disclaimer { flex-wrap: wrap; }
+          .global-disclaimer-badge { margin-left: 0; }
+          .likert-row { grid-template-columns: 1fr; gap: 4px; }
+          .likert-row .shiny-options-group { justify-content: flex-start; }
+          .feedback-actions { flex-direction: column; align-items: stretch; }
+          .doenca-titulo { font-size: 24px; }
+        }
+      ")),
+      tags$script(HTML("
+        // FormSubmit é chamado pelo navegador do usuário, não pelo servidor.
+        // Isso evita bloqueios de IP de datacenter e mantém o Referer/Origin
+        // do app publicado, requisitos do serviço.
+        Shiny.addCustomMessageHandler('feedback_formsubmit', function(msg) {
+          if (!msg || !msg.endpoint) {
+            Shiny.setInputValue('feedback_js_result', {
+              ok: false, status: 0, message: 'Endpoint ausente'
+            }, {priority: 'event'});
+            return;
+          }
+          // mode: 'no-cors' envia um simple request form-encoded, sem preflight.
+          // O navegador não expõe a resposta, mas o FormSubmit recebe o POST.
+          var body = new URLSearchParams();
+          var payload = msg.payload || {};
+          Object.keys(payload).forEach(function(k) {
+            if (payload[k] !== null && payload[k] !== undefined) {
+              body.append(k, String(payload[k]));
+            }
+          });
+          var done = false;
+          var finish = function(ok, message) {
+            if (done) return;
+            done = true;
+            Shiny.setInputValue('feedback_js_result', {
+              ok: ok, status: ok ? 200 : 0, message: message
+            }, {priority: 'event'});
+          };
+          var attempt = function(restantes) {
+            var controller = new AbortController();
+            var timer = setTimeout(function() { controller.abort(); }, 8000);
+            fetch(msg.endpoint, {
+              method: 'POST',
+              mode: 'no-cors',
+              body: body,
+              signal: controller.signal
+            }).then(function() {
+              clearTimeout(timer);
+              finish(true, 'Requisição enviada ao FormSubmit');
+            }).catch(function(err) {
+              clearTimeout(timer);
+              if (restantes > 1) {
+                setTimeout(function() { attempt(restantes - 1); }, 1200);
+              } else {
+                finish(false, String(err));
+              }
+            });
+          };
+          attempt(2);
+        });
       "))
     ),
     tags$div(class = "fixed-app-title", "Painel Arboviroses — Campos/RJ"),
+    div(class = "global-disclaimer", role = "note",
+      tags$i(class = "fa fa-info-circle", `aria-hidden` = "true"),
+      tags$div(
+        tags$strong("Dados de notificação não são incidência real. "),
+        "Os indicadores são descritivos, não estabelecem causalidade e não substituem avaliação clínica ou decisão sanitária local. Consulte a aba ",
+        tags$strong("Métodos"), " e a nota de licença/FAIR no README antes de reutilizar."
+      ),
+      tags$span(class = "global-disclaimer-badge", "Uso responsável")
+    ),
     tabItems(
       tabItem(
         tabName = "inicio",
@@ -740,6 +1049,7 @@ ui <- dashboardPage(skin = "black",
           div(class = "mosquito-icon", tags$img(src = "mosquito.svg", width = "28", height = "28", alt = "Mosquito")),
           span("Painel de Inteligência Epidemiológica para Chikungunya, Dengue e Zika em Campos dos Goytacazes (2020-2025)")
         ),
+        aviso_uso_dados(),
         # TUTORIAL COLLAPSIBLE - Integrated into Início tab
         div(class = "tutorial-collapsible", id = "tutorial-box",
           div(class = "tutorial-header",
@@ -879,17 +1189,26 @@ ui <- dashboardPage(skin = "black",
           h4("Sugestões"),
           p("Estamos abertos a sugestões, críticas, correções e ideias para aprimorar este painel. Contribuições sobre novas visualizações, melhorias de interpretação, ajustes metodológicos ou possibilidades de uso em ensino, pesquisa e vigilância em saúde são muito bem-vindas."),
           p(
-            "Para entrar em contato, envie uma mensagem para ",
+            "Para avaliar utilidade, clareza, confiança e usabilidade, responda ao formulário estruturado na aba ",
+            tags$strong("Avaliação"),
+            ". Para contato direto, escreva para ",
             tags$a("ryan.paulo@gsuite.iff.edu.br", href = "mailto:ryan.paulo@gsuite.iff.edu.br"),
             "."
           ),
           tags$a(
-            href = "mailto:ryan.paulo@gsuite.iff.edu.br?subject=Sugest%C3%A3o%20para%20o%20Painel%20de%20Arboviroses",
-            onclick = "window.location.href='mailto:ryan.paulo@gsuite.iff.edu.br?subject=Sugest%C3%A3o%20para%20o%20Painel%20de%20Arboviroses'; return false;",
-            target = "_blank",
+            href = "#shiny-tab-feedback",
+            `data-toggle` = "tab",
+            `data-value` = "feedback",
             class = "contact-button",
+            tags$i(class = "fa fa-clipboard-check"),
+            "Responder à avaliação"
+          ),
+          tags$a(
+            href = "mailto:ryan.paulo@gsuite.iff.edu.br?subject=Sugest%C3%A3o%20para%20o%20Painel%20de%20Arboviroses",
+            class = "contact-button",
+            style = "margin-left:8px; background:#475569 !important;",
             tags$i(class = "fa fa-envelope"),
-            "Enviar sugestão"
+            "Enviar e-mail"
           )
         )
       ),
@@ -901,6 +1220,7 @@ ui <- dashboardPage(skin = "black",
           span("CHIKUNGUNYA"),
           uiOutput("chik_titulo_ano")
         ),
+        aviso_uso_dados(compacto = TRUE),
         fluidRow(
           column(3, selectInput("chik_ano", "PERÍODO", choices = c("Todos", sort(unique(dados$Chikungunya$Ano))), selected = "Todos")),
           column(9, uiOutput("chik_periodo"))
@@ -932,8 +1252,9 @@ ui <- dashboardPage(skin = "black",
         dashboard_qualidade_dados("chik_qualidade"),
         div(class = "graph-box",
           div(class = "graph-title", "Incidência anual por 100 mil habitantes"),
-          plotlyOutput("chik_incidencia", height = "280px"),
+          plotlyOutput("chik_incidencia", height = "300px"),
           botao_download_grafico("chik_download_incidencia"),
+          div(class = "benchmark-note", tags$strong("Linhas tracejadas: "), "referência do Estado do RJ e do Brasil (SINAN/SVS; população IBGE/SIDRA). ", tags$em("Comparação contextual, não diagnóstico local.")),
           div(class="fig-caption","O que mostra: casos confirmados de chikungunya padronizados pela população estimada de Campos dos Goytacazes. Como interpretar: compare anos com maior carga relativa. Atenção metodológica: a taxa usa casos notificados e população SIDRA/IBGE.")
         ),
         painel_downloads("chik"),
@@ -987,6 +1308,7 @@ ui <- dashboardPage(skin = "black",
           span("DENGUE"),
           uiOutput("dengue_titulo_ano")
         ),
+        aviso_uso_dados(compacto = TRUE),
         fluidRow(
           column(3, selectInput("dengue_ano", "PERÍODO", choices = c("Todos", sort(unique(dados$Dengue$Ano))), selected = "Todos")),
           column(9, uiOutput("dengue_periodo"))
@@ -1015,8 +1337,9 @@ ui <- dashboardPage(skin = "black",
         dashboard_qualidade_dados("dengue_qualidade"),
         div(class = "graph-box",
           div(class = "graph-title", "Incidência anual por 100 mil habitantes"),
-          plotlyOutput("dengue_incidencia", height = "280px"),
+          plotlyOutput("dengue_incidencia", height = "300px"),
           botao_download_grafico("dengue_download_incidencia"),
+          div(class = "benchmark-note", tags$strong("Linhas tracejadas: "), "referência do Estado do RJ e do Brasil (SINAN/SVS; população IBGE/SIDRA). ", tags$em("Comparação contextual, não diagnóstico local.")),
           div(class="fig-caption","O que mostra: casos confirmados de dengue padronizados pela população estimada de Campos dos Goytacazes. Como interpretar: compare anos com maior carga relativa. Atenção metodológica: a taxa usa casos notificados e população SIDRA/IBGE.")
         ),
         painel_downloads("dengue"),
@@ -1110,6 +1433,7 @@ ui <- dashboardPage(skin = "black",
           span("ZIKA"),
           uiOutput("zika_titulo_ano")
         ),
+        aviso_uso_dados(compacto = TRUE),
         fluidRow(
           column(3, selectInput("zika_ano", "PERÍODO", choices = c("Todos", sort(unique(dados$Zika$Ano))), selected = "Todos")),
           column(9, uiOutput("zika_periodo"))
@@ -1141,8 +1465,9 @@ ui <- dashboardPage(skin = "black",
         dashboard_qualidade_dados("zika_qualidade"),
         div(class = "graph-box",
           div(class = "graph-title", "Incidência anual por 100 mil habitantes"),
-          plotlyOutput("zika_incidencia", height = "280px"),
+          plotlyOutput("zika_incidencia", height = "300px"),
           botao_download_grafico("zika_download_incidencia"),
+          div(class = "benchmark-note", tags$strong("Linhas tracejadas: "), "referência do Estado do RJ e do Brasil (SINAN/SVS; população IBGE/SIDRA). ", tags$em("Comparação contextual, não diagnóstico local.")),
           div(class="fig-caption","O que mostra: casos confirmados de Zika vírus padronizados pela população estimada de Campos dos Goytacazes. Como interpretar: compare anos com maior carga relativa. Atenção metodológica: a taxa usa casos notificados e população SIDRA/IBGE.")
         ),
         painel_downloads("zika"),
@@ -1187,12 +1512,86 @@ ui <- dashboardPage(skin = "black",
           )
         )
       ),
+      # AVALIAÇÃO E CO-DESIGN
+      tabItem(
+        tabName = "feedback",
+        div(class = "doenca-titulo",
+          div(class = "mosquito-icon", tags$img(src = "mosquito.svg", width = "28", height = "28", alt = "Mosquito")),
+          span("AVALIAÇÃO E CO-DESIGN")
+        ),
+        aviso_uso_dados(compacto = TRUE),
+        div(class = "landing-section feedback-intro",
+          h3("Ajude a melhorar o painel"),
+          p("Esta avaliação estruturada tem como objetivo medir utilidade, clareza, confiança e usabilidade percebida por profissionais da vigilância, gestão, ensino e pesquisa. O questionário leva cerca de 4 minutos e segue uma escala Likert de 5 pontos."),
+          div(class = "feedback-meta",
+            tags$span(tags$i(class = "fa fa-clock"), " 4 minutos"),
+            tags$span(tags$i(class = "fa fa-lock"), " Respostas voluntárias"),
+            tags$span(tags$i(class = "fa fa-envelope"), " Retorno para ", tags$a(href = "mailto:ryan.paulo@gsuite.iff.edu.br", "ryan.paulo@gsuite.iff.edu.br"))
+          )
+        ),
+        div(class = "feedback-card",
+          h4("1. Sobre você"),
+          p(class = "feedback-help", "O e-mail é opcional e serve apenas para retorno sobre melhorias ou esclarecimentos."),
+          fluidRow(
+            column(6, selectInput("feedback_perfil", "Perfil principal",
+              choices = c(
+                "Vigilância epidemiológica" = "vigilancia",
+                "Gestão de saúde" = "gestao",
+                "Ensino" = "ensino",
+                "Pesquisa" = "pesquisa",
+                "Assistência clínica" = "assistencia",
+                "Comunidade / outro" = "outro"
+              )
+            )),
+            column(6, textInput("feedback_instituicao", "Instituição ou território (opcional)"))
+          ),
+          fluidRow(
+            column(6, textInput("feedback_email", "E-mail para retorno (opcional)")),
+            column(6, selectInput("feedback_tempo_uso", "Tempo de uso do painel",
+              choices = c("Primeiro acesso" = "primeiro", "Menos de 1 mês" = "<1m", "1 a 6 meses" = "1-6m", "Mais de 6 meses" = ">6m")
+            ))
+          ),
+          hr(),
+          h4("2. Avaliação de utilidade e usabilidade"),
+          p(class = "feedback-help", "Escolha de 1 (discordo totalmente) a 5 (concordo totalmente)."),
+          div(class = "likert-scale",
+            tags$span("1 = discordo totalmente"),
+            tags$span("3 = neutro"),
+            tags$span("5 = concordo totalmente")
+          ),
+          campo_likert("feedback_q1", "Consigo navegar e encontrar as informações com facilidade."),
+          campo_likert("feedback_q2", "Os gráficos e mapas são claros e fáceis de interpretar."),
+          campo_likert("feedback_q3", "O painel é útil para a rotina de vigilância ou gestão em saúde."),
+          campo_likert("feedback_q4", "Confio nos dados e nos indicadores apresentados."),
+          campo_likert("feedback_q5", "Compreendo os limites metodológicos e o risco de subnotificação."),
+          campo_likert("feedback_q6", "A documentação (Métodos, legendas e notas) é suficiente para usar o painel."),
+          campo_likert("feedback_q7", "As cores e a apresentação são acessíveis, inclusive para pessoas daltônicas."),
+          campo_likert("feedback_q8", "Eu recomendaria este painel a colegas de trabalho ou pesquisa."),
+          hr(),
+          h4("3. Comentários e sugestões"),
+          textAreaInput("feedback_comentarios", "O que deve ser mantido, melhorado ou incluído?",
+                        rows = 4, placeholder = "Ex.: incluir filtro por bairro, melhorar legenda do mapa, comparar com anos anteriores..."),
+          checkboxInput("feedback_consentimento",
+            "Concordo em enviar estas respostas para avaliação do painel e melhoria contínua.", FALSE),
+          div(class = "feedback-actions",
+            actionButton("feedback_enviar", "Enviar avaliação", class = "btn-primary"),
+            downloadButton("feedback_download", "Baixar respostas em CSV")
+          ),
+          uiOutput("feedback_status")
+        ),
+        div(class = "landing-section",
+          h4("Como as respostas são usadas"),
+          p("As respostas alimentam um relatório quantitativo de satisfação e usabilidade e orientam melhorias de co-design. Nenhum dado clínico ou identificável de paciente é solicitado. O envio automático usa o FormSubmit e chega a ", tags$strong("ryan.paulo@gsuite.iff.edu.br"), "; no primeiro envio pode ser necessária uma ativação única por e-mail. Se o envio automático falhar, o painel oferece e-mail pré-preenchido e CSV."),
+          p(tags$strong("Privacidade: "), "não informe dados pessoais de pacientes, prontuários ou informações sensíveis neste formulário.")
+        )
+      ),
       tabItem(
         tabName = "metodos",
         div(class = "doenca-titulo",
           div(class = "mosquito-icon", tags$img(src = "mosquito.svg", width = "28", height = "28", alt = "Mosquito")),
           span("MÉTODOS")
         ),
+        aviso_uso_dados(compacto = TRUE),
         div(class = "landing-section",
           h3("Métodos, fontes e reprodutibilidade"),
           p("Esta aba documenta as fontes, os filtros aplicados, os critérios de agregação e as limitações usadas no painel."),
@@ -1221,6 +1620,7 @@ ui <- dashboardPage(skin = "black",
                   "| shinydashboard", as.character(packageVersion("shinydashboard")),
                   "| microdatasus", as.character(packageVersion("microdatasus")),
                   "| plotly", as.character(packageVersion("plotly")),
+                  "| viridisLite", as.character(packageVersion("viridisLite")),
                   "| sf", as.character(packageVersion("sf")),
                   "| geobr", as.character(packageVersion("geobr"))
                 )),
@@ -1257,6 +1657,33 @@ ui <- dashboardPage(skin = "black",
             tags$li("As visualizações são descritivas e não estabelecem causalidade."),
             tags$li("A malha de bairros de 2010 pode não refletir todos os limites ou nomes territoriais usados nos registros atuais.")
           )
+        ),
+        div(class = "landing-section",
+          h4("Comparação com o Estado do RJ e o Brasil"),
+          p("As linhas tracejadas dos gráficos de incidência usam referências anuais do Estado do Rio de Janeiro e do Brasil. Elas servem para contextualizar a magnitude local, não para substituir a análise municipal nem para inferir causalidade."),
+          tags$ul(
+            tags$li("Dengue e Zika: casos confirmados agregados do SINAN/SVS (TabNet/DataSUS), por ano de notificação."),
+            tags$li("Chikungunya: microdados nacionais do SINAN-CHIKUNGUNYA via microdatasus, filtrando residência no RJ (código IBGE 33) ou total Brasil."),
+            tags$li("Denominadores: população residente do IBGE/SIDRA (Censo 2022 para 2022-2023; estimativas para os demais anos).")
+          ),
+          p(tags$strong("Atualização: "), "o arquivo data/app_cache/benchmarks_uf_br.csv é gerado por scripts/08_benchmarks.R e pode ser atualizado semestralmente pelo GitHub Actions.")
+        ),
+        div(class = "landing-section",
+          h4("Licença, citação e reuso (princípios FAIR)"),
+          p("O código está sob licença MIT, permitindo reuso, adaptação e redistribuição com atribuição. Os dados agregados podem ser reutilizados com citação da fonte original (SINAN/SVS) e deste painel. Dados brutos individuais e planilhas locais restritas não são publicados."),
+          tags$ul(
+            tags$li(tags$strong("Findable: "), "metadados, fontes, período e versão documentados no README e em data/app_cache/metadata.json."),
+            tags$li(tags$strong("Accessible: "), "aplicativo público, repositório aberto e arquivos de cache versionados."),
+            tags$li(tags$strong("Interoperable: "), "nomes de variáveis padronizados, CSV/JSON e código R modular."),
+            tags$li(tags$strong("Reusable: "), "licença MIT, script de atualização, testes automatizados e nota de citação (CITATION.cff).")
+          ),
+          p(
+            "Como citar: SANTOS, R. P. et al. ",
+            tags$em("Painel de Inteligência Epidemiológica para Arboviroses em Campos dos Goytacazes (2020-2025)"),
+            ". IFF Guarus, 2026. Disponível em: ",
+            tags$a(href = "https://github.com/santosry/arboviroses-campos", target = "_blank", "github.com/santosry/arboviroses-campos"),
+            ". Licença MIT."
+          )
         )
       ),
       tabItem(
@@ -1265,6 +1692,7 @@ ui <- dashboardPage(skin = "black",
           div(class = "mosquito-icon", tags$img(src = "mosquito.svg", width = "28", height = "28", alt = "Mosquito")),
           span("EQUIPE E DESENVOLVEDORES")
         ),
+        aviso_uso_dados(compacto = TRUE),
         div(class = "landing-section",
           h4("Equipe do projeto"),
           p("Esta empreitada reúne bacharelandos em Enfermagem pelo Instituto Federal Fluminense, Campus Campos Guarus, sob orientação da Profa. Dra. Karla Rangel Ribeiro. A proposta integra formação em saúde, vigilância epidemiológica, ciência de dados e comunicação científica aplicada às arboviroses."),
@@ -1306,6 +1734,18 @@ ui <- dashboardPage(skin = "black",
             )
           )
         )
+      )
+    ),
+    div(class = "app-footer",
+      tags$div(
+        tags$strong("Painel de Arboviroses — Campos dos Goytacazes/RJ"),
+        " · Dados: SINAN/SVS, microdatasus, IBGE/SIDRA · Código: MIT · ",
+        tags$a(href = "https://github.com/santosry/arboviroses-campos", target = "_blank", "Repositório"),
+        " · ",
+        tags$a(href = "mailto:ryan.paulo@gsuite.iff.edu.br", "Contato")
+      ),
+      tags$div(class = "app-footer-note",
+        "Indicadores descritivos. Notificação não é incidência real. Consulte Métodos e a licença/FAIR no README."
       )
     )
   )

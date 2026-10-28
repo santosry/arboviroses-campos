@@ -2,6 +2,66 @@
 options(encoding = "UTF-8")
 try(Sys.setlocale("LC_CTYPE", "pt_BR.UTF-8"), silent = TRUE)
 
+# ============================================================================
+# PALETA VISUAL ACESSÍVEL (VIRIDIS)
+# ----------------------------------------------------------------------------
+# A paleta viridis é perceptualmente uniforme e segura para daltonismo.
+# Todos os gráficos e mapas do painel devem usar estes helpers, evitando
+# combinações de vermelho/verde como única codificação de informação.
+# ============================================================================
+
+paleta_viridis <- function(n, begin = 0.05, end = 0.95, option = "D", direction = 1) {
+  n <- as.integer(n)
+  if (is.na(n) || n < 1) return(character(0))
+  cores <- viridisLite::viridis(n, begin = begin, end = end, option = option, direction = direction)
+  substr(cores, 1, 7)  # normaliza para #RRGGBB (remove alfa FF)
+}
+
+CORES_AGRAVOS <- c(
+  Chikungunya = paleta_viridis(3, begin = 0.12, end = 0.80)[1],
+  Dengue      = paleta_viridis(3, begin = 0.12, end = 0.80)[2],
+  Zika        = paleta_viridis(3, begin = 0.12, end = 0.80)[3]
+)
+
+CORES_SEXO <- c(
+  Masculino        = paleta_viridis(3, begin = 0.12, end = 0.80)[1],
+  Feminino         = paleta_viridis(3, begin = 0.12, end = 0.80)[2],
+  "Ign/Branco"     = "#94A3B8"
+)
+
+CORES_QUALIDADE <- c(
+  "Sexo"                 = paleta_viridis(6, begin = 0.10, end = 0.90)[1],
+  "Idade"                = paleta_viridis(6, begin = 0.10, end = 0.90)[2],
+  "Escolaridade"         = paleta_viridis(6, begin = 0.10, end = 0.90)[3],
+  "Raça/cor"             = paleta_viridis(6, begin = 0.10, end = 0.90)[4],
+  "Gestação"             = paleta_viridis(6, begin = 0.10, end = 0.90)[5],
+  "Classificação final"  = paleta_viridis(6, begin = 0.10, end = 0.90)[6]
+)
+
+COR_REFERENCIA_RJ <- paleta_viridis(2, begin = 0.30, end = 0.60)[1]
+COR_REFERENCIA_BR <- paleta_viridis(2, begin = 0.30, end = 0.60)[2]
+COR_IGNORADO <- "#94A3B8"
+
+cor_agravo <- function(agravo) {
+  agravo <- as.character(agravo)[1]
+  chave <- names(CORES_AGRAVOS)[tolower(names(CORES_AGRAVOS)) == tolower(agravo)]
+  if (length(chave) > 0) unname(CORES_AGRAVOS[[chave[1]]]) else unname(CORES_AGRAVOS[["Dengue"]])
+}
+
+# Tema ggplot2 enxuto e consistente para figuras de publicação
+tema_publicacao_viridis <- function(base_size = 13) {
+  ggplot2::theme_minimal(base_size = base_size) +
+    ggplot2::theme(
+      plot.title = ggplot2::element_text(face = "bold", size = 17, color = "#0F172A"),
+      plot.subtitle = ggplot2::element_text(size = 11, color = "#475569"),
+      plot.caption = ggplot2::element_text(size = 9, color = "#475569", hjust = 0, lineheight = 1.15),
+      legend.position = "bottom",
+      legend.title = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank(),
+      panel.grid.major.x = ggplot2::element_blank()
+    )
+}
+
 # SISTEMA DE AUDITORIA
 
 # Em publicacao (shinyapps.io), o diretorio do app pode ser somente leitura.
@@ -26,6 +86,15 @@ LOG_DADOS <- file.path(AUDIT_DIR, "03_dados_consistentes.csv")
 LOG_INCONSISTENCIAS <- file.path(AUDIT_DIR, "04_inconsistencias.csv")
 LOG_SESSAO <- file.path(AUDIT_DIR, "05_sessao.csv")
 LOG_POPULACAO <- file.path(AUDIT_DIR, "06_populacao_sidra.csv")
+LOG_FEEDBACK <- file.path(AUDIT_DIR, "07_feedback.csv")
+
+# Destino padrão do formulário de avaliação.
+# FormSubmit é um serviço gratuito e sem chave de API; o primeiro envio
+# dispara um e-mail de ativação para o endereço abaixo. Depois da ativação,
+# as respostas chegam automaticamente à caixa de entrada.
+FEEDBACK_ENDPOINT_PADRAO <- "https://formsubmit.co/ajax/ryan.paulo@gsuite.iff.edu.br"
+FEEDBACK_EMAIL_PADRAO <- "ryan.paulo@gsuite.iff.edu.br"
+FEEDBACK_REFERER_PADRAO <- "https://arbovirosescamposiff.shinyapps.io/arboviroses/"
 
 # Gerar ID unico da sessao
 session_id <- paste0(format(Sys.time(), "%Y%m%d_%H%M%S"), "_", 

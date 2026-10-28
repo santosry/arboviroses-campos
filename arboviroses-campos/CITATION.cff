@@ -1,0 +1,42 @@
+cff-version: 1.2.0
+message: "Se reutilizar este painel, cite os autores e a fonte dos dados originais (SINAN/SVS e IBGE/SIDRA)."
+title: "Painel de Inteligência Epidemiológica para Arboviroses em Campos dos Goytacazes (2020-2025)"
+abstract: "Painel Shiny descritivo de dengue, chikungunya e Zika em Campos dos Goytacazes/RJ, com indicadores de sazonalidade, perfil sociodemográfico, qualidade da notificação, distribuição espacial da dengue e comparação com referências do Estado do Rio de Janeiro e do Brasil."
+type: software
+license: MIT
+version: "0.2.0"
+date-released: "2026-10-28"
+repository-code: "https://github.com/santosry/arboviroses-campos"
+url: "https://arbovirosescamposiff.shinyapps.io/arboviroses/"
+keywords:
+  - arboviroses
+  - dengue
+  - chikungunya
+  - zika
+  - vigilância em saúde
+  - epidemiologia
+  - Shiny
+  - FAIR
+authors:
+  - family-names: "Santos"
+    given-names: "Ryan de Paulo"
+    affiliation: "Instituto Federal Fluminense (IFF), Campus Campos Guarus"
+  - family-names: "Moreira"
+    given-names: "Brenda Velasco"
+    affiliation: "Instituto Federal Fluminense (IFF), Campus Campos Guarus"
+  - family-names: "Souza"
+    given-names: "Mirella Guimarães Lourenço de"
+    affiliation: "Instituto Federal Fluminense (IFF), Campus Campos Guarus"
+  - family-names: "Mello"
+    given-names: "Marcelly Rangel de"
+    affiliation: "Instituto Federal Fluminense (IFF), Campus Campos Guarus"
+  - family-names: "Ribeiro"
+    given-names: "Karla Rangel"
+    affiliation: "Instituto Federal Fluminense (IFF), Campus Campos Guarus"
+references:
+  - type: generic
+    title: "SINAN/SVS — Sistema de Informação de Agravos de Notificação"
+    url: "https://datasus.saude.gov.br/"
+  - type: generic
+    title: "IBGE/SIDRA — População residente estimada"
+    url: "https://sidra.ibge.gov.br/"

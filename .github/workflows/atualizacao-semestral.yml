@@ -1,0 +1,92 @@
+name: Atualização semestral dos dados e benchmarks
+
+on:
+  schedule:
+    # 1º de janeiro e 1º de julho, 06:00 UTC (03:00 no horário de Brasília)
+    - cron: "0 6 1 1,7 *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atualizacao-semestral-arboviroses
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: arboviroses-campos
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    env:
+      ARBOVIROSES_DOWNLOAD: "true"
+      ARBOVIROSES_ANOS: "2020,2021,2022,2023,2024,2025"
+      RENV_PATHS_ROOT: ~/.cache/R/renv
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.4"
+          use-public-rspm: true
+
+      - name: Instalar dependências do sistema
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            libcurl4-openssl-dev libssl-dev libxml2-dev libgdal-dev \
+            libgeos-dev libproj-dev libudunits2-dev
+
+      - name: Restaurar ambiente renv
+        run: |
+          if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
+          renv::restore(prompt = FALSE)
+        shell: Rscript {0}
+
+      - name: Atualizar pipeline principal
+        run: |
+          source("scripts/update_data.R")
+        shell: Rscript {0}
+
+      - name: Atualizar referências RJ/Brasil (SINAN + IBGE)
+        run: |
+          source("scripts/08_benchmarks.R")
+        shell: Rscript {0}
+
+      - name: Rodar testes automatizados
+        run: |
+          testthat::test_dir("tests/testthat")
+        shell: Rscript {0}
+
+      - name: Publicar artefatos de auditoria
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atualizacao-semestral-auditoria
+          path: |
+            arboviroses-campos/data/audit/
+            arboviroses-campos/data/app_cache/benchmarks_uf_br.csv
+            arboviroses-campos/data/app_cache/metadata.json
+
+      - name: Commitar caches atualizados
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add arboviroses-campos/data/app_cache \
+                  arboviroses-campos/data/audit
+          if git diff --cached --quiet; then
+            echo "Sem alterações para commitar."
+          else
+            git commit -m "chore(data): atualização semestral de caches e benchmarks [skip ci]"
+            git push
+          fi
+        working-directory: .

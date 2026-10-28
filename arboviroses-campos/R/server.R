@@ -133,7 +133,7 @@ server <- function(input, output, session) {
       return(ggplot() + annotate("text", x=1, y=1, label="Sem dados") + theme_void())
     }
     
-    cores <- c("Chikungunya" = "#2E86AB", "Dengue" = "#C73E1D", "Zika" = "#A23B72")
+    cores <- CORES_AGRAVOS
     
     # Ordena categorias por total de casos (decrescente)
     ordem <- tab %>%
@@ -227,7 +227,7 @@ server <- function(input, output, session) {
             "function(data, type, row) {
               if (data === null || isNaN(data)) return 'N/D';
               var val = parseFloat(data);
-              var color = val > 60 ? '#DC2626' : val > 30 ? '#D97706' : val > 10 ? '#2563EB' : '#16A34A';
+              var color = val > 60 ? '#440154' : val > 30 ? '#3B528B' : val > 10 ? '#21918C' : '#5EC962';
               return '<span style=\"font-weight:700;color:' + color + '\">' + val.toFixed(1) + '%</span>';
             }"
           ))
@@ -239,7 +239,7 @@ server <- function(input, output, session) {
         5,
         backgroundColor = styleInterval(
           c(10, 30, 60),
-          c('#F0FFF0', '#FFF7ED', '#FEF3C7', '#FEE2E2')
+          c('#F0F9E8', '#E8F4D9', '#D7EFC4', '#C2E6AE')
         )
       )
   })
@@ -263,7 +263,7 @@ server <- function(input, output, session) {
         p <- criticos$Percentual[i]
         nivel <- if (is.na(p) || p > QUALIDADE_THRESHOLD_CRITICO) "critico" else if (p > QUALIDADE_THRESHOLD_ALERTA) "alerta" else "atencao"
         icone <- if (nivel == "critico") "\u26A0\uFE0F" else if (nivel == "alerta") "\u2757" else "\u2139\uFE0F"
-        cores <- c(critico = "#DC2626", alerta = "#D97706", atencao = "#2563EB")
+        cores <- c(critico = "#440154", alerta = "#3B528B", atencao = "#21918C")
         div(class = "quality-card", style = paste0("border-left: 3px solid ", cores[nivel]),
           div(class = "quality-label", paste(icone, nome, ":", v)),
           div(class = "quality-value", if (is.na(p)) "?" else paste0(format_percent(p))),
@@ -390,7 +390,8 @@ server <- function(input, output, session) {
     ggsave(file, plot = plot, device = "png", width = width, height = height, dpi = 600, units = "in", bg = "white")
   }
 
-  registrar_download_grafico <- function(output_id, df_func, nome_doenca, visualizacao, titulo, width = 9, height = 6) {
+  registrar_download_grafico <- function(output_id, df_func, nome_doenca, visualizacao, titulo,
+                                         width = 9, height = 6, benchmarks = NULL) {
     output[[output_id]] <- downloadHandler(
       filename = function() {
         paste0(nome_doenca, "_", visualizacao, "_alta_resolucao_", Sys.Date(), ".png")
@@ -398,7 +399,8 @@ server <- function(input, output, session) {
       content = function(file) {
         df_plot <- df_func()
         periodo_label <- if(length(unique(df_plot$Ano)) == 1) paste("Ano:", unique(df_plot$Ano)) else paste0("Período: ", min(df_plot$Ano), "-", max(df_plot$Ano))
-        p <- grafico_publicacao(df_plot, visualizacao, titulo, nome_doenca, periodo_label)
+        p <- grafico_publicacao(df_plot, visualizacao, titulo, nome_doenca, periodo_label,
+                                benchmarks = benchmarks)
         salvar_png_alta_resolucao(p, file, width = width, height = height)
       }
     )
@@ -431,7 +433,8 @@ server <- function(input, output, session) {
       df_filtrado,
       nome_doenca,
       "incidencia",
-      paste(nome_doenca, "- Incidência por 100 mil")
+      paste(nome_doenca, "- Incidência por 100 mil"),
+      benchmarks = obter_benchmarks(nome_doenca)
     )
     registrar_download_grafico(
       paste0(prefixo, "_download_gestacao"),
@@ -482,7 +485,7 @@ server <- function(input, output, session) {
         arrange(Casos)
 
       p <- ggplot(df, aes(x = Casos, y = reorder(NM_BAIRRO, Casos))) +
-        geom_col(fill = "#C73E1D") +
+        geom_col(fill = cor_agravo("Dengue")) +
         geom_text(aes(label = format_number(Casos)), hjust = -0.08, size = 3.4, color = "#1e293b") +
         scale_x_continuous(expand = expansion(mult = c(0, 0.16))) +
         labs(title = "Top 20 bairros com mais registros de dengue", x = "Casos", y = "") +
@@ -582,7 +585,7 @@ server <- function(input, output, session) {
     df$NM_BAIRRO <- factor(df$NM_BAIRRO, levels = df$NM_BAIRRO)
     max_casos <- max(df$Casos, na.rm = TRUE)
     
-    paleta <- colorRampPalette(c("#facc15", "#f97316", "#ef4444", "#b91c1c", "#7f1d1d"))(nrow(df))
+    paleta <- paleta_viridis(nrow(df), begin = 0.08, end = 0.92)
     
     ggplot(df, aes(x = Casos, y = NM_BAIRRO)) +
       geom_col(aes(fill = NM_BAIRRO), width = 0.72) +
@@ -693,24 +696,24 @@ server <- function(input, output, session) {
   output$zika_qualidade <- render_qualidade(zika_filtrado)
   
   # Gráficos
-  output$chik_serie <- renderPlotly({ criar_grafico_serie(dados$Chikungunya, "#2E86AB", "Chikungunya") })
-  output$chik_incidencia <- renderPlotly({ criar_grafico_incidencia(chik_filtrado(), "#2E86AB", "Chikungunya") })
+  output$chik_serie <- renderPlotly({ criar_grafico_serie(dados$Chikungunya, CORES_AGRAVOS[["Chikungunya"]], "Chikungunya") })
+  output$chik_incidencia <- renderPlotly({ criar_grafico_incidencia(chik_filtrado(), CORES_AGRAVOS[["Chikungunya"]], "Chikungunya", benchmarks = obter_benchmarks("Chikungunya")) })
   output$chik_etnia <- renderPlotly({ criar_grafico_etnia(chik_filtrado()) })
   output$chik_sexo <- renderPlotly({ criar_grafico_sexo(chik_filtrado(), destacar_feminino_2024 = TRUE) })
   output$chik_faixa_etaria <- renderPlotly({ criar_grafico_faixa_etaria(chik_filtrado()) })
   output$chik_gestacao <- renderPlotly({ criar_grafico_gestacao(chik_filtrado()) })
   output$chik_escolaridade <- renderPlotly({ criar_grafico_escolaridade(chik_filtrado()) })
   
-  output$dengue_serie <- renderPlotly({ criar_grafico_serie(dados$Dengue, "#C73E1D", "Dengue") })
-  output$dengue_incidencia <- renderPlotly({ criar_grafico_incidencia(dengue_filtrado(), "#C73E1D", "Dengue") })
+  output$dengue_serie <- renderPlotly({ criar_grafico_serie(dados$Dengue, CORES_AGRAVOS[["Dengue"]], "Dengue") })
+  output$dengue_incidencia <- renderPlotly({ criar_grafico_incidencia(dengue_filtrado(), CORES_AGRAVOS[["Dengue"]], "Dengue", benchmarks = obter_benchmarks("Dengue")) })
   output$dengue_etnia <- renderPlotly({ criar_grafico_etnia(dengue_filtrado()) })
   output$dengue_sexo <- renderPlotly({ criar_grafico_sexo(dengue_filtrado(), organizar_rotulos = TRUE) })
   output$dengue_faixa_etaria <- renderPlotly({ criar_grafico_faixa_etaria(dengue_filtrado()) })
   output$dengue_gestacao <- renderPlotly({ criar_grafico_gestacao(dengue_filtrado()) })
   output$dengue_escolaridade <- renderPlotly({ criar_grafico_escolaridade(dengue_filtrado()) })
   
-  output$zika_serie <- renderPlotly({ criar_grafico_serie(dados$Zika, "#A23B72", "Zika") })
-  output$zika_incidencia <- renderPlotly({ criar_grafico_incidencia(zika_filtrado(), "#A23B72", "Zika") })
+  output$zika_serie <- renderPlotly({ criar_grafico_serie(dados$Zika, CORES_AGRAVOS[["Zika"]], "Zika") })
+  output$zika_incidencia <- renderPlotly({ criar_grafico_incidencia(zika_filtrado(), CORES_AGRAVOS[["Zika"]], "Zika", benchmarks = obter_benchmarks("Zika")) })
   output$zika_etnia <- renderPlotly({ criar_grafico_etnia(zika_filtrado()) })
   output$zika_sexo <- renderPlotly({ criar_grafico_sexo(zika_filtrado()) })
   output$zika_faixa_etaria <- renderPlotly({ criar_grafico_faixa_etaria(zika_filtrado()) })
@@ -886,6 +889,158 @@ server <- function(input, output, session) {
       write.csv(tab, file, row.names = FALSE, fileEncoding = "UTF-8")
     }
   )
+
+  # ============================================================
+  # AVALIAÇÃO DE USABILIDADE / CO-DESIGN
+  # ============================================================
+  feedback_status_msg <- reactiveVal(NULL)
+  feedback_ultimo <- reactiveVal(NULL)
+
+  output$feedback_status <- renderUI({
+    msg <- feedback_status_msg()
+    if (is.null(msg) || is.null(msg$texto) || !nzchar(msg$texto)) return(NULL)
+    div(class = paste("feedback-status", msg$tipo),
+      tags$strong(msg$titulo), tags$br(), msg$texto
+    )
+  })
+
+  output$feedback_download <- downloadHandler(
+    filename = function() paste0("avaliacao_painel_arboviroses_", Sys.Date(), ".csv"),
+    content = function(file) {
+      registro <- feedback_ultimo()
+      if (is.null(registro)) {
+        registro <- data.frame(Mensagem = "Nenhuma avaliação enviada nesta sessão.", stringsAsFactors = FALSE)
+      }
+      utils::write.csv(registro, file, row.names = FALSE, fileEncoding = "UTF-8")
+    }
+  )
+
+  mostrar_fallback_feedback <- function(registro, erro_envio = NULL) {
+    email_dest <- Sys.getenv("ARBOVIROSES_FEEDBACK_EMAIL", FEEDBACK_EMAIL_PADRAO)
+    assunto <- utils::URLencode("Avaliação do Painel de Arboviroses — Campos/RJ", reserved = TRUE)
+    corpo <- paste(
+      "Avaliação de utilidade e usabilidade do Painel de Arboviroses",
+      "",
+      paste(names(registro), unlist(registro), sep = ": ", collapse = "\n"),
+      "",
+      "Enviado pelo formulário do painel.",
+      sep = "\n"
+    )
+    link_mailto <- paste0(
+      "mailto:", email_dest,
+      "?subject=", assunto,
+      "&body=", utils::URLencode(corpo, reserved = TRUE)
+    )
+    feedback_status_msg(list(tipo = "warn", titulo = "Respostas registradas nesta sessão",
+      texto = paste0(
+        "O envio automático não foi concluído",
+        if (!is.null(erro_envio) && nzchar(as.character(erro_envio)[1])) {
+          paste0(" (", as.character(erro_envio)[1], ")")
+        } else "",
+        ". Use o botão de e-mail ou baixe o CSV para encaminhar à equipe."
+      )))
+    showModal(modalDialog(
+      title = "Respostas registradas",
+      easyClose = TRUE,
+      footer = modalButton("Fechar"),
+      p("Obrigado pela avaliação. Para concluir o envio à equipe, abra o e-mail pré-preenchido abaixo ou baixe o CSV e anexe na mensagem."),
+      p(tags$a(href = link_mailto, class = "contact-button", target = "_blank",
+               tags$i(class = "fa fa-envelope"), " Abrir e-mail pré-preenchido")),
+      p(class = "feedback-help", "Destinatário: ", tags$strong(email_dest)),
+      if (!is.null(erro_envio)) p(class = "feedback-help", "Detalhe técnico do envio automático: ", erro_envio)
+    ))
+  }
+
+  observeEvent(input$feedback_enviar, {
+    ids_q <- paste0("feedback_q", 1:8)
+    respostas_q <- vapply(ids_q, function(id) {
+      v <- input[[id]]
+      if (is.null(v) || !nzchar(as.character(v))) NA_character_ else as.character(v)
+    }, character(1))
+
+    if (any(is.na(respostas_q))) {
+      feedback_status_msg(list(tipo = "err", titulo = "Avaliação incompleta",
+        texto = "Responda às oito afirmações da escala Likert antes de enviar."))
+      showNotification("Responda às oito afirmações da avaliação.", type = "warning", duration = 6)
+      return()
+    }
+    if (!isTRUE(input$feedback_consentimento)) {
+      feedback_status_msg(list(tipo = "err", titulo = "Consentimento necessário",
+        texto = "Marque a caixa de consentimento para enviar as respostas."))
+      showNotification("Marque o consentimento para enviar.", type = "warning", duration = 6)
+      return()
+    }
+
+    valores_num <- suppressWarnings(as.integer(respostas_q))
+    registro <- data.frame(
+      data_hora = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+      perfil = as.character(input$feedback_perfil %||% ""),
+      instituicao = as.character(input$feedback_instituicao %||% ""),
+      email = as.character(input$feedback_email %||% ""),
+      tempo_uso = as.character(input$feedback_tempo_uso %||% ""),
+      q1_navegacao = valores_num[1],
+      q2_clareza_graficos = valores_num[2],
+      q3_utilidade_rotina = valores_num[3],
+      q4_confianca_dados = valores_num[4],
+      q5_compreensao_limites = valores_num[5],
+      q6_documentacao = valores_num[6],
+      q7_acessibilidade_cores = valores_num[7],
+      q8_recomendacao = valores_num[8],
+      media_likert = round(mean(valores_num, na.rm = TRUE), 2),
+      comentarios = as.character(input$feedback_comentarios %||% ""),
+      consentimento = TRUE,
+      stringsAsFactors = FALSE
+    )
+    feedback_ultimo(registro)
+
+    # Persistência local (auditoria) e envio automático via endpoint.
+    # O endpoint padrão usa FormSubmit (sem chave de API). O primeiro envio
+    # dispara um e-mail de ativação; depois disso as respostas chegam direto
+    # à caixa configurada. TESTTHAT evita envios reais durante os testes.
+    tryCatch(registrar_log(LOG_FEEDBACK, registro), error = function(e) NULL)
+    autosend <- !identical(tolower(Sys.getenv("ARBOVIROSES_FEEDBACK_AUTOSEND", "true")), "false") &&
+      !identical(Sys.getenv("TESTTHAT"), "true")
+    endpoint_env <- Sys.getenv("ARBOVIROSES_FEEDBACK_ENDPOINT", unset = NA_character_)
+    endpoint <- if (is.na(endpoint_env)) FEEDBACK_ENDPOINT_PADRAO else endpoint_env
+    if (!autosend) endpoint <- ""
+    if (!autosend || !nzchar(endpoint)) {
+      mostrar_fallback_feedback(registro, "envio automático desativado")
+      return()
+    }
+
+    payload <- as.list(registro)
+    payload[["_subject"]] <- "Nova avaliação do Painel de Arboviroses — Campos/RJ"
+    payload[["_template"]] <- "table"
+    payload[["_captcha"]] <- "false"
+    if (nzchar(registro$email)) payload[["_replyto"]] <- registro$email
+
+    feedback_status_msg(list(tipo = "warn", titulo = "Enviando avaliação...",
+      texto = "Aguarde enquanto as respostas são enviadas ao FormSubmit."))
+    session$sendCustomMessage("feedback_formsubmit", list(
+      endpoint = endpoint,
+      payload = payload
+    ))
+  })
+
+  observeEvent(input$feedback_js_result, {
+    res <- input$feedback_js_result
+    if (is.null(res) || is.null(feedback_ultimo())) return()
+    registro <- feedback_ultimo()
+    if (isTRUE(res$ok)) {
+      feedback_status_msg(list(tipo = "ok", titulo = "Avaliação enviada com sucesso",
+        texto = paste0(
+          "Obrigado! As respostas foram registradas e serão usadas no relatório de usabilidade e nas melhorias do painel. ",
+          "O envio automático foi concluído via FormSubmit."
+        )))
+      showNotification("Avaliação enviada. Obrigado!", type = "message", duration = 6)
+    } else {
+      detalhe <- paste0(
+        "HTTP ", if (is.null(res$status)) "?" else res$status,
+        if (!is.null(res$message) && nzchar(as.character(res$message)[1])) paste0(": ", as.character(res$message)[1]) else ""
+      )
+      mostrar_fallback_feedback(registro, detalhe)
+    }
+  })
 
   session$onSessionEnded(function() {
     registrar_log(LOG_SESSAO, data.frame(

@@ -160,7 +160,7 @@ grafico_mapa_bairros_geobr <- function(mapa_sf, periodo_label) {
   ggplot(mapa_sf) +
     geom_sf(aes(fill = Casos), color = "#ffffff", linewidth = 0.16) +
     scale_fill_gradientn(
-      colours = c("#fff7bc", "#fec44f", "#fe9929", "#d95f0e", "#7f0000"),
+      colours = paleta_viridis(7, begin = 0.05, end = 0.95),
       name = "Casos",
       labels = format_number
     ) +
@@ -188,9 +188,9 @@ mapa_leaflet_bairros_geobr <- function(mapa_sf, periodo_label) {
   if(length(dominio) == 0) dominio <- c(0, 1)
   
   pal <- leaflet::colorNumeric(
-    palette = c("#fff7bc", "#fec44f", "#fe9929", "#d95f0e", "#7f0000"),
+    palette = paleta_viridis(7, begin = 0.05, end = 0.95),
     domain = dominio,
-    na.color = "#e2e8f0"
+    na.color = COR_IGNORADO
   )
   
   labels <- paste0(
@@ -204,7 +204,7 @@ mapa_leaflet_bairros_geobr <- function(mapa_sf, periodo_label) {
     leaflet::addProviderTiles("OpenStreetMap.Mapnik", group = "OpenStreetMap") %>%
     leaflet::addPolygons(
       group = "Dengue por bairro",
-      fillColor = ~ifelse(Casos > 0, pal(Casos), "#e2e8f0"),
+      fillColor = ~ifelse(Casos > 0, pal(Casos), COR_IGNORADO),
       fillOpacity = ~ifelse(Casos > 0, 0.82, 0.34),
       color = "#ffffff",
       opacity = 0.95,
@@ -214,7 +214,7 @@ mapa_leaflet_bairros_geobr <- function(mapa_sf, periodo_label) {
       popup = lapply(labels, htmltools::HTML),
       highlightOptions = leaflet::highlightOptions(
         weight = 2,
-        color = "#1B3A6B",
+        color = "#0F172A",
         fillOpacity = 0.9,
         bringToFront = TRUE
       )

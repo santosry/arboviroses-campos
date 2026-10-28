@@ -54,6 +54,25 @@ for (old in old_accounts) {
   )
 }
 
+# Variáveis de ambiente do formulário de avaliação. O endpoint padrão usa
+# FormSubmit e não contém segredo; pode ser sobrescrito por variável de ambiente.
+feedback_env <- c(
+  ARBOVIROSES_FEEDBACK_ENDPOINT = Sys.getenv(
+    "ARBOVIROSES_FEEDBACK_ENDPOINT",
+    unset = "https://formsubmit.co/ajax/ryan.paulo@gsuite.iff.edu.br"
+  ),
+  ARBOVIROSES_FEEDBACK_EMAIL = Sys.getenv(
+    "ARBOVIROSES_FEEDBACK_EMAIL",
+    unset = "ryan.paulo@gsuite.iff.edu.br"
+  )
+)
+
+# shinyapps.io não aceita envVars via deployApp. O endpoint padrão do
+# formulário já está definido em R/utils.R; as variáveis abaixo ficam
+# disponíveis para execução local e podem ser configuradas no painel do
+# shinyapps.io, se necessário.
+do.call(Sys.setenv, as.list(feedback_env))
+
 deploy <- rsconnect::deployApp(
   appDir = ".",
   appFiles = required_files,
