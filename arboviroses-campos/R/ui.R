@@ -32,6 +32,21 @@ campo_likert <- function(id, pergunta) {
   )
 }
 
+seletor_anos <- function(id, anos, rotulo = "PERÍODO — selecione um ou mais anos") {
+  anos <- sort(unique(anos[!is.na(anos)]))
+  anos <- as.character(anos)
+  div(class = "seletor-anos",
+    div(class = "seletor-anos-label", rotulo),
+    checkboxGroupInput(
+      id, NULL,
+      choices = stats::setNames(anos, anos),
+      selected = anos,
+      inline = TRUE
+    ),
+    div(class = "seletor-anos-help", "Deixe todos marcados para visualizar o período completo.")
+  )
+}
+
 ui <- dashboardPage(skin = "black",
   dashboardHeader(
     title = "",
@@ -49,14 +64,6 @@ ui <- dashboardPage(skin = "black",
       menuItem("AVALIAÇÃO", tabName = "feedback", icon = icon("clipboard-check")),
       menuItem("MÉTODOS", tabName = "metodos", icon = icon("flask")),
       menuItem("EQUIPE", tabName = "equipe", icon = icon("users"))
-    ),
-    hr(),
-    tags$div(class = "sidebar-filtro-global",
-      tags$strong("Filtro Global"),
-      selectInput("global_ano", "Período",
-        choices = c("Todos", 2020, 2021, 2022, 2023, 2024, 2025),
-        selected = "Todos"
-      )
     ),
     hr(),
     tags$div(class = "sidebar-fonte",
@@ -734,6 +741,41 @@ ui <- dashboardPage(skin = "black",
           color: #92400E;
         }
         
+        /* ===== SELETOR MULTIPLO DE ANOS ===== */
+        .seletor-anos {
+          background: #F8FAFC;
+          border: 1px solid #DCE5EF;
+          border-radius: 8px;
+          padding: 10px 14px 8px 14px;
+          margin-bottom: 12px;
+        }
+        .seletor-anos-label {
+          color: #1B3A6B;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 1.1px;
+          text-transform: uppercase;
+          margin-bottom: 6px;
+        }
+        .seletor-anos .form-group {
+          margin-bottom: 0;
+        }
+        .seletor-anos .checkbox-inline {
+          margin-left: 0;
+          margin-right: 16px;
+          color: #1A2535;
+          font-size: 13px;
+          font-weight: 600;
+        }
+        .seletor-anos .checkbox-inline input {
+          margin-top: 2px;
+        }
+        .seletor-anos-help {
+          color: #64748B;
+          font-size: 11px;
+          margin-top: 4px;
+        }
+
         /* ===== PERIODO BADGE ===== */
         .periodo-badge {
           display: inline-flex;
@@ -1060,7 +1102,7 @@ ui <- dashboardPage(skin = "black",
             p("Este painel foi criado para apoiar a leitura epidemiológica das arboviroses em Campos dos Goytacazes. Ele reúne indicadores descritivos de Chikungunya, Dengue e Zika, permitindo observar a magnitude dos registros, o perfil dos casos, a completude das notificações e a distribuição espacial da dengue por bairro. Para detalhes sobre fontes, métodos e limitações, consulte a aba Métodos."),
             tags$ol(
               tags$li("Escolha a doença no menu lateral: Chikungunya, Dengue ou Zika."),
-              tags$li("Use o filtro de período no menu lateral para focar em um ano ou ver todos os dados."),
+              tags$li("Use o seletor de período dentro de cada aba de doença para escolher um ou vários anos."),
               tags$li("Comece pelos cartões-resumo para entender rapidamente curas, óbitos, casos confirmados, descartados, inconclusivos e campos ignorados/brancos."),
               tags$li("Compare os gráficos de série temporal, sexo, faixa etária, gestação, raça/cor e escolaridade para reconhecer padrões e diferenças entre os grupos."),
               tags$li("Na aba de Dengue, explore também o mapa por bairros e o ranking dos bairros com maior número de registros."),
@@ -1222,8 +1264,8 @@ ui <- dashboardPage(skin = "black",
         ),
         aviso_uso_dados(compacto = TRUE),
         fluidRow(
-          column(3, selectInput("chik_ano", "PERÍODO", choices = c("Todos", sort(unique(dados$Chikungunya$Ano))), selected = "Todos")),
-          column(9, uiOutput("chik_periodo"))
+          column(8, seletor_anos("chik_anos", dados$Chikungunya$Ano)),
+          column(4, uiOutput("chik_periodo"))
         ),
         fluidRow(
           column(3, uiOutput("chik_card_cura")),
@@ -1310,8 +1352,8 @@ ui <- dashboardPage(skin = "black",
         ),
         aviso_uso_dados(compacto = TRUE),
         fluidRow(
-          column(3, selectInput("dengue_ano", "PERÍODO", choices = c("Todos", sort(unique(dados$Dengue$Ano))), selected = "Todos")),
-          column(9, uiOutput("dengue_periodo"))
+          column(8, seletor_anos("dengue_anos", dados$Dengue$Ano)),
+          column(4, uiOutput("dengue_periodo"))
         ),
         fluidRow(
           column(3, uiOutput("dengue_card_cura")),
@@ -1394,7 +1436,7 @@ ui <- dashboardPage(skin = "black",
         div(class = "landing-section",
           h4("Classificação de risco — Grupos oficiais A/B/C/D"),
           fluidRow(
-            column(3, selectInput("risco_dengue_ano", "PERÍODO", choices = c("Todos", 2020, 2021, 2022, 2023, 2024, 2025), selected = "Todos"))
+            column(12, seletor_anos("risco_dengue_anos", dados$Dengue$Ano))
           ),
           fluidRow(
             column(3, uiOutput("risco_card_A")),
@@ -1435,8 +1477,8 @@ ui <- dashboardPage(skin = "black",
         ),
         aviso_uso_dados(compacto = TRUE),
         fluidRow(
-          column(3, selectInput("zika_ano", "PERÍODO", choices = c("Todos", sort(unique(dados$Zika$Ano))), selected = "Todos")),
-          column(9, uiOutput("zika_periodo"))
+          column(8, seletor_anos("zika_anos", dados$Zika$Ano)),
+          column(4, uiOutput("zika_periodo"))
         ),
         fluidRow(
           column(3, uiOutput("zika_card_cura")),

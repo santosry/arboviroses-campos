@@ -164,7 +164,7 @@ O pipeline é integralmente reprodutível e modular:
 *   **Painel de qualidade** com indicadores de completude por variável e alertas automáticos para campos com >30% de ignorados/brancos.
 *   **Comparador entre agravos** na página inicial com seletor de variável (ano, sexo, faixa etária, raça/cor, gestação) e escala logarítmica no eixo Y.
 *   **Tutorial integrado** à página inicial (colapsável) com instruções de uso e interpretação.
-*   **Filtro global de período** na barra lateral que sincroniza todas as abas.
+*   **Seleção múltipla de anos por aba:** cada aba de doença (Chikungunya, Dengue, Zika) possui seu próprio seletor de período com caixas de seleção, permitindo comparar dois ou mais anos no mesmo painel.
 *   **Ícone de mosquito** como identidade visual em todas as abas do painel.
 *   **Comparação com o Estado do RJ e o Brasil:** linhas tracejadas de referência nos gráficos de incidência, com dados anuais e população IBGE/SIDRA.
 *   **Avaliação de usabilidade e co-design:** aba própria com questionário Likert, registro local das respostas e envio por endpoint ou e-mail pré-preenchido.

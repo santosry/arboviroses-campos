@@ -31,6 +31,12 @@ test_that("filtro anual preserva Todos e filtra ano especifico", {
   expect_true(all(filtrado$Ano == 2024))
 })
 
+test_that("filtro anual permite selecionar varios anos", {
+  filtrado <- filter_year(dengue, c("2021", "2024"))
+  expect_true(all(filtrado$Ano %in% c(2021, 2024)))
+  expect_setequal(unique(filtrado$Ano), c(2021, 2024))
+})
+
 test_that("calculo de incidencia retorna numero finito quando ha populacao", {
   taxa <- incidencia_periodo(dengue)
   expect_type(taxa, "double")

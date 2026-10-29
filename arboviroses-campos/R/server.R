@@ -22,19 +22,39 @@ server <- function(input, output, session) {
     ))
   })
 
-  # Filtro global sincronizado com filtros por doenca
-  observeEvent(input$global_ano, {
-    updateSelectInput(session, "chik_ano", selected = input$global_ano)
-    updateSelectInput(session, "dengue_ano", selected = input$global_ano)
-    updateSelectInput(session, "zika_ano", selected = input$global_ano)
-  })
-  
-  ano_selecionado <- function(input_id) {
-    # Usa filtro global como preferencia; se per-tab diferir, usa per-tab
+  # Seleção de anos por aba: o usuário pode marcar um ou vários anos.
+  anos_disponiveis <- function(df) {
+    sort(unique(as.integer(df$Ano[!is.na(df$Ano)])))
+  }
+
+  anos_selecionados <- function(input_id, df) {
+    disponiveis <- anos_disponiveis(df)
     valor <- input[[input_id]]
-    if (is.null(valor) || length(valor) == 0) valor <- input[["global_ano"]]
-    if (is.null(valor) || length(valor) == 0) valor <- "Todos"
-    valor
+    if (is.null(valor) || length(valor) == 0) return(disponiveis)
+
+    valor_num <- suppressWarnings(as.integer(valor))
+    valor_num <- valor_num[!is.na(valor_num)]
+    if (length(valor_num) == 0) return(disponiveis)
+
+    selecionados <- sort(intersect(disponiveis, valor_num))
+    if (length(selecionados) == 0) return(disponiveis)
+    selecionados
+  }
+
+  rotulo_periodo <- function(anos, disponiveis = anos) {
+    anos <- sort(unique(anos[!is.na(anos)]))
+    disponiveis <- sort(unique(disponiveis[!is.na(disponiveis)]))
+    if (length(anos) == 0) return("Sem dados no período")
+    if (length(disponiveis) > 0 && setequal(anos, disponiveis)) {
+      return(paste0("Todos os anos (", min(disponiveis), "-", max(disponiveis), ")"))
+    }
+    if (length(anos) == 1) return(paste0("Ano selecionado: ", anos))
+    paste0("Anos selecionados: ", paste(anos, collapse = ", "))
+  }
+
+  rotulo_periodo_df <- function(df) {
+    anos <- sort(unique(df$Ano[!is.na(df$Ano)]))
+    rotulo_periodo(anos, anos)
   }
 
   dados_longos_home <- reactive({
@@ -182,11 +202,7 @@ server <- function(input, output, session) {
 
   # Painel de qualidade na pagina inicial
   dados_filtrados_global <- reactive({
-    ano <- input$global_ano
-    if (is.null(ano) || ano == "Todos") {
-      return(dados)
-    }
-    lapply(dados, function(df) df[df$Ano == as.numeric(ano), , drop = FALSE])
+    dados
   })
 
   # Tabela de qualidade na pagina inicial (substitui o grafico com log)
@@ -283,36 +299,36 @@ server <- function(input, output, session) {
     div(class = "quality-grid", alertas)
   })
   
-  observeEvent(input$chik_ano, {
+  observeEvent(input$chik_anos, {
     registrar_log(LOG_ACESSOS, data.frame(
       pagina = "chikungunya",
       acao = "filtro_ano",
-      detalhes = paste("Filtro alterado para:", input$chik_ano)
+      detalhes = paste("Filtro alterado para:", paste(input$chik_anos, collapse = ", "))
     ))
   })
-  observeEvent(input$dengue_ano, {
+  observeEvent(input$dengue_anos, {
     registrar_log(LOG_ACESSOS, data.frame(
       pagina = "dengue",
       acao = "filtro_ano",
-      detalhes = paste("Filtro alterado para:", input$dengue_ano)
+      detalhes = paste("Filtro alterado para:", paste(input$dengue_anos, collapse = ", "))
     ))
   })
-  observeEvent(input$zika_ano, {
+  observeEvent(input$zika_anos, {
     registrar_log(LOG_ACESSOS, data.frame(
       pagina = "zika",
       acao = "filtro_ano",
-      detalhes = paste("Filtro alterado para:", input$zika_ano)
+      detalhes = paste("Filtro alterado para:", paste(input$zika_anos, collapse = ", "))
     ))
   })
   
-  chik_filtrado <- reactive({ filter_year(dados$Chikungunya, ano_selecionado("chik_ano")) })
-  dengue_filtrado <- reactive({ filter_year(dados$Dengue, ano_selecionado("dengue_ano")) })
-  zika_filtrado <- reactive({ filter_year(dados$Zika, ano_selecionado("zika_ano")) })
+  chik_filtrado <- reactive({ filter_year(dados$Chikungunya, anos_selecionados("chik_anos", dados$Chikungunya)) })
+  dengue_filtrado <- reactive({ filter_year(dados$Dengue, anos_selecionados("dengue_anos", dados$Dengue)) })
+  zika_filtrado <- reactive({ filter_year(dados$Zika, anos_selecionados("zika_anos", dados$Zika)) })
   dengue_bairros_filtrado <- reactive({
     df <- dengue_bairros
     if(nrow(df) == 0) return(df)
-    ano <- ano_selecionado("dengue_ano")
-    if(ano != "Todos") df <- df[df$Ano == as.numeric(ano), , drop = FALSE]
+    anos <- anos_selecionados("dengue_anos", dados$Dengue)
+    df <- df[df$Ano %in% anos, , drop = FALSE]
     # Agrega por bairro_key (mesma logica da tabela de correspondencia)
     df %>%
       mutate(bairro_key = normalizar_chave_bairro(NM_BAIRRO)) %>%
@@ -355,8 +371,7 @@ server <- function(input, output, session) {
         paste0(nome_doenca, "_tabela_analitica_", Sys.Date(), ".csv")
       },
       content = function(file) {
-        ano <- ano_selecionado(paste0(prefixo, "_ano"))
-        periodo_label <- if(ano == "Todos") "Todos" else ano
+        periodo_label <- rotulo_periodo_df(df_reativo())
         write.csv(
           tabela_analitica_doenca(df_reativo(), tools::toTitleCase(nome_doenca), periodo_label),
           file,
@@ -375,7 +390,7 @@ server <- function(input, output, session) {
         if(is.null(visualizacao)) visualizacao <- "serie"
         if(is.null(formato)) formato <- "pdf"
         df_plot <- df_reativo()
-        periodo_label <- if(length(unique(df_plot$Ano)) == 1) paste("Ano:", unique(df_plot$Ano)) else paste0("Período: ", min(df_plot$Ano), "-", max(df_plot$Ano))
+        periodo_label <- rotulo_periodo_df(df_plot)
         p <- grafico_publicacao(df_plot, visualizacao, paste(nome_doenca, "-", names(opcoes_visualizacao)[opcoes_visualizacao == visualizacao]), nome_doenca, periodo_label)
         ggsave(file, plot = p, device = formato, width = 9, height = 6, dpi = 600, units = "in")
       }
@@ -398,7 +413,7 @@ server <- function(input, output, session) {
       },
       content = function(file) {
         df_plot <- df_func()
-        periodo_label <- if(length(unique(df_plot$Ano)) == 1) paste("Ano:", unique(df_plot$Ano)) else paste0("Período: ", min(df_plot$Ano), "-", max(df_plot$Ano))
+        periodo_label <- rotulo_periodo_df(df_plot)
         p <- grafico_publicacao(df_plot, visualizacao, titulo, nome_doenca, periodo_label,
                                 benchmarks = benchmarks)
         salvar_png_alta_resolucao(p, file, width = width, height = height)
@@ -459,17 +474,16 @@ server <- function(input, output, session) {
     )
   }
 
-  registrar_downloads_graficos_doenca("chik", chik_filtrado, function() dados$Chikungunya, "chikungunya")
-  registrar_downloads_graficos_doenca("dengue", dengue_filtrado, function() dados$Dengue, "dengue")
-  registrar_downloads_graficos_doenca("zika", zika_filtrado, function() dados$Zika, "zika")
+  registrar_downloads_graficos_doenca("chik", chik_filtrado, chik_filtrado, "chikungunya")
+  registrar_downloads_graficos_doenca("dengue", dengue_filtrado, dengue_filtrado, "dengue")
+  registrar_downloads_graficos_doenca("zika", zika_filtrado, zika_filtrado, "zika")
 
   output$dengue_download_mapa_bairros <- downloadHandler(
     filename = function() {
       paste0("dengue_mapa_bairros_alta_resolucao_", Sys.Date(), ".png")
     },
     content = function(file) {
-      ano <- ano_selecionado("dengue_ano")
-      periodo_label <- if(ano == "Todos") "Período: 2020-2025" else paste("Ano:", ano)
+      periodo_label <- rotulo_periodo_df(dengue_bairros_filtrado())
       p <- grafico_mapa_bairros_geobr(dengue_mapa_geobr()$mapa, periodo_label)
       salvar_png_alta_resolucao(p, file, width = 10, height = 8)
     }
@@ -500,8 +514,7 @@ server <- function(input, output, session) {
   )
 
   output$dengue_mapa_bairros <- renderUI({
-    ano <- ano_selecionado("dengue_ano")
-    periodo_label <- if(ano == "Todos") "Período: 2020-2025" else paste("Ano:", ano)
+    periodo_label <- rotulo_periodo_df(dengue_bairros_filtrado())
     
     if(nrow(dengue_bairros_filtrado()) == 0) {
       return(div(class = "context-box", "Não há registros com bairro informado nas planilhas locais para o período selecionado."))
@@ -556,8 +569,7 @@ server <- function(input, output, session) {
   )
   
   output$dengue_mapa_bairros_plot <- renderLeaflet({
-    ano <- ano_selecionado("dengue_ano")
-    periodo_label <- if(ano == "Todos") "Período: 2020-2025" else paste("Ano:", ano)
+    periodo_label <- rotulo_periodo_df(dengue_bairros_filtrado())
     tryCatch({
       mapa_leaflet_bairros_geobr(dengue_mapa_geobr()$mapa, periodo_label)
     }, error = function(e) {
@@ -696,7 +708,7 @@ server <- function(input, output, session) {
   output$zika_qualidade <- render_qualidade(zika_filtrado)
   
   # Gráficos
-  output$chik_serie <- renderPlotly({ criar_grafico_serie(dados$Chikungunya, CORES_AGRAVOS[["Chikungunya"]], "Chikungunya") })
+  output$chik_serie <- renderPlotly({ criar_grafico_serie(chik_filtrado(), CORES_AGRAVOS[["Chikungunya"]], "Chikungunya") })
   output$chik_incidencia <- renderPlotly({ criar_grafico_incidencia(chik_filtrado(), CORES_AGRAVOS[["Chikungunya"]], "Chikungunya", benchmarks = obter_benchmarks("Chikungunya")) })
   output$chik_etnia <- renderPlotly({ criar_grafico_etnia(chik_filtrado()) })
   output$chik_sexo <- renderPlotly({ criar_grafico_sexo(chik_filtrado(), destacar_feminino_2024 = TRUE) })
@@ -704,7 +716,7 @@ server <- function(input, output, session) {
   output$chik_gestacao <- renderPlotly({ criar_grafico_gestacao(chik_filtrado()) })
   output$chik_escolaridade <- renderPlotly({ criar_grafico_escolaridade(chik_filtrado()) })
   
-  output$dengue_serie <- renderPlotly({ criar_grafico_serie(dados$Dengue, CORES_AGRAVOS[["Dengue"]], "Dengue") })
+  output$dengue_serie <- renderPlotly({ criar_grafico_serie(dengue_filtrado(), CORES_AGRAVOS[["Dengue"]], "Dengue") })
   output$dengue_incidencia <- renderPlotly({ criar_grafico_incidencia(dengue_filtrado(), CORES_AGRAVOS[["Dengue"]], "Dengue", benchmarks = obter_benchmarks("Dengue")) })
   output$dengue_etnia <- renderPlotly({ criar_grafico_etnia(dengue_filtrado()) })
   output$dengue_sexo <- renderPlotly({ criar_grafico_sexo(dengue_filtrado(), organizar_rotulos = TRUE) })
@@ -712,7 +724,7 @@ server <- function(input, output, session) {
   output$dengue_gestacao <- renderPlotly({ criar_grafico_gestacao(dengue_filtrado()) })
   output$dengue_escolaridade <- renderPlotly({ criar_grafico_escolaridade(dengue_filtrado()) })
   
-  output$zika_serie <- renderPlotly({ criar_grafico_serie(dados$Zika, CORES_AGRAVOS[["Zika"]], "Zika") })
+  output$zika_serie <- renderPlotly({ criar_grafico_serie(zika_filtrado(), CORES_AGRAVOS[["Zika"]], "Zika") })
   output$zika_incidencia <- renderPlotly({ criar_grafico_incidencia(zika_filtrado(), CORES_AGRAVOS[["Zika"]], "Zika", benchmarks = obter_benchmarks("Zika")) })
   output$zika_etnia <- renderPlotly({ criar_grafico_etnia(zika_filtrado()) })
   output$zika_sexo <- renderPlotly({ criar_grafico_sexo(zika_filtrado()) })
@@ -720,45 +732,44 @@ server <- function(input, output, session) {
   output$zika_gestacao <- renderPlotly({ criar_grafico_gestacao(zika_filtrado()) })
   output$zika_escolaridade <- renderPlotly({ criar_grafico_escolaridade(zika_filtrado()) })
   
-  # ---- Títulos dinâmicos com ano ativo (#9) ----
+  # ---- Títulos dinâmicos com os anos ativos (#9) ----
   output$chik_titulo_ano <- renderUI({
-    ano <- ano_selecionado("chik_ano")
-    if (ano != "Todos") {
-      tags$span(class = "titulo-ano-badge", paste0("(", ano, ")"))
+    disponiveis <- anos_disponiveis(dados$Chikungunya)
+    anos <- anos_selecionados("chik_anos", dados$Chikungunya)
+    if (!setequal(anos, disponiveis)) {
+      tags$span(class = "titulo-ano-badge", paste0("(", paste(anos, collapse = ", "), ")"))
     }
   })
   output$dengue_titulo_ano <- renderUI({
-    ano <- ano_selecionado("dengue_ano")
-    if (ano != "Todos") {
-      tags$span(class = "titulo-ano-badge", paste0("(", ano, ")"))
+    disponiveis <- anos_disponiveis(dados$Dengue)
+    anos <- anos_selecionados("dengue_anos", dados$Dengue)
+    if (!setequal(anos, disponiveis)) {
+      tags$span(class = "titulo-ano-badge", paste0("(", paste(anos, collapse = ", "), ")"))
     }
   })
   output$zika_titulo_ano <- renderUI({
-    ano <- ano_selecionado("zika_ano")
-    if (ano != "Todos") {
-      tags$span(class = "titulo-ano-badge", paste0("(", ano, ")"))
+    disponiveis <- anos_disponiveis(dados$Zika)
+    anos <- anos_selecionados("zika_anos", dados$Zika)
+    if (!setequal(anos, disponiveis)) {
+      tags$span(class = "titulo-ano-badge", paste0("(", paste(anos, collapse = ", "), ")"))
     }
   })
   
   # ---- Badge de periodo ativo ----
   render_periodo <- function(df_full, input_id) {
     renderUI({
-      ano <- ano_selecionado(input_id)
-      if (ano == "Todos") {
-        anos <- df_full$Ano
-        lbl  <- paste0("Todos os anos (", min(anos), "-", max(anos), ")")
-      } else {
-        lbl <- paste0("Ano selecionado: ", ano)
-      }
+      disponiveis <- anos_disponiveis(df_full)
+      anos <- anos_selecionados(input_id, df_full)
+      lbl <- rotulo_periodo(anos, disponiveis)
       
       tags$span(class = "periodo-badge",
         tags$i(class = "fa fa-calendar-o"), " ", lbl
       )
     })
   }
-  output$chik_periodo   <- render_periodo(dados$Chikungunya, "chik_ano")
-  output$dengue_periodo <- render_periodo(dados$Dengue, "dengue_ano")
-  output$zika_periodo   <- render_periodo(dados$Zika, "zika_ano")
+  output$chik_periodo   <- render_periodo(dados$Chikungunya, "chik_anos")
+  output$dengue_periodo <- render_periodo(dados$Dengue, "dengue_anos")
+  output$zika_periodo   <- render_periodo(dados$Zika, "zika_anos")
 
   # ============================================================
   # CLASSIFICACAO DE RISCO / GRAVIDADE (MS)
@@ -788,9 +799,8 @@ server <- function(input, output, session) {
 
   risco_dengue_filtrado <- reactive({
     df <- dengue_risco
-    ano <- input$risco_dengue_ano
-    if (is.null(ano) || ano == "Todos") return(df)
-    df[df$Ano == as.numeric(ano), , drop = FALSE]
+    anos <- anos_selecionados("risco_dengue_anos", df)
+    df[df$Ano %in% anos, , drop = FALSE]
   })
 
   render_risco_card <- function(grupo) {
@@ -839,9 +849,8 @@ server <- function(input, output, session) {
 
   risco_dengue_bairros_filtrado <- reactive({
     df <- dengue_risco_bairros
-    ano <- input$risco_dengue_ano
-    if (!is.null(ano) && ano != "Todos") df <- df[df$Ano == as.numeric(ano), , drop = FALSE]
-    df
+    anos <- anos_selecionados("risco_dengue_anos", dengue_risco)
+    df[df$Ano %in% anos, , drop = FALSE]
   })
 
   output$risco_dengue_bairros_dt <- renderDT({

@@ -1,9 +1,14 @@
 # FUNCOES UTILITARIAS
 
-filter_year <- function(df, ano) {
-  if(ano == "Todos") return(df)
-  ano_num <- as.numeric(ano)
-  df[df$Ano == ano_num, , drop = FALSE]
+filter_year <- function(df, anos) {
+  if (is.null(anos) || length(anos) == 0) return(df)
+  if (is.character(anos) && any(anos == "Todos", na.rm = TRUE)) return(df)
+
+  anos_num <- suppressWarnings(as.numeric(anos))
+  anos_num <- anos_num[!is.na(anos_num)]
+  if (length(anos_num) == 0) return(df)
+
+  df[df$Ano %in% anos_num, , drop = FALSE]
 }
 
 format_number <- function(x) {
