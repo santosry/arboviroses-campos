@@ -648,6 +648,11 @@ dados <- list(
   "Zika" = zika
 )
 
+message(
+  "Dados do app carregados de data/cache_app: ",
+  paste(sprintf("%s=%d linhas", names(dados), vapply(dados, nrow, integer(1))), collapse = ", ")
+)
+
 # Validar todos os dados iniciais
 tryCatch({
   for (nome in names(dados)) {

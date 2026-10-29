@@ -31,21 +31,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
-      - uses: r-lib/actions/setup-r@v2
-        with:
-          r-version: "4.4"
-          use-public-rspm: true
-      - name: Instalar dependências do sistema
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y \
-            libcurl4-openssl-dev libssl-dev libxml2-dev libgdal-dev \
-            libgeos-dev libproj-dev libudunits2-dev
-      - name: Restaurar renv
-        run: |
-          if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
-          renv::restore(prompt = FALSE)
-        shell: Rscript {0}
+      - name: Setup R + renv
+        uses: ./.github/actions/setup-r-env
       - name: Atualizar pipeline principal
         run: source("scripts/update_data.R")
         shell: Rscript {0}
@@ -71,21 +58,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
-      - uses: r-lib/actions/setup-r@v2
-        with:
-          r-version: "4.4"
-          use-public-rspm: true
-      - name: Instalar dependências do sistema
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y \
-            libcurl4-openssl-dev libssl-dev libxml2-dev libgdal-dev \
-            libgeos-dev libproj-dev libudunits2-dev
-      - name: Restaurar renv
-        run: |
-          if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
-          renv::restore(prompt = FALSE)
-        shell: Rscript {0}
+      - name: Setup R + renv
+        uses: ./.github/actions/setup-r-env
       - name: Atualizar benchmarks
         run: source("scripts/08_benchmarks.R")
         shell: Rscript {0}
@@ -110,21 +84,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
-      - uses: r-lib/actions/setup-r@v2
-        with:
-          r-version: "4.4"
-          use-public-rspm: true
-      - name: Instalar dependências do sistema
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y \
-            libcurl4-openssl-dev libssl-dev libxml2-dev libgdal-dev \
-            libgeos-dev libproj-dev libudunits2-dev
-      - name: Restaurar renv
-        run: |
-          if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
-          renv::restore(prompt = FALSE)
-        shell: Rscript {0}
+      - name: Setup R + renv
+        uses: ./.github/actions/setup-r-env
       - name: Baixar caches do pipeline
         uses: actions/download-artifact@v4
         with:
@@ -137,6 +98,23 @@ jobs:
           name: benchmarks
           path: arboviroses-campos/data
           merge-multiple: true
+      - name: Verify deployment bundle contains app data
+        run: |
+          required <- c(
+            "app.R",
+            list.files("R", pattern = "\\.R$", full.names = TRUE),
+            list.files("data/cache_app", full.names = TRUE)
+          )
+          bundle <- rsconnect::listBundleFiles(".")$contents
+          missing <- setdiff(required, bundle)
+          if (length(missing) > 0) {
+            stop("Arquivos obrigatorios fora do bundle: ", paste(missing, collapse = ", "))
+          }
+          cat(
+            "Bundle OK:", length(bundle), "arquivos;",
+            length(grep("^data/cache_app/", bundle)), "arquivos de cache.\n"
+          )
+        shell: Rscript {0}
       - name: Rodar testes
         run: testthat::test_dir("tests/testthat")
         shell: Rscript {0}

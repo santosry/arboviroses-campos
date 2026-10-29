@@ -256,7 +256,7 @@ shiny::runApp()
 
 ### Atualização semestral automatizada
 
-O workflow [`atualizacao-semestral.yml`](../.github/workflows/atualizacao-semestral.yml) executa a atualização dos caches e dos benchmarks a cada seis meses (janeiro e julho) e também pode ser disparado manualmente (`workflow_dispatch`). Ele restaura o ambiente `renv`, executa `scripts/update_data.R` e `scripts/08_benchmarks.R`, roda os testes e publica os artefatos de auditoria. O app **nunca baixa dados no startup**: lê apenas os caches versionados em `data/cache_app/`.
+O workflow [`atualizacao-semestral.yml`](../.github/workflows/atualizacao-semestral.yml) executa a atualização dos caches e dos benchmarks a cada seis meses (janeiro e julho) e também pode ser disparado manualmente (`workflow_dispatch`). O ambiente é configurado pela composite action [`.github/actions/setup-r-env`](../.github/actions/setup-r-env/action.yml), que instala a **mesma versão de R registrada em `renv.lock`** (`r-version: renv`), instala as dependências de sistema e restaura o `renv`. Em seguida, o workflow executa `scripts/update_data.R` e `scripts/08_benchmarks.R`, roda os testes, verifica se os caches entram no bundle de deploy e publica os artefatos de auditoria. O app **nunca baixa dados no startup**: lê apenas os caches versionados em `data/cache_app/`.
 
 Para reproduzir localmente a etapa de referências externas:
 
