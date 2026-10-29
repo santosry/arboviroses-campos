@@ -1720,7 +1720,7 @@ ui <- dashboardPage(skin = "black",
             tags$li(tags$strong("Reusable: "), "licença MIT, script de atualização, testes automatizados e nota de citação (CITATION.cff).")
           ),
           p(
-            "Como citar: SANTOS, R. P. et al. ",
+            "Como citar: SOUZA, Mirella Guimarães Lourenço de; SANTOS, Ryan de Paulo; MOREIRA, Brenda Velasco; MELLO, Marcelly Rangel de; RIBEIRO, Karla Rangel. ",
             tags$em("Painel de Inteligência Epidemiológica para Arboviroses em Campos dos Goytacazes (2020-2025)"),
             ". IFF Guarus, 2026. Disponível em: ",
             tags$a(href = "https://github.com/santosry/arboviroses-campos", target = "_blank", "github.com/santosry/arboviroses-campos"),

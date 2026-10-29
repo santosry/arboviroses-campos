@@ -37,7 +37,7 @@ Este repositório foi organizado para ser **localizável, acessível, interoper�
 
 ### Como citar
 
-> SANTOS, R. P.; MOREIRA, B. V.; SOUZA, M. G. L.; MELLO, M. R.; RIBEIRO, K. R. **Painel de Inteligência Epidemiológica para Arboviroses em Campos dos Goytacazes (2020-2025)**. Instituto Federal Fluminense, Campus Campos Guarus, 2026. Disponível em: <https://github.com/santosry/arboviroses-campos>. Licença MIT.
+> SOUZA, Mirella Guimarães Lourenço de; SANTOS, Ryan de Paulo; MOREIRA, Brenda Velasco; MELLO, Marcelly Rangel de; RIBEIRO, Karla Rangel. **Painel de Inteligência Epidemiológica para Arboviroses em Campos dos Goytacazes (2020-2025)**. Instituto Federal Fluminense, Campus Campos Guarus, 2026. Disponível em: <https://github.com/santosry/arboviroses-campos>. Licença MIT.
 
 O arquivo [`CITATION.cff`](CITATION.cff) contém a versão legível por máquina. Para reutilizar o código:
 
