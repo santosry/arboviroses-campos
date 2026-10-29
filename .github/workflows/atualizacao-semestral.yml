@@ -55,7 +55,7 @@ jobs:
         with:
           name: pipeline-caches
           path: |
-            arboviroses-campos/data/app_cache/
+            arboviroses-campos/data/cache_app/
             arboviroses-campos/data/audit/
           if-no-files-found: warn
 
@@ -95,7 +95,7 @@ jobs:
         with:
           name: benchmarks
           path: |
-            arboviroses-campos/data/app_cache/benchmarks_uf_br.csv
+            arboviroses-campos/data/cache_app/benchmarks_uf_br.csv
             arboviroses-campos/data/audit/benchmarks_uf_br_auditoria.csv
           if-no-files-found: warn
 
@@ -145,7 +145,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add arboviroses-campos/data/app_cache \
+          git add arboviroses-campos/data/cache_app \
                   arboviroses-campos/data/audit
           if git diff --cached --quiet; then
             echo "Sem alterações para commitar."

@@ -1,6 +1,6 @@
 # ============================================================
 # DADOS: Leitura de caches gerados pelo pipeline via microdatasus
-# Nenhum dado hardcoded. Tudo vem de data/app_cache/*.rds
+# Nenhum dado hardcoded. Tudo vem de data/cache_app/*.rds
 # ============================================================
 
 # Funcao local de leitura segura (redundante com utils.R para robustez no deploy)
@@ -25,7 +25,7 @@ ler_rds_seguro_local <- function(path, nome = basename(path), quiet = FALSE) {
 
 # Chikungunya
 carregar_chikungunya_microdatasus <- function(
-  cache_path = file.path("data", "app_cache", "chikungunya_microdatasus_campos_v1.rds")
+  cache_path = file.path("data", "cache_app", "chikungunya_microdatasus_campos_v1.rds")
 ) {
   cache <- ler_rds_seguro_local(cache_path, "SINAN-CHIKUNGUNYA")
   if (is.null(cache) || nrow(cache) == 0) {
@@ -50,7 +50,7 @@ chikungunya <- tryCatch(
 
 # Dengue
 carregar_dengue_microdatasus <- function(
-  cache_path = file.path("data", "app_cache", "dengue_microdatasus_campos_v2.rds")
+  cache_path = file.path("data", "cache_app", "dengue_microdatasus_campos_v2.rds")
 ) {
   cache <- ler_rds_seguro_local(cache_path, "SINAN-DENGUE")
   if (is.null(cache) || nrow(cache) == 0) {
@@ -75,7 +75,7 @@ dengue <- tryCatch(
 
 # Zika
 carregar_zika_microdatasus <- function(
-  cache_path = file.path("data", "app_cache", "zika_microdatasus_campos_v1.rds")
+  cache_path = file.path("data", "cache_app", "zika_microdatasus_campos_v1.rds")
 ) {
   cache <- ler_rds_seguro_local(cache_path, "SINAN-ZIKA")
   if (is.null(cache) || nrow(cache) == 0) {
@@ -100,7 +100,7 @@ zika <- tryCatch(
 
 # Populacao
 carregar_populacao_campos_sidra <- function(
-  cache_path = file.path("data", "app_cache", "populacao_campos_sidra.rds")
+  cache_path = file.path("data", "cache_app", "populacao_campos_sidra.rds")
 ) {
   pop <- ler_rds_seguro_local(cache_path, "populacao")
   if (is.null(pop) || nrow(pop) == 0 || !"Populacao" %in% names(pop)) {
@@ -132,7 +132,7 @@ populacao_campos <- tryCatch(
 # ============================================================
 
 carregar_benchmarks_referencia <- function(
-  cache_path = file.path("data", "app_cache", "benchmarks_uf_br.csv")
+  cache_path = file.path("data", "cache_app", "benchmarks_uf_br.csv")
 ) {
   vazio <- data.frame(
     Agravo = character(), Ano = integer(), Local = character(),
@@ -207,7 +207,7 @@ normalizar_bairro <- function(x) {
 # Bairros de dengue (planilhas locais, somente se disponiveis)
 carregar_bairros_dengue_local <- function(
   dir_dados = "dados_sinan_campos",
-  cache_path = file.path("data", "app_cache", "dengue_bairros_campos_v1.rds")
+  cache_path = file.path("data", "cache_app", "dengue_bairros_campos_v1.rds")
 ) {
   cache <- ler_rds_seguro_local(cache_path)
   if (!is.null(cache) && nrow(cache) > 0) return(cache)
@@ -252,7 +252,7 @@ dengue_bairros <- tryCatch(
 # ============================================================
 
 carregar_risco_dengue <- function(
-  cache_path = file.path("data", "app_cache", "dengue_risco_campos_v1.rds")
+  cache_path = file.path("data", "cache_app", "dengue_risco_campos_v1.rds")
 ) {
   cache <- ler_rds_seguro_local(cache_path, "dengue_risco")
   if (is.null(cache) || nrow(cache) == 0) {
@@ -263,7 +263,7 @@ carregar_risco_dengue <- function(
 }
 
 carregar_risco_dengue_bairros <- function(
-  cache_path = file.path("data", "app_cache", "dengue_risco_bairros_campos_v1.rds")
+  cache_path = file.path("data", "cache_app", "dengue_risco_bairros_campos_v1.rds")
 ) {
   cache <- ler_rds_seguro_local(cache_path, "dengue_risco_bairros")
   if (is.null(cache) || nrow(cache) == 0) {

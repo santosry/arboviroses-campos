@@ -15,9 +15,9 @@ mapa <- tryCatch(
 )
 
 saveRDS(mapa$nao_mapeados, root_path("data", "processed", "bairros_nao_mapeados.rds"))
-if (file.exists(root_path("data", "app_cache", "geobr_bairros_campos_2010.rds"))) {
+if (file.exists(root_path("data", "cache_app", "geobr_bairros_campos_2010.rds"))) {
   file.copy(
-    root_path("data", "app_cache", "geobr_bairros_campos_2010.rds"),
+    root_path("data", "cache_app", "geobr_bairros_campos_2010.rds"),
     root_path("data", "processed", "geobr_bairros_campos_2010.rds"),
     overwrite = TRUE
   )

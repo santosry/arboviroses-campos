@@ -54,14 +54,14 @@ jobs:
       - name: Verify caches
         run: |
           cat("=== Verificando caches finais ===\n")
-          caches <- list.files("data/app_cache", pattern = "\\.rds$", full.names = TRUE)
+          caches <- list.files("data/cache_app", pattern = "\\.rds$", full.names = TRUE)
           for (f in caches) {
             obj <- readRDS(f)
             cat(basename(f), ":", nrow(obj), "linhas,", ncol(obj), "colunas\n")
           }
           cat("=== metadata.json ===\n")
-          if (file.exists("data/app_cache/metadata.json")) {
-            cat(readLines("data/app_cache/metadata.json"), sep = "\n")
+          if (file.exists("data/cache_app/metadata.json")) {
+            cat(readLines("data/cache_app/metadata.json"), sep = "\n")
           }
         shell: Rscript {0}
 
@@ -72,4 +72,4 @@ jobs:
           name: audit-report
           path: |
             arboviroses-campos/data/audit/
-            arboviroses-campos/data/app_cache/metadata.json
+            arboviroses-campos/data/cache_app/metadata.json

@@ -23,7 +23,7 @@ Substituir o mapa de bairros baseado exclusivamente na malha do `geobr` (IBGE 20
 | `R/graficos.R` | `painel_correspondencia_bairros` atualizado para tabela de geolocalização |
 | `scripts/04_mapas.R` | Adicionado cache de setores censitários + pré-geocodificação |
 | `scripts/06_export_app.R` | Adicionada cópia de novos caches |
-| `data/app_cache/` | Novos arquivos: `setores_censitarios_campos_2010.rds`, `bairros_geocoded.csv`, `dengue_bairros_campos_v1.rds` (reconstruído) |
+| `data/cache_app/` | Novos arquivos: `setores_censitarios_campos_2010.rds`, `bairros_geocoded.csv`, `dengue_bairros_campos_v1.rds` (reconstruído) |
 | `data/audit/` | Novo: `totais_por_bairro.csv` |
 
 ### Arquivos novos criados (scripts auxiliares)
@@ -74,14 +74,14 @@ Função `normalizar_bairro_v2` (em `scripts/rebuild_bairros.R`) e atualização
 ### Fonte da malha
 - **Setores censitários do IBGE 2010** via `geobr::read_census_tract(code_tract = 3301009)`
 - **665 feições** com cobertura **100% do município**
-- Cache em `data/app_cache/setores_censitarios_campos_2010.rds`
+- Cache em `data/cache_app/setores_censitarios_campos_2010.rds`
 
 ### Obtenção de coordenadas dos bairros
 
 Duas fontes, em ordem de prioridade:
 
 1. **Centroides geobr** — para bairros que existem na malha de bairros do IBGE 2010 (≈82 bairros)
-2. **Geocodificação Nominatim/OSM** — para os demais, via API `nominatim.openstreetmap.org` com cache em `data/app_cache/bairros_geocoded.csv` (≈100 bairros prioritários)
+2. **Geocodificação Nominatim/OSM** — para os demais, via API `nominatim.openstreetmap.org` com cache em `data/cache_app/bairros_geocoded.csv` (≈100 bairros prioritários)
 
 ### Validação espacial
 Coordenadas obtidas são validadas contra o polígono do município (`sf::st_within`). Pontos fora dos limites de Campos são **descartados automaticamente**.
@@ -160,7 +160,7 @@ Coordenadas obtidas são validadas contra o polígono do município (`sf::st_wit
 ## 7. Como continuar amanhã
 
 ### Para adicionar coordenadas manuais dos bairros faltantes:
-Editar o arquivo `data/app_cache/bairros_geocoded.csv` e adicionar linhas com `lat` e `lon` para cada bairro.
+Editar o arquivo `data/cache_app/bairros_geocoded.csv` e adicionar linhas com `lat` e `lon` para cada bairro.
 
 ### Para rodar o app localmente:
 ```r

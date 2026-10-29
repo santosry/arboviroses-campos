@@ -99,8 +99,8 @@ server <- function(input, output, session) {
       pico = pico_ano,
       predominante = predominante_agravo,
       incidencia = incidencia_periodo(df),
-      atualizado = if (file.exists(file.path("data", "app_cache", "metadata.json")) && requireNamespace("jsonlite", quietly = TRUE)) {
-        meta <- jsonlite::read_json(file.path("data", "app_cache", "metadata.json"))
+      atualizado = if (file.exists(file.path("data", "cache_app", "metadata.json")) && requireNamespace("jsonlite", quietly = TRUE)) {
+        meta <- jsonlite::read_json(file.path("data", "cache_app", "metadata.json"))
         substr(meta$atualizado_em, 1, 10)
       } else {
         as.character(APP_DATA_ATUALIZACAO)

@@ -158,13 +158,13 @@ print(idx)
 # ============================================================
 # SALVAR CACHE
 # ============================================================
-saveRDS(dengue_bairros, "data/app_cache/dengue_bairros_campos_v1.rds")
-cat("\nCache salvo: data/app_cache/dengue_bairros_campos_v1.rds\n")
+saveRDS(dengue_bairros, "data/cache_app/dengue_bairros_campos_v1.rds")
+cat("\nCache salvo: data/cache_app/dengue_bairros_campos_v1.rds\n")
 
 # Salvar tabela de mapeamento (original -> normalizado)
 mapeamento <- dados_brutos %>%
   distinct(NM_BAIRRO_ORIGINAL, NM_BAIRRO)
-write.csv(mapeamento, "data/app_cache/mapeamento_bairros.csv", row.names = FALSE)
+write.csv(mapeamento, "data/cache_app/mapeamento_bairros.csv", row.names = FALSE)
 
 # Salvar totais por bairro para auditoria
 totais_bairro <- dengue_bairros %>%

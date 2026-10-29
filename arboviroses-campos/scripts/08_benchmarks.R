@@ -13,7 +13,7 @@
 #   source("scripts/08_benchmarks.R")
 #
 # Saída:
-#   data/app_cache/benchmarks_uf_br.csv
+#   data/cache_app/benchmarks_uf_br.csv
 #   data/audit/benchmarks_uf_br_auditoria.csv
 #
 # O download nacional é pesado (milhões de registros por ano). O workflow
@@ -207,12 +207,12 @@ if (length(resultados) == 0) {
 benchmarks <- dplyr::bind_rows(resultados)
 benchmarks <- benchmarks[order(benchmarks$Agravo, benchmarks$Local, benchmarks$Ano), , drop = FALSE]
 
-dir.create(root_path("data", "app_cache"), recursive = TRUE, showWarnings = FALSE)
+dir.create(root_path("data", "cache_app"), recursive = TRUE, showWarnings = FALSE)
 dir.create(root_path("data", "audit"), recursive = TRUE, showWarnings = FALSE)
 
 utils::write.csv(
   benchmarks,
-  root_path("data", "app_cache", "benchmarks_uf_br.csv"),
+  root_path("data", "cache_app", "benchmarks_uf_br.csv"),
   row.names = FALSE,
   fileEncoding = "UTF-8"
 )
@@ -226,6 +226,6 @@ utils::write.csv(
 message(
   "Benchmarks concluídos: ",
   nrow(benchmarks),
-  " linhas em data/app_cache/benchmarks_uf_br.csv"
+  " linhas em data/cache_app/benchmarks_uf_br.csv"
 )
 }

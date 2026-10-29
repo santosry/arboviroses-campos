@@ -39,8 +39,8 @@ primeira_coluna_existente <- function(df, candidatas) {
 }
 
 carregar_malha_bairros_campos <- function(
-  cache_path = file.path("data", "app_cache", "geobr_bairros_campos_2010.rds"),
-  gpkg_path = file.path("data", "app_cache", "neighborhoods_2010_simplified.gpkg")
+  cache_path = file.path("data", "cache_app", "geobr_bairros_campos_2010.rds"),
+  gpkg_path = file.path("data", "cache_app", "neighborhoods_2010_simplified.gpkg")
 ) {
   preparar_malha <- function(malha) {
     col_bairro <- primeira_coluna_existente(malha, c("name_neighborhood", "name_neighbourhood", "NM_BAIRRO", "bairro", "NM_BAIR", "NM_BAIRRO_GEO"))

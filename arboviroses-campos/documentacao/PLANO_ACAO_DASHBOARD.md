@@ -28,7 +28,7 @@ Este plano organiza as mudanças em blocos de impacto e esforço, com indicadore
   - `CITATION.cff` com autores, versão, licença e links.
   - READMEs (raiz e app) com badges, seção “Licença, citação e reuso (FAIR)”, guia rápido de reuso e limites de dados.
   - Documentação do que pode ser reutilizado: código e indicadores agregados sim; dados individuais e planilhas locais não.
-  - Metadados atualizados em `data/app_cache/metadata.json` (versão 0.2.0, benchmarks, observações).
+  - Metadados atualizados em `data/cache_app/metadata.json` (versão 0.2.0, benchmarks, observações).
 - **Indicador:** repositório indexado com licença aberta, citação e nota FAIR explícita.
 - **Status:** concluído.
 
@@ -39,7 +39,7 @@ Este plano organiza as mudanças em blocos de impacto e esforço, com indicadore
 ### B3. Comparação com médias do Estado do RJ e do Brasil
 
 - **O que foi feito**
-  - Cache `data/app_cache/benchmarks_uf_br.csv` com casos confirmados, população e incidência por 100 mil para **RJ e Brasil**, 2020–2025, nos três agravos.
+  - Cache `data/cache_app/benchmarks_uf_br.csv` com casos confirmados, população e incidência por 100 mil para **RJ e Brasil**, 2020–2025, nos três agravos.
   - Linhas tracejadas adicionais nos gráficos de incidência (Plotly e figuras de publicação), com legenda, *hover* e nota de escopo.
   - Script `scripts/08_benchmarks.R` para atualização via `microdatasus` (SINAN nacional, filtro de residência RJ e total Brasil) e denominadores IBGE/SIDRA.
   - Auditoria em `data/audit/benchmarks_uf_br_auditoria.csv`.
@@ -103,7 +103,7 @@ Este plano organiza as mudanças em blocos de impacto e esforço, com indicadore
 | Item | Como verificar |
 |:---|:---|
 | Avisos em todas as abas | Abrir o app e navegar pelas sete abas; banner e nota devem estar visíveis. |
-| FAIR/licença | Conferir `README.md`, `LICENSE`, `CITATION.cff` e `data/app_cache/metadata.json`. |
+| FAIR/licença | Conferir `README.md`, `LICENSE`, `CITATION.cff` e `data/cache_app/metadata.json`. |
 | Benchmarks | Abrir Dengue/Chikungunya/Zika e verificar linhas tracejadas RJ/Brasil e nota de escopo. |
 | Feedback | Responder ao formulário, verificar mensagem de status e download CSV; configurar endpoint para envio automático. |
 | Automação | Executar o workflow manualmente em Actions e conferir artefatos/commit. |

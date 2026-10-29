@@ -33,13 +33,26 @@ required_files <- c(
   "app.R",
   list.files("R", pattern = "\\.R$", full.names = TRUE),
   list.files("www", full.names = TRUE),
-  list.files("data/app_cache", full.names = TRUE)
+  list.files("data/cache_app", full.names = TRUE)
 )
 required_files <- unique(required_files[file.exists(required_files)])
-required_files <- unique(required_files[file.exists(required_files)])
 
-if (!"data/app_cache/metadata.json" %in% required_files) {
-  warning("metadata.json nao encontrado em data/app_cache. Rode scripts/update_data.R antes do deploy.")
+if (!"data/cache_app/metadata.json" %in% required_files) {
+  warning("metadata.json nao encontrado em data/cache_app. Rode scripts/update_data.R antes do deploy.")
+}
+
+# O rsconnect ignora automaticamente diretorios chamados "app_cache".
+# Verificamos o bundle para garantir que os caches realmente serao enviados.
+bundle_files <- tryCatch(rsconnect::listBundleFiles(".")$contents, error = function(e) NULL)
+if (!is.null(bundle_files)) {
+  ausentes <- setdiff(required_files, bundle_files)
+  if (length(ausentes) > 0) {
+    stop(
+      "Arquivos obrigatorios fora do bundle do deploy: ",
+      paste(ausentes, collapse = ", "),
+      call. = FALSE
+    )
+  }
 }
 
 for (old in old_accounts) {

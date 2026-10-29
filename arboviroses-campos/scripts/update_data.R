@@ -18,4 +18,4 @@ for (etapa in etapas) {
   sys.source(etapa, envir = globalenv(), keep.source = FALSE)
 }
 
-message("Pipeline completo. Caches finais em data/app_cache/.")
+message("Pipeline completo. Caches finais em data/cache_app/.")

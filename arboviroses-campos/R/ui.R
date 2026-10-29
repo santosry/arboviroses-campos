@@ -1708,13 +1708,13 @@ ui <- dashboardPage(skin = "black",
             tags$li("Chikungunya: microdados nacionais do SINAN-CHIKUNGUNYA via microdatasus, filtrando residência no RJ (código IBGE 33) ou total Brasil."),
             tags$li("Denominadores: população residente do IBGE/SIDRA (Censo 2022 para 2022-2023; estimativas para os demais anos).")
           ),
-          p(tags$strong("Atualização: "), "o arquivo data/app_cache/benchmarks_uf_br.csv é gerado por scripts/08_benchmarks.R e pode ser atualizado semestralmente pelo GitHub Actions.")
+          p(tags$strong("Atualização: "), "o arquivo data/cache_app/benchmarks_uf_br.csv é gerado por scripts/08_benchmarks.R e pode ser atualizado semestralmente pelo GitHub Actions.")
         ),
         div(class = "landing-section",
           h4("Licença, citação e reuso (princípios FAIR)"),
           p("O código está sob licença MIT, permitindo reuso, adaptação e redistribuição com atribuição. Os dados agregados podem ser reutilizados com citação da fonte original (SINAN/SVS) e deste painel. Dados brutos individuais e planilhas locais restritas não são publicados."),
           tags$ul(
-            tags$li(tags$strong("Findable: "), "metadados, fontes, período e versão documentados no README e em data/app_cache/metadata.json."),
+            tags$li(tags$strong("Findable: "), "metadados, fontes, período e versão documentados no README e em data/cache_app/metadata.json."),
             tags$li(tags$strong("Accessible: "), "aplicativo público, repositório aberto e arquivos de cache versionados."),
             tags$li(tags$strong("Interoperable: "), "nomes de variáveis padronizados, CSV/JSON e código R modular."),
             tags$li(tags$strong("Reusable: "), "licença MIT, script de atualização, testes automatizados e nota de citação (CITATION.cff).")

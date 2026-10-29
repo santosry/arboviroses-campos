@@ -24,7 +24,7 @@ Este repositório foi organizado para ser **localizável, acessível, interoper�
 
 | Princípio | Como é atendido |
 |:---|:---|
-| **Findable** | README com fontes, período, recorte territorial, versão do pipeline, `data/app_cache/metadata.json` e `CITATION.cff`. |
+| **Findable** | README com fontes, período, recorte territorial, versão do pipeline, `data/cache_app/metadata.json` e `CITATION.cff`. |
 | **Accessible** | Aplicativo público, repositório aberto, caches agregados versionados e licença MIT. |
 | **Interoperable** | Variáveis padronizadas, saídas em CSV/JSON, funções R modulares e documentação metodológica. |
 | **Reusable** | Licença MIT, script de atualização, testes automatizados, notas de limitação e guia rápido de reuso. |
@@ -129,12 +129,12 @@ Implementado em `R/classificacao_risco.R` (função `classificar_dengue()` e ver
 
 | Componente | Fonte | Detalhe |
 |:---|---|:---|
-| Dengue e Zika (registros individuais) | SINAN-DENGUE e SINAN-ZIKA via pacote [`microdatasus`](https://github.com/rfsaldanha/microdatasus) | Download parametrizável; cache local em `data/app_cache/` |
-| Chikungunya (registros individuais) | SINAN-CHIKUNGUNYA via pacote [`microdatasus`](https://github.com/rfsaldanha/microdatasus) | Download parametrizável; cache local em `data/app_cache/`; fallback estático se cache indisponível |
+| Dengue e Zika (registros individuais) | SINAN-DENGUE e SINAN-ZIKA via pacote [`microdatasus`](https://github.com/rfsaldanha/microdatasus) | Download parametrizável; cache local em `data/cache_app/` |
+| Chikungunya (registros individuais) | SINAN-CHIKUNGUNYA via pacote [`microdatasus`](https://github.com/rfsaldanha/microdatasus) | Download parametrizável; cache local em `data/cache_app/`; fallback estático se cache indisponível |
 | Dengue por bairro | Planilhas locais `DENGUEYYYY.xlsx` fornecidas pela **Subsecretaria de Vigilância Epidemiológica de Campos dos Goytacazes** | `dados_sinan_campos/` (não versionado) |
 | Malha territorial | `geobr` / IBGE: bairros de 2010 | Cache em `neighborhoods_2010_simplified.gpkg` |
 | População residente | IBGE/SIDRA: tabela 6579, variável 9324; Censo 2022 (tabela 4714) para 2022-2023 | Cache com fallback embutido |
-| Referências RJ e Brasil | SINAN/SVS via `microdatasus` (chikungunya e atualização nacional) e TabNet/DataSUS (dengue e Zika); população IBGE/SIDRA | `data/app_cache/benchmarks_uf_br.csv`, gerado por `scripts/08_benchmarks.R` |
+| Referências RJ e Brasil | SINAN/SVS via `microdatasus` (chikungunya e atualização nacional) e TabNet/DataSUS (dengue e Zika); população IBGE/SIDRA | `data/cache_app/benchmarks_uf_br.csv`, gerado por `scripts/08_benchmarks.R` |
 
 ### Critérios de inclusão e definição de caso
 
@@ -202,14 +202,14 @@ arboviroses-campos/
 │   ├── 03_agregacao.R           # Agregacao por ano, sexo, idade, raca/cor, gestacao etc.
 │   ├── 04_mapas.R               # Preparacao de bases espaciais
 │   ├── 05_validacao.R           # Auditoria de totais, completude, bairros nao mapeados
-│   ├── 06_export_app.R          # Exportacao dos .rds finais para data/app_cache/
+│   ├── 06_export_app.R          # Exportacao dos .rds finais para data/cache_app/
 │   ├── 07_risco.R               # Classificacao de risco MS (dengue/chikungunya) -> cache
 │   ├── 08_benchmarks.R          # Referencias externas RJ/Brasil (microdatasus/TabNet + IBGE)
 │   ├── update_data.R            # Orquestrador do pipeline completo
 │   ├── deploy.R                 # Publicacao no shinyapps.io com protecao contra conta antiga
 │   └── fix_encoding_text.R      # Correcao de encoding em textos do projeto
 ├── data/
-│   ├── app_cache/               # Caches processados usados pelo app (versionados)
+│   ├── cache_app/               # Caches processados usados pelo app (versionados)
 │   ├── audit/                   # Relatorios automaticos de auditoria (versionados)
 │   ├── raw/                     # Dados brutos baixados (nao versionados)
 │   ├── interim/                 # Dados limpos intermediarios (nao versionados)
@@ -220,7 +220,7 @@ arboviroses-campos/
 ├── renv.lock                    # Ambiente R reprodutivel
 ├── LICENSE                      # MIT License
 ├── CITATION.cff                 # Metadados de citacao (FAIR)
-├── data/app_cache/benchmarks_uf_br.csv  # Referencias RJ/Brasil por ano
+├── data/cache_app/benchmarks_uf_br.csv  # Referencias RJ/Brasil por ano
 ├── .github/workflows/           # CI e atualizacao semestral
 └── README.md
 ```
@@ -256,7 +256,7 @@ shiny::runApp()
 
 ### Atualização semestral automatizada
 
-O workflow [`atualizacao-semestral.yml`](../.github/workflows/atualizacao-semestral.yml) executa a atualização dos caches e dos benchmarks a cada seis meses (janeiro e julho) e também pode ser disparado manualmente (`workflow_dispatch`). Ele restaura o ambiente `renv`, executa `scripts/update_data.R` e `scripts/08_benchmarks.R`, roda os testes e publica os artefatos de auditoria. O app **nunca baixa dados no startup**: lê apenas os caches versionados em `data/app_cache/`.
+O workflow [`atualizacao-semestral.yml`](../.github/workflows/atualizacao-semestral.yml) executa a atualização dos caches e dos benchmarks a cada seis meses (janeiro e julho) e também pode ser disparado manualmente (`workflow_dispatch`). Ele restaura o ambiente `renv`, executa `scripts/update_data.R` e `scripts/08_benchmarks.R`, roda os testes e publica os artefatos de auditoria. O app **nunca baixa dados no startup**: lê apenas os caches versionados em `data/cache_app/`.
 
 Para reproduzir localmente a etapa de referências externas:
 
@@ -300,13 +300,13 @@ O pipeline gera automaticamente:
 
 | Arquivo | Conteúdo |
 |:---|---|
-| `data/app_cache/metadata.json` | Data de atualização, fontes, anos, versão do pipeline, observações metodológicas |
+| `data/cache_app/metadata.json` | Data de atualização, fontes, anos, versão do pipeline, observações metodológicas |
 | `data/audit/totais_por_ano_agravo.csv` | Casos confirmados, óbitos e ignorados por ano e agravo |
 | `data/audit/completude_variaveis.csv` | Percentual de campos ignorados/brancos por variável, agravo e ano |
 | `data/audit/bairros_nao_mapeados.csv` | Bairros da planilha sem correspondência na malha geobr/IBGE |
 | `data/audit/relatorio_auditoria.html` | Relatório HTML consolidado com alertas metodológicos |
 | `data/audit/benchmarks_uf_br_auditoria.csv` | Casos confirmados por ano, agravo e local (RJ/Brasil), códigos de classificação e data de processamento |
-| `data/app_cache/benchmarks_uf_br.csv` | Referências anuais de incidência do RJ e do Brasil usadas nas linhas tracejadas |
+| `data/cache_app/benchmarks_uf_br.csv` | Referências anuais de incidência do RJ e do Brasil usadas nas linhas tracejadas |
 | `logs/07_feedback.csv` | Respostas voluntárias da avaliação de usabilidade (quando o diretório é gravável) |
 
 ---

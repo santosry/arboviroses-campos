@@ -5,7 +5,7 @@
   "municipio": "Campos dos Goytacazes, RJ",
   "versao_pipeline": "0.2.0",
   "arquivos_gerados": ["bairros_geocoded.csv", "benchmarks_uf_br.csv", "catalogo_bairros_bruto.csv", "chikungunya_microdatasus_campos_v1.rds", "dengue_bairros_campos_v1.rds", "dengue_microdatasus_campos_v2.rds", "dengue_microdatasus_temporal_campos_v1.rds", "dengue_risco_bairros_campos_v1.rds", "dengue_risco_campos_v1.rds", "geobr_bairros_campos_2010.rds", "mapeamento_bairros.csv", "metadata.json", "neighborhoods_2010_simplified.gpkg", "populacao_campos_sidra.rds", "setores_censitarios_campos_2010.rds", "zika_microdatasus_campos_v1.rds", "zika_microdatasus_temporal_campos_v1.rds"],
-  "observacoes_metodologicas": ["O app Shiny le apenas caches processados e nao baixa dados no startup.", "Dados brutos e dados_sinan_campos/outputs nao sao publicados.", "Chikungunya possui etapa de ingestao via SINAN-CHIKUNGUNYA no microdatasus.", "Benchmarks do Estado do RJ e Brasil sao lidos de data/app_cache/benchmarks_uf_br.csv.", "A paleta viridis e usada nos graficos e mapas para acessibilidade a pessoas daltonicas."],
+  "observacoes_metodologicas": ["O app Shiny le apenas caches processados e nao baixa dados no startup.", "Dados brutos e dados_sinan_campos/outputs nao sao publicados.", "Chikungunya possui etapa de ingestao via SINAN-CHIKUNGUNYA no microdatasus.", "Benchmarks do Estado do RJ e Brasil sao lidos de data/cache_app/benchmarks_uf_br.csv.", "A paleta viridis e usada nos graficos e mapas para acessibilidade a pessoas daltonicas."],
   "benchmarks": {
     "arquivo": "benchmarks_uf_br.csv",
     "periodo": "2020-2025",

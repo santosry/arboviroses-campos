@@ -21,7 +21,7 @@ for (arq in arquivos) {
 cat(sprintf("\nTotal: %d registros, %d bairros unicos\n", nrow(todos_bairros), length(unique(todos_bairros$NM_BAIRRO))))
 
 # Salvar catalogo para analise
-write.csv(todos_bairros, "data/app_cache/catalogo_bairros_bruto.csv", row.names = FALSE)
+write.csv(todos_bairros, "data/cache_app/catalogo_bairros_bruto.csv", row.names = FALSE)
 
 # Mostrar exemplos de variacoes
 cat("\n=== EXEMPLOS DE VARIACOES DE GRAFIA ===\n")

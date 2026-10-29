@@ -132,12 +132,12 @@ risco_dengue_bairros <- classificados %>%
   arrange(Ano, NM_BAIRRO, Grupo)
 
 dir.create(root_path("data", "processed"), recursive = TRUE, showWarnings = FALSE)
-dir.create(root_path("data", "app_cache"), recursive = TRUE, showWarnings = FALSE)
+dir.create(root_path("data", "cache_app"), recursive = TRUE, showWarnings = FALSE)
 
 saveRDS(risco_dengue, root_path("data", "processed", "dengue_risco.rds"))
 saveRDS(risco_dengue_bairros, root_path("data", "processed", "dengue_risco_bairros.rds"))
-invisible(file.copy(root_path("data", "processed", "dengue_risco.rds"), root_path("data", "app_cache", "dengue_risco_campos_v1.rds"), overwrite = TRUE))
-invisible(file.copy(root_path("data", "processed", "dengue_risco_bairros.rds"), root_path("data", "app_cache", "dengue_risco_bairros_campos_v1.rds"), overwrite = TRUE))
+invisible(file.copy(root_path("data", "processed", "dengue_risco.rds"), root_path("data", "cache_app", "dengue_risco_campos_v1.rds"), overwrite = TRUE))
+invisible(file.copy(root_path("data", "processed", "dengue_risco_bairros.rds"), root_path("data", "cache_app", "dengue_risco_bairros_campos_v1.rds"), overwrite = TRUE))
 
 message("Distribuicao de risco (dengue) por grupo:")
 print(risco_dengue %>% group_by(Grupo) %>% summarise(Casos = sum(Casos), .groups = "drop"))

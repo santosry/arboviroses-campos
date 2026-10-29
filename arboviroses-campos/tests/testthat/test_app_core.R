@@ -14,10 +14,10 @@ source(file.path(project_root, "R", "mapas.R"), encoding = "UTF-8")
 
 test_that("caches finais do app existem e carregam", {
   arquivos <- c(
-    "data/app_cache/chikungunya_microdatasus_campos_v1.rds",
-    "data/app_cache/dengue_microdatasus_campos_v2.rds",
-    "data/app_cache/zika_microdatasus_campos_v1.rds",
-    "data/app_cache/dengue_bairros_campos_v1.rds"
+    "data/cache_app/chikungunya_microdatasus_campos_v1.rds",
+    "data/cache_app/dengue_microdatasus_campos_v2.rds",
+    "data/cache_app/zika_microdatasus_campos_v1.rds",
+    "data/cache_app/dengue_bairros_campos_v1.rds"
   )
   expect_true(all(file.exists(arquivos)))
   expect_gt(nrow(readRDS(arquivos[1])), 0)

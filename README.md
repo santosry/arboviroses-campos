@@ -31,7 +31,7 @@ O código deste repositório está sob **licença MIT** (consulte [`LICENSE`](LI
 
 | Princípio | Como é atendido |
 |:---|:---|
-| **Findable** | README, `CITATION.cff`, metadados em `data/app_cache/metadata.json` e documentação metodológica. |
+| **Findable** | README, `CITATION.cff`, metadados em `data/cache_app/metadata.json` e documentação metodológica. |
 | **Accessible** | Aplicativo público, repositório aberto, caches agregados e licença MIT. |
 | **Interoperable** | CSV/JSON, nomes de variáveis padronizados e módulos R reutilizáveis. |
 | **Reusable** | Licença aberta, testes automatizados, scripts de atualização e limites metodológicos explícitos. |
